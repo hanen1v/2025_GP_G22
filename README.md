@@ -1,5 +1,4 @@
-# Mujeer – AI-Powered Legal Consultation & Contract Drafting App
-
+## Mujeer
 ## Introduction
 Mujeer is an Arabic Android application for legal consultations in Saudi Arabia.  
 The app simplifies access to lawyers licensed by the Saudi Ministry of Justice and features a smart recommendation system to suggest the most suitable lawyer.  
