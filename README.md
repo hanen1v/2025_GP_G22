@@ -17,5 +17,6 @@ Mujeer supports Saudi Arabia’s digital-justice goals by implementing a **manua
   - **Twilio API** – Handles OTP (One-Time Password) verification for secure account login.
 
 ## Launching Instructions
+Instructions for running and deploying the app will be added once the implementation phase.
 
    
