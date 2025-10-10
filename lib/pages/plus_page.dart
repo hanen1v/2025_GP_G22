@@ -8,7 +8,7 @@ class PlusPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: const Center(child: Text('Plus Page (create new)', style: TextStyle(fontSize: 24))),
-      // لو تبي تخلي البار يظهر بينما أنت في Plus، ضَع route غير موجود بالبار (لا يتم تمييز أي أيقونة)
+      
       bottomNavigationBar: const AppBottomNav(currentRoute: '/plus'),
       floatingActionButton: _buildFab(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

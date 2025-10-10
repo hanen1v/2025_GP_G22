@@ -4,6 +4,8 @@ import 'pages/search_page.dart';
 import 'pages/plus_page.dart';
 import 'pages/status_page.dart';
 import 'pages/more_page.dart';
+import 'pages/consultation_page.dart';
+import 'pages/contract_review_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -36,6 +38,8 @@ class MyApp extends StatelessWidget {
         '/plus': (context) => const PlusPage(),
         '/status': (context) => const StatusPage(),
         '/more': (context) => const MorePage(),
+        '/consultation': (context) => const ConsultationPage(),
+        '/contractReview': (context) => const ContractReviewPage(),
       },
     );
   }
