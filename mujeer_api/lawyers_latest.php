@@ -1,28 +1,44 @@
 <?php
 require_once __DIR__ . '/config.php';
 
-// رؤوس بسيطة تسمح للـ Flutter يقرأ من الـ API
+// رؤوس تسمح لتطبيق Flutter يقرأ الـ API
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json; charset=utf-8');
 
 /*
   نرجّع آخر 10 محامين حالتهم Approved
-  + نحسب تقييم تقريبي من Points (أو اخليها 4.9 لو ما فيه نقاط)
+  + نحسب التقييم من متوسط feedback.Rate
 */
-$sql = "SELECT LawyerID, FullName, LawyerPhoto, Points, Status
-        FROM lawyer
-        WHERE Status = 'Approved'
-        ORDER BY LawyerID DESC
-        LIMIT 10";
+$sql = "
+SELECT
+  l.LawyerID,
+  l.FullName,
+  l.LawyerPhoto,
+  l.Status,
+  IFNULL(ROUND(AVG(f.Rate), 1), 0) AS Rating   -- ← التقييم من feedback
+FROM lawyer l
+LEFT JOIN feedback f ON f.LawyerID = l.LawyerID
+WHERE l.Status = 'Approved'
+GROUP BY l.LawyerID, l.FullName, l.LawyerPhoto, l.Status
+ORDER BY Rating DESC, l.LawyerID DESC
+LIMIT 10
+";
 
 try {
   $stmt = $pdo->query($sql);
-  $rows = $stmt->fetchAll();
+  $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+  // (اختياري) لو تخزّنين الصورة كمسار نسبي 'uploads/...'
+  // نكمّلها إلى رابط كامل علشان Flutter يعرضها مباشرة
+  // عدّلي base حسب مسار مجلد الـ API عندك
+  /*
+  $base = (isset($_SERVER['HTTP_HOST']) ? "http://{$_SERVER['HTTP_HOST']}" : "") . "/mujeer_api/";
   foreach ($rows as &$r) {
-    $points = isset($r['Points']) ? (float)$r['Points'] : 0.0;
-    $r['Rating'] = $points > 0 ? min(5.0, round($points / 20.0, 1)) : 4.9;
+    if (!empty($r['LawyerPhoto']) && str_starts_with($r['LawyerPhoto'], 'uploads/')) {
+      $r['LawyerPhoto'] = $base . $r['LawyerPhoto'];
+    }
   }
+  */
 
   echo json_encode(['ok' => true, 'data' => $rows], JSON_UNESCAPED_UNICODE);
 } catch (Exception $e) {
