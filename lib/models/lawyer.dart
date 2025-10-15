@@ -12,13 +12,12 @@ class Lawyer {
   });
 
   factory Lawyer.fromJson(Map<String, dynamic> j) {
-    // نحاول نقرأ Points من الـ JSON
-    final ratingValue = double.tryParse('${j['Points'] ?? j['Rating'] ?? 0}') ?? 0.0;
-    final rating = double.parse(ratingValue.clamp(0, 5).toStringAsFixed(1));
+    // نقرأ التقييم من Rating فقط (اللي يجي من feedback.Rate)
+    final rating = double.tryParse('${j['Rating'] ?? 0}') ?? 0.0;
 
-    // نكوّن الرابط الكامل للصورة
+    // نكوّن رابط الصورة الكامل
     final photoName = (j['LawyerPhoto'] ?? '').toString().trim();
-    const baseUrl = 'http://10.0.2.2:8888/mujeer_api'; // غيّريه لو غيرتي اسم مجلد الـ backend
+    const baseUrl = 'http://10.0.2.2:8888/mujeer_api'; // غيّريه لو تغيّر المسار
     final fullPhotoUrl = photoName.isEmpty ? '' : '$baseUrl/uploads/$photoName';
 
     return Lawyer(
