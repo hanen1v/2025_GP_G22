@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/services_section.dart';
+import '../widgets/lawyers_strip_simple.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -14,11 +15,23 @@ class HomePage extends StatelessWidget {
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: [
+            //  شريط المحامين فوق
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 110,
+              bottom: 10,
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: LawyersStripSimple(),
+              ),
+            ),
+
             //  الخدمات مثبتة في الأسفل 
             Positioned(
               left: 16,
               right: 16,
-              bottom: kBottomNavigationBarHeight + 20, // ← مسافة فوق FloatingButton
+              bottom: kBottomNavigationBarHeight + 180, // ← مسافة فوق FloatingButton
               child: const ServicesSection(),
             ),
           ],
