@@ -4,10 +4,40 @@ import '../widgets/services_section.dart';
 import '../widgets/lawyers_strip_simple.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final String? userName;
+  final String? userType;
+
+  const HomePage({super.key, this.userName, this.userType});
 
   @override
   Widget build(BuildContext context) {
+    // عرض رسالة ترحيبية إذا كان هناك اسم مستخدم
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (userName != null && userName!.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'مرحباً بعودتك $userName! 👋',
+              style: const TextStyle(
+                fontFamily: 'Tajawal', 
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: const Color(0xFF0B5345),
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.only(
+              bottom: MediaQuery.of(context).size.height * 0.15,
+              left: 20,
+              right: 20,
+            ),
+          ),
+        );
+      }
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
 

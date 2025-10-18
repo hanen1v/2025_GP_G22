@@ -6,6 +6,10 @@ import 'pages/status_page.dart';
 import 'pages/more_page.dart';
 import 'pages/consultation_page.dart';
 import 'pages/contract_review_page.dart';
+import 'pages/welcome_page.dart';
+import 'pages/login_page.dart';
+import 'pages/lawyer_register_page.dart';
+import 'pages/client_register_page.dart'; 
 
 void main() {
   runApp(const MyApp());
@@ -31,9 +35,13 @@ class MyApp extends StatelessWidget {
         textDirection: TextDirection.rtl, // ← اتجاه عربي
         child: child!,
       ),
-      initialRoute: '/home',
+      initialRoute: '/welcome',
       routes: {
+        '/welcome': (context) => const WelcomePage(),
         '/home': (context) => const HomePage(),
+        '/login': (context) => const LoginPage(),
+        '/lawyer_register': (context) => const LawyerRegisterPage(),
+        '/client_register': (context) => const ClientRegisterPage(),
         '/search': (context) => const SearchPage(),
         '/plus': (context) => const PlusPage(),
         '/status': (context) => const StatusPage(),
