@@ -14,6 +14,8 @@ dependencies:
   http: ^1.2.2
   cupertino_icons: ^1.0.8
   iconsax: ^0.0.8
+  path_provider: ^2.0.1
+  open_file: ^3.0.1
 
 dev_dependencies:
   flutter_test:
