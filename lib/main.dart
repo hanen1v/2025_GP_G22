@@ -10,7 +10,7 @@ import 'pages/welcome_page.dart';
 import 'pages/login_page.dart';
 import 'pages/lawyer_register_page.dart';
 import 'pages/client_register_page.dart'; 
-
+import 'pages/requests_management_page.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -48,6 +48,8 @@ class MyApp extends StatelessWidget {
         '/more': (context) => const MorePage(),
         '/consultation': (context) => const ConsultationPage(),
         '/contractReview': (context) => const ContractReviewPage(),
+        '/requestsManagement': (context) => const RequestManagementPage(),
+
       },
     );
   }
