@@ -18,7 +18,7 @@ class _RequestManagementPageState extends State<RequestManagementPage> {
   List<LawyerRequest> _requests = [];
   bool _loading = true;
 
-  static const String splashPageRoute = '/splash';
+  static const String splashPageRoute = '/welcome';
 
   @override
   void initState() {
@@ -214,3 +214,4 @@ class RequestCard extends StatelessWidget {
     );
   }
 }
+
