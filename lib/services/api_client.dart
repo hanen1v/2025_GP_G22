@@ -43,4 +43,45 @@ class ApiClient {
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
     }
   }
+//get pending requests
+static Future<List<LawyerRequest>> getPendingRequests() async {
+  final res = await http.get(Uri.parse('$base/get_pending_requests.php'));
+  if (res.statusCode != 200) {
+    throw Exception('HTTP ${res.statusCode}: ${res.body}');
+  }
+
+  final decoded = json.decode(res.body);
+
+
+  if (decoded is List) {
+    return decoded
+        .cast<Map<String, dynamic>>()
+        .map((j) => LawyerRequest.fromJson(j))
+        .toList();
+  } else if (decoded is Map && decoded['ok'] == true) {
+    final list = (decoded['data'] as List).cast<Map<String, dynamic>>();
+    return list.map((j) => LawyerRequest.fromJson(j)).toList();
+  } else {
+    throw Exception('Bad response: $decoded');
+  }
+}
+  static Future<void> updateRequestStatus({
+    required int requestId,
+    required String status, // 'Approved' أو 'Rejected'
+  }) async {
+    final res = await http
+        .post(
+          Uri.parse('$base/update_request_status.php'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'RequestID': requestId, 'Status': status}),
+        );
+
+    if (res.statusCode != 200) {
+      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    }
+    final body = json.decode(res.body);
+    if (body is! Map || body['ok'] != true) {
+      throw Exception(body['message'] ?? 'Failed to update status');
+    }
+  }
 }
