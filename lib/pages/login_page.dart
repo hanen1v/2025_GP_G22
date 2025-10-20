@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_client.dart';
 import '../models/user.dart';
-
+import 'requests_management_page.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -219,58 +219,74 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // توجيه المستخدم وعرض رسالة الترحيب
-  void _redirectBasedOnUserType(User user) {
-    // أولاً: الانتقال للصفحة الرئيسية
+  
+    // دالة توجيه المستخدم للصفحة المناسبة حسب نوعه
+void _redirectBasedOnUserType(User user) {
+  // التوجيه للصفحة المناسبة حسب نوع المستخدم
+  if (user.isAdmin) {
+    // الأدمن يروح لصفحة إدارة الطلبات
+    Navigator.pushReplacementNamed(context, '/requestsManagement');
+  } else if (user.isLawyer) {
+    // المحامي يروح للصفحة الرئيسية
     Navigator.pushReplacementNamed(context, '/home');
-    
-    // ثانياً: عرض رسالة ترحيب أنيقة بعد الانتقال
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      showDialog(
-        context: context,
-        barrierDismissible: true,
-        builder: (context) => AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.check_circle, color: Color(0xFF0B5345)),
-              SizedBox(width: 8),
-              Text(
-                'مرحباً',
-                style: TextStyle(
-                  fontFamily: 'Tajawal',
-                  color: Color(0xFF0B5345),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            '${user.fullName} - ${_getUserTypeArabic(user.userType)}',
-            style: TextStyle(
-              fontFamily: 'Tajawal',
-              color: Colors.black87,
+  } else {
+    // العميل يروح للصفحة الرئيسية
+    Navigator.pushReplacementNamed(context, '/home');
+  }
+  
+  // عرض رسالة ترحيب أنيقة بعد الانتقال
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              user.isAdmin ? Icons.admin_panel_settings : 
+              user.isLawyer ? Icons.gavel : Icons.person,
+              color: user.isAdmin ? Color(0xFF8B0000) : Color(0xFF0B5345),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'حسناً',
-                style: TextStyle(
-                  fontFamily: 'Tajawal',
-                  color: Color(0xFF0B5345),
-                ),
+            SizedBox(width: 8),
+            Text(
+              user.isAdmin ? 'مرحباً أيها المشرف' : 
+              user.isLawyer ? 'مرحباً أيها المحامي' : 'مرحباً',
+              style: TextStyle(
+                fontFamily: 'Tajawal',
+                color: user.isAdmin ? Color(0xFF8B0000) : Color(0xFF0B5345),
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
         ),
-      );
-    });
-  }
+        content: Text(
+          '${user.fullName} - ${_getUserTypeArabic(user.userType)}',
+          style: TextStyle(
+            fontFamily: 'Tajawal',
+            color: Colors.black87,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'حسناً',
+              style: TextStyle(
+                fontFamily: 'Tajawal',
+                color: user.isAdmin ? Color(0xFF8B0000) : Color(0xFF0B5345),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  });
+}
+  
 
   // دالة مساعدة لتحويل نوع المستخدم للعربية
   String _getUserTypeArabic(String userType) {

@@ -97,7 +97,9 @@ if ($result && $result->num_rows > 0) {
 
 // البحث في جدول admin
 error_log("=== CHECKING ADMIN TABLE ===");
-$sql = "SELECT AdminID as UserID, Username, 'admin' as UserType, Password 
+$sql = "SELECT AdminID as UserID, Username, 'admin' as UserType, Password, 
+               Username as FullName,
+               '' as PhoneNumber
         FROM admin WHERE Username = '$username'";
 $result = $conn->query($sql);
 

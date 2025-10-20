@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/lawyer.dart';
 import '../models/user.dart';
+import '../models/lawyer_request.dart';
 class ApiClient {
   // مهم:
   // على Android Emulator نستخدم 10.0.2.2 بدل localhost
-  static const String base = 'http://192.168.3.10:8888/mujeer_api';
+  static const String base = 'http://192.168.3.10:8888/mujeer_api/login.php';
   // على iOS Simulator أو Flutter Web على نفس الجهاز:
   // static const String base = 'http://localhost:8888/mujeer_api';
 

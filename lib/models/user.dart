@@ -1,9 +1,7 @@
-
 class User {
   final int id;
   final String fullName;
   final String username;
-  final String email;
   final String phoneNumber;
   final String userType; // 'client', 'lawyer', 'admin'
   final int points;
@@ -14,7 +12,6 @@ class User {
     required this.id,
     required this.fullName,
     required this.username,
-    required this.email,
     required this.phoneNumber,
     required this.userType,
     required this.points,
@@ -28,7 +25,6 @@ class User {
       id: _parseId(json),
       fullName: (json['FullName'] ?? json['fullName'] ?? '').toString(),
       username: (json['Username'] ?? json['username'] ?? '').toString(),
-      email: (json['Email'] ?? json['email'] ?? '').toString(),
       phoneNumber: (json['PhoneNumber'] ?? json['phoneNumber'] ?? '').toString(),
       userType: _determineUserType(json),
       points: int.tryParse('${json['Points'] ?? json['points'] ?? 0}') ?? 0,
@@ -43,7 +39,6 @@ class User {
       'id': id,
       'fullName': fullName,
       'username': username,
-      'email': email,
       'phoneNumber': phoneNumber,
       'userType': userType,
       'points': points,
