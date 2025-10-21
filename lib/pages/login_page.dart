@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../services/api_client.dart';
 import '../models/user.dart';
 import 'requests_management_page.dart';
+import '../services/session.dart';
+
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -205,6 +208,8 @@ class _LoginPageState extends State<LoginPage> {
         _usernameController.text.trim(),
         _passwordController.text,
       );
+
+      await Session.saveUser(user);     // ← حفظ الجلسة
 
       // 3. التحقق من نوع المستخدم والتوجيه للصفحة المناسبة
       _redirectBasedOnUserType(user);

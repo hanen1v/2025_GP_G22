@@ -57,6 +57,9 @@ class User {
 
   // دالة مساعدة لتحويل ID
   static int _parseId(Map<String, dynamic> json) {
+    // يدعم رد تسجيل الدخول: UserID
+    if (json['UserID'] != null) return int.tryParse('${json['UserID']}') ?? 0;
+    
     if (json['ClientID'] != null) return int.tryParse('${json['ClientID']}') ?? 0;
     if (json['LawyerID'] != null) return int.tryParse('${json['LawyerID']}') ?? 0;
     if (json['AdminID'] != null) return int.tryParse('${json['AdminID']}') ?? 0;

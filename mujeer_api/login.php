@@ -39,7 +39,7 @@ if ($conn->connect_error) {
 error_log("DB Connection: OK");
 
 // البحث في جدول client أولاً
-$sql = "SELECT ClientID as UserID, FullName, Username, PhoneNumber, 'client' as UserType, Password 
+$sql = "SELECT ClientID as UserID, FullName, Username, PhoneNumber, Points, 'client' as UserType, Password 
         FROM client WHERE Username = '$username'";
 $result = $conn->query($sql);
 
