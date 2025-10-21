@@ -3,6 +3,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
+import '../services/session.dart';
+import '../models/user.dart';
+
 
 class LawyerRegisterPage extends StatefulWidget {
   const LawyerRegisterPage({super.key});
@@ -537,7 +540,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
 
       print('📤 إرسال البيانات: $requestData');
 
-      String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
+      String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
       
       // 1. أولاً: تسجيل البيانات الأساسية
       var response = await http.post(
@@ -562,6 +565,17 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
           await _uploadFile(_profileImage!, result['photoFileName'], baseUrl);
         }
         
+        // خزّن المستخدم في الجلسة
+  final user = User(
+    id: 0, // ما عندنا ID من الـ API الآن
+    fullName: _fullNameController.text.trim(),
+    username: _usernameController.text.trim(),
+    phoneNumber: _phoneController.text.trim(),
+    userType: 'lawyer',
+    points: 0,
+  );
+  await Session.saveUser(user);
+  
         _showSuccess(result['message']);
         await Future.delayed(const Duration(seconds: 2));
         Navigator.pop(context);

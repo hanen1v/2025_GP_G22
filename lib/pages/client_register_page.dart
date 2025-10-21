@@ -2,6 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../services/session.dart';
+import '../models/user.dart';
+
 
 class ClientRegisterPage extends StatefulWidget {
   const ClientRegisterPage({super.key});
@@ -252,7 +255,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       print('📤 إرسال بيانات العميل: $requestData');
 
       // غيري الرابط حسب سيرفرك
-      String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
+      String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
       
       var response = await http.post(
         Uri.parse('$baseUrl/register_client.php'), 
@@ -266,18 +269,18 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       var result = json.decode(response.body);
       
       if (result['success'] == true) {
-        _showSuccess(result['message']);
-        await Future.delayed(const Duration(seconds: 2));
-       Navigator.pushReplacementNamed(
-    context, 
-    '/home',
-    arguments: {
-      'userType': 'client',
-      'userName': _fullNameController.text,
-      'username': _usernameController.text,
-    }
-  );
-      } else {
+  _showSuccess(result['message']);
+
+  if (result['user'] != null) {
+    final user = User.fromJson(result['user']); // ← استخدمي الـ fromJson اللي عندك في model
+    await Session.saveUser(user); // ← نحفظه في SharedPreferences
+  }
+
+  _showSuccess(result['message']);
+  await Future.delayed(const Duration(seconds: 1));
+
+  Navigator.pushReplacementNamed(context, '/home');
+}else {
         _showError(result['message']);
       }
       

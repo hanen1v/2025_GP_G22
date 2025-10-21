@@ -74,10 +74,33 @@ error_log("Executing SQL: " . $sql);
 if($conn->query($sql) === TRUE) {
     error_log("SUCCESS: Client registered successfully");
     
-    echo json_encode([
-        "success" => true, 
-        "message" => "تم تسجيل العميل بنجاح!."
-    ]);
+  // ——— التعديل المهم يبدأ هنا ———
+  $newId = $conn->insert_id;
+
+  // اجلب نفس السجل الذي تم إدخاله الآن
+  $uRes = $conn->query("
+    SELECT 
+      ClientID   AS UserID,
+      FullName,
+      Username,
+      PhoneNumber,
+      Points
+    FROM client
+    WHERE ClientID = $newId
+    LIMIT 1
+  ");
+
+  $user = null;
+  if ($uRes && $uRes->num_rows === 1) {
+    $user = $uRes->fetch_assoc();
+  }
+
+  echo json_encode([
+    "success" => true,
+    "message" => "تم تسجيل العميل بنجاح!",
+    "user"    => $user
+  ], JSON_UNESCAPED_UNICODE);
+  // ——— التعديل المهم ينتهي هنا ———
 } else {
     error_log("ERROR: Database insert failed - " . $conn->error);
     echo json_encode(["success" => false, "message" => "فشل في التسجيل: " . $conn->error]);
