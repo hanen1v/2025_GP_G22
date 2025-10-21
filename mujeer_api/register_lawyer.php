@@ -60,27 +60,23 @@ $photoFileName = 'photo_' . $username . '_' . time() . '.jpg';
 
 error_log("Processing registration for: " . $username);
 
-// التحقق من عدم تكرار اسم المستخدم أو رقم الرخصة أو الجوال
-$check_sql = "SELECT Username, LicenseNumber, PhoneNumber FROM lawyer 
-              WHERE Username = '$username' OR LicenseNumber = '$licenseNumber' OR PhoneNumber = '$phoneNumber'";
+// التحقق من عدم تكرار اسم المستخدم أو رقم الجوال
+$check_sql = "SELECT Username, PhoneNumber FROM lawyer 
+              WHERE Username = '$username' OR PhoneNumber = '$phoneNumber'";
 $check_result = $conn->query($check_sql);
 
 if($check_result && $check_result->num_rows > 0) {
-    $existing = $check_result->fetch_assoc();
-    if($existing['Username'] == $username) {
-        error_log("ERROR: Username already exists");
-        echo json_encode(["success" => false, "message" => "اسم المستخدم موجود مسبقاً"]);
-        exit;
-    }
-    if($existing['LicenseNumber'] == $licenseNumber) {
-        error_log("ERROR: License number already exists");
-        echo json_encode(["success" => false, "message" => "رقم الرخصة موجود مسبقاً"]);
-        exit;
-    }
-    if($existing['PhoneNumber'] == $phoneNumber) {
-        error_log("ERROR: Phone number already exists");
-        echo json_encode(["success" => false, "message" => "رقم الجوال موجود مسبقاً"]);
-        exit;
+    while($existing = $check_result->fetch_assoc()) {
+        if($existing['Username'] == $username) {
+            error_log("ERROR: Username already exists");
+            echo json_encode(["success" => false, "message" => "اسم المستخدم موجود مسبقاً"]);
+            exit;
+        }
+        if($existing['PhoneNumber'] == $phoneNumber) {
+            error_log("ERROR: Phone number already exists");
+            echo json_encode(["success" => false, "message" => "رقم الجوال موجود مسبقاً"]);
+            exit;
+        }
     }
 }
 
@@ -99,6 +95,17 @@ $sql = "INSERT INTO lawyer (Username, FullName, PhoneNumber, Password, LicenseNu
 error_log("Executing SQL: " . $sql);
 
 if($conn->query($sql) === TRUE) {
+     $lawyerID = $conn->insert_id; // جلب الـ ID الجديد
+    
+    // إنشاء طلب في جدول request
+    $request_sql = "INSERT INTO request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status, RequestDate) 
+                    VALUES (1, '$lawyerID', '$licenseFileName', '$fullName', '$licenseNumber', 'Pending', NOW())";
+    
+    if($conn->query($request_sql)) {
+        error_log("SUCCESS: Request created for lawyer ID: " . $lawyerID);
+    } else {
+        error_log("ERROR: Failed to create request - " . $conn->error);
+    }
     error_log("SUCCESS: Lawyer registered successfully");
     
     echo json_encode([
