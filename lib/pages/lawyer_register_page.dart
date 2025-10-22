@@ -566,19 +566,13 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
         }
         
         // خزّن المستخدم في الجلسة
-  final user = User(
-    id: 0, // ما عندنا ID من الـ API الآن
-    fullName: _fullNameController.text.trim(),
-    username: _usernameController.text.trim(),
-    phoneNumber: _phoneController.text.trim(),
-    userType: 'lawyer',
-    points: 0,
-  );
+  final user = User.fromJson(result['lawyer']);
   await Session.saveUser(user);
   
         _showSuccess(result['message']);
         await Future.delayed(const Duration(seconds: 2));
-        Navigator.pop(context);
+      Navigator.pushReplacementNamed(context, '/lawyer/requests');
+
       } else {
         _showError(result['message']);
       }

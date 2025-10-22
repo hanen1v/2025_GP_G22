@@ -107,14 +107,51 @@ if($conn->query($sql) === TRUE) {
         error_log("ERROR: Failed to create request - " . $conn->error);
     }
     error_log("SUCCESS: Lawyer registered successfully");
-    
+
+    // احصلي على الـ ID الجديد
+    $lawyerId = $conn->insert_id;
+
+    // اقري صف المحامي (يتضمن Points)
+    $sel = "
+      SELECT 
+        LawyerID,
+        FullName,
+        Username,
+        PhoneNumber,
+        COALESCE(Points, 0) AS Points,
+        LawyerPhoto,
+        'lawyer' AS UserType,
+        NOW() AS RegistrationDate
+      FROM lawyer
+      WHERE LawyerID = $lawyerId
+      LIMIT 1
+    ";
+    $res = $conn->query($sel);
+
+    if ($res && $res->num_rows === 1) {
+        $lawyerRow = $res->fetch_assoc();
+    } else {
+        // احتياط
+        $lawyerRow = [
+          "LawyerID" => $lawyerId,
+          "FullName" => $fullName,
+          "Username" => $username,
+          "PhoneNumber" => $phoneNumber,
+          "Points" => 0,
+          "LawyerPhoto" => $photoFileName,
+          "UserType" => "lawyer",
+          "RegistrationDate" => date('c')
+        ];
+    }
+
     echo json_encode([
         "success" => true, 
         "message" => "تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك من قبل الإدارة.",
         "licenseFileName" => $licenseFileName,
-        "photoFileName" => $photoFileName
+        "photoFileName"   => $photoFileName,
+        "lawyer" => $lawyerRow
     ]);
-} else {
+}  else {
     error_log("ERROR: Database insert failed - " . $conn->error);
     echo json_encode(["success" => false, "message" => "فشل في التسجيل: " . $conn->error]);
 }

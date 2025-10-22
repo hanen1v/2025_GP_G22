@@ -233,7 +233,7 @@ void _redirectBasedOnUserType(User user) {
     Navigator.pushReplacementNamed(context, '/requestsManagement');
   } else if (user.isLawyer) {
     // المحامي يروح للصفحة الرئيسية
-    Navigator.pushReplacementNamed(context, '/home');
+    Navigator.pushReplacementNamed(context, '/lawyer/requests');
   } else {
     // العميل يروح للصفحة الرئيسية
     Navigator.pushReplacementNamed(context, '/home');

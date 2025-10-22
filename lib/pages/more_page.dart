@@ -51,8 +51,11 @@ class _MorePageState extends State<MorePage> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(title: const Text('المزيد')),
-        backgroundColor: const Color(0xFFF8F9FA),
+        appBar: AppBar(
+          title: const Text('المزيد'),
+          automaticallyImplyLeading: false,
+           ),
+       backgroundColor: const Color(0xFFF8F9FA),
 
         // الملف الشخصي + تسجيل الخروج
         body: ListView(
