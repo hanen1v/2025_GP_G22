@@ -230,6 +230,7 @@ void _redirectBasedOnUserType(User user) {
   // التوجيه للصفحة المناسبة حسب نوع المستخدم
   if (user.isAdmin) {
     // الأدمن يروح لصفحة إدارة الطلبات
+    ApiClient.registerAdminDevice();
     Navigator.pushReplacementNamed(context, '/requestsManagement');
   } else if (user.isLawyer) {
     // المحامي يروح للصفحة الرئيسية
