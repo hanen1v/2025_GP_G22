@@ -14,9 +14,20 @@ import 'pages/requests_management_page.dart';
 import 'pages/lawyer_requests_page.dart';
 import 'pages/lawyer_availability_page.dart';
 import 'pages/lawyer_more_page.dart';
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+
+
+void main() async{
   runApp(const MyApp());
-}
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+);
+OneSignal.Debug.setLogLevel(OSLogLevel.verbose); 
+OneSignal.initialize('52e7af05-5276-4ccd-9715-1cb9820f4361');
+OneSignal.Notifications.requestPermission(true);
+  }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
