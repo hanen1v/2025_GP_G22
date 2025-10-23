@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "299841180289",
+    "project_id": "notificationsmujeer",
+    "storage_bucket": "notificationsmujeer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:299841180289:android:85eb28e9731e2895593380",
+        "android_client_info": {
+          "package_name": "com.example.mujeer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoXn9w3JBFT5tQiVJlgWtqqPQnRBz7d1Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
