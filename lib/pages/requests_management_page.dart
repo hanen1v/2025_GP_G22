@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:iconsax/iconsax.dart';
 import '../models/lawyer_request.dart';
 import '../services/api_client.dart';
+import '../services/session.dart';
 
 class RequestManagementPage extends StatefulWidget {
   const RequestManagementPage({super.key});
@@ -57,7 +58,8 @@ class _RequestManagementPageState extends State<RequestManagementPage> {
   void _onApprove(LawyerRequest r) => _updateRequestStatus(r, 'Approved');
   void _onDecline(LawyerRequest r) => _updateRequestStatus(r, 'Rejected');
 
-  void _onLogout() {
+  void _onLogout() async{
+    await Session.clear();
     Navigator.of(context).pushReplacementNamed(splashPageRoute);
   }
 
@@ -214,4 +216,3 @@ class RequestCard extends StatelessWidget {
     );
   }
 }
-
