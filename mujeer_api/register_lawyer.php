@@ -143,7 +143,25 @@ if($conn->query($sql) === TRUE) {
           "RegistrationDate" => date('c')
         ];
     }
+    //get id to send notifications
+    $q = $conn->prepare("SELECT player_id FROM admin_devices");
+    $q->execute();
+    $res = $q->get_result();
+    $players = [];
+    while ($row = $res->fetch_assoc()) {
+        if (!empty($row['player_id'])) {
+            $players[] = $row['player_id'];         }
+    }
+    $q->close();
 
+    $pushResult = null;
+    if (!empty($players)) {
+        $title = 'طلب جديد';
+                $body  = "محامي جديد سجل الدخول";
+        $data  = [];
+
+        $pushResult = send_push($players, $title, $body, $data); 
+    }
     echo json_encode([
         "success" => true, 
         "message" => "تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك من قبل الإدارة.",
@@ -155,6 +173,7 @@ if($conn->query($sql) === TRUE) {
     error_log("ERROR: Database insert failed - " . $conn->error);
     echo json_encode(["success" => false, "message" => "فشل في التسجيل: " . $conn->error]);
 }
+
 
 $conn->close();
 ?>
