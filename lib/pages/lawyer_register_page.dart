@@ -571,7 +571,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   
         _showSuccess(result['message']);
         await Future.delayed(const Duration(seconds: 2));
-      Navigator.pushReplacementNamed(context, '/lawyer/requests');
+      Navigator.pushReplacementNamed(context, '/lawyer/more');
 
       } else {
         _showError(result['message']);

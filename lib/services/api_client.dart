@@ -5,6 +5,7 @@ import '../models/user.dart';
 import '../models/lawyer_request.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:flutter/material.dart';
+
 class ApiClient {
   // مهم:
   // على Android Emulator نستخدم 10.0.2.2 بدل localhost
@@ -25,6 +26,8 @@ class ApiClient {
       throw Exception('HTTP ${res.statusCode}: ${res.body}');
     }
   }
+
+
   static Future<User> login(String username, String password) async {
     final response = await http.post(
       Uri.parse('$base/login.php'),
@@ -46,6 +49,8 @@ class ApiClient {
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
     }
   }
+
+
 //get pending requests
 static Future<List<LawyerRequest>> getPendingRequests() async {
   final res = await http.get(Uri.parse('$base/get_pending_requests.php'));
@@ -68,6 +73,8 @@ static Future<List<LawyerRequest>> getPendingRequests() async {
     throw Exception('Bad response: $decoded');
   }
 }
+
+
   static Future<void> updateRequestStatus({
     required int requestId,
     required String status, // 'Approved' أو 'Rejected'
@@ -87,6 +94,8 @@ static Future<List<LawyerRequest>> getPendingRequests() async {
       throw Exception(body['message'] ?? 'Failed to update status');
     }
   }
+
+  
 //send playerID
   static Future<void> registerAdminDevice() async {
     final playerId = OneSignal.User.pushSubscription.id;
@@ -113,5 +122,38 @@ static Future<List<LawyerRequest>> getPendingRequests() async {
       throw Exception(body['message'] ?? 'Failed to register admin device');
     }
   }
+
+
+  static Future<String> getLawyerStatus(int lawyerId) async {
+  try {
+    final res = await http
+        .post(
+          Uri.parse('$base/lawyer_status.php'),
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: {'lawyer_id': '$lawyerId'},
+        )
+        .timeout(const Duration(seconds: 10));
+
+    if (res.statusCode != 200) {
+      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    }
+
+    final m = json.decode(res.body);
+    if (m is Map && m['ok'] == true) {
+      final raw = (m['status'] as String? ?? '').trim().toLowerCase();
+      if (raw == 'approved') return 'Approved';
+      if (raw == 'rejected') return 'Rejected';
+      return 'Pending'; // أي قيمة غير معروفة نرجّعها Pending
+    }
+
+    throw Exception('Bad response: $m');
+  } catch (e) {
+    // في حالة الشبكة/التايم أوت: رجّع القيمة الحالية الافتراضية
+    // تقدر تغيّرها لـ 'Pending' أو ترمي الاستثناء حسب رغبتك
+    return 'Pending';
+  }
+}
+
+
 }
 

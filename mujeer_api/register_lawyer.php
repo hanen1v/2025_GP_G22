@@ -6,8 +6,8 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 // تفعيل السجلات
 error_reporting(E_ALL);
-ini_set('display_errors', 0); 
-ini_set('log_errors', 1);     
+ini_set('display_errors', 0); // ✅ لا تطبعي الأخطاء للمستخدم
+ini_set('log_errors', 1);     // سجليها في اللوج فقط
 
 
 include 'config.php';
@@ -116,6 +116,7 @@ if($conn->query($sql) === TRUE) {
         FullName,
         Username,
         PhoneNumber,
+        TRIM(Status) AS Status,
         COALESCE(Points, 0) AS Points,
         LawyerPhoto,
         'lawyer' AS UserType,
@@ -134,6 +135,7 @@ if($conn->query($sql) === TRUE) {
           "FullName" => $fullName,
           "Username" => $username,
           "PhoneNumber" => $phoneNumber,
+           "Status" => "Pending",
           "Points" => 0,
           "LawyerPhoto" => $photoFileName,
           "UserType" => "lawyer",
@@ -160,6 +162,18 @@ if($conn->query($sql) === TRUE) {
 
         $pushResult = send_push($players, $title, $body, $data); 
     }
+
+    // ✅ تطبيع قبل الإرجاع
+    if (isset($lawyerRow['LawyerID']) && !isset($lawyerRow['UserID'])) {
+       $lawyerRow['UserID'] = (int)$lawyerRow['LawyerID'];
+       unset($lawyerRow['LawyerID']);
+      }
+      $rawStatus = strtolower(trim($lawyerRow['Status'] ?? ''));
+        if ($rawStatus === 'approved')      $lawyerRow['Status'] = 'Approved';
+        elseif ($rawStatus === 'rejected')  $lawyerRow['Status'] = 'Rejected';
+        else                                $lawyerRow['Status'] = 'Pending';  // default
+        $lawyerRow['UserType'] = 'lawyer';
+
     echo json_encode([
         "success" => true, 
         "message" => "تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك من قبل الإدارة.",

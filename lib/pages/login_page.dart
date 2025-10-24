@@ -233,8 +233,8 @@ void _redirectBasedOnUserType(User user) {
     ApiClient.registerAdminDevice();
     Navigator.pushReplacementNamed(context, '/requestsManagement');
   } else if (user.isLawyer) {
-    // المحامي يروح للصفحة الرئيسية
-    Navigator.pushReplacementNamed(context, '/lawyer/requests');
+    // المحامي يروح لصفحة المزيد
+    Navigator.pushReplacementNamed(context, '/lawyer/more');
   } else {
     // العميل يروح للصفحة الرئيسية
     Navigator.pushReplacementNamed(context, '/home');
