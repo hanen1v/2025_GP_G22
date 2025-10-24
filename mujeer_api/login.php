@@ -69,7 +69,7 @@ if ($result && $result->num_rows > 0) {
 
 // البحث في جدول lawyer
 error_log("=== CHECKING LAWYER TABLE ===");
-$sql = "SELECT LawyerID as UserID, FullName, Username, PhoneNumber, 'lawyer' as UserType, Password 
+$sql = "SELECT LawyerID as UserID, FullName, Username, PhoneNumber, Status, 'lawyer' as UserType, Password 
         FROM lawyer WHERE Username = '$username'";
 $result = $conn->query($sql);
 
