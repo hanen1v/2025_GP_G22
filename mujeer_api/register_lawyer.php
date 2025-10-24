@@ -6,7 +6,9 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 // تفعيل السجلات
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0); 
+ini_set('log_errors', 1);     
+
 
 include 'config.php';
 
@@ -95,26 +97,22 @@ $sql = "INSERT INTO lawyer (Username, FullName, PhoneNumber, Password, LicenseNu
 error_log("Executing SQL: " . $sql);
 
 if($conn->query($sql) === TRUE) {
-     $lawyerID = $conn->insert_id; // جلب الـ ID الجديد
-    
+    $lawyerId = (int)$conn->insert_id; // ← ثبّتي الاسم هكذا
+
     // إنشاء طلب في جدول request
     $request_sql = "INSERT INTO request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status, RequestDate) 
-                    VALUES (1, '$lawyerID', '$licenseFileName', '$fullName', '$licenseNumber', 'Pending', NOW())";
-    
+                    VALUES (1, $lawyerId, '$licenseFileName', '$fullName', '$licenseNumber', 'Pending', NOW())";
     if($conn->query($request_sql)) {
-        error_log("SUCCESS: Request created for lawyer ID: " . $lawyerID);
+        error_log("SUCCESS: Request created for lawyer ID: " . $lawyerId);
+        $requestId = (int)$conn->insert_id; // ← رقم الطلب في متغير منفصل
     } else {
         error_log("ERROR: Failed to create request - " . $conn->error);
     }
-    error_log("SUCCESS: Lawyer registered successfully");
 
-    // احصلي على الـ ID الجديد
-    $lawyerId = $conn->insert_id;
-
-    // اقري صف المحامي (يتضمن Points)
+    // اقرأ صف المحامي بالـID الصحيح
     $sel = "
       SELECT 
-        LawyerID,
+        LawyerID AS UserID,
         FullName,
         Username,
         PhoneNumber,
@@ -131,9 +129,8 @@ if($conn->query($sql) === TRUE) {
     if ($res && $res->num_rows === 1) {
         $lawyerRow = $res->fetch_assoc();
     } else {
-        // احتياط
         $lawyerRow = [
-          "LawyerID" => $lawyerId,
+          "UserID" => $lawyerId,     // ← استخدمي نفس الـID
           "FullName" => $fullName,
           "Username" => $username,
           "PhoneNumber" => $phoneNumber,
@@ -143,6 +140,7 @@ if($conn->query($sql) === TRUE) {
           "RegistrationDate" => date('c')
         ];
     }
+    
     //get id to send notifications
     $q = $conn->prepare("SELECT player_id FROM admin_devices");
     $q->execute();
