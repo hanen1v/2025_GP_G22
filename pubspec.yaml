@@ -30,7 +30,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/icons/
+    - assets/logo/
 
   fonts:
     - family: Tajawal
