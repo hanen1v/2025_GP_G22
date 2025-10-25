@@ -11,7 +11,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // عرض رسالة ترحيبية إذا كان هناك اسم مستخدم
+    // رسالة ترحيب
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (userName != null && userName!.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -19,7 +19,7 @@ class HomePage extends StatelessWidget {
             content: Text(
               'مرحباً بعودتك $userName! 👋',
               style: const TextStyle(
-                fontFamily: 'Tajawal', 
+                fontFamily: 'Tajawal',
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -42,33 +42,46 @@ class HomePage extends StatelessWidget {
       backgroundColor: const Color(0xFFF8F9FA),
 
       body: SafeArea(
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            //  شريط المحامين فوق
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 110,
-              bottom: 10,
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: LawyersStripSimple(),
-              ),
-            ),
-
-            //  الخدمات مثبتة في الأسفل 
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: kBottomNavigationBarHeight + 180, // ← مسافة فوق FloatingButton
-              child: const ServicesSection(),
-            ),
-          ],
+  child: Stack(
+    alignment: Alignment.bottomCenter,
+    children: [
+      //  شعار المشروع أعلى اليمين 
+      Positioned(
+        top: 14,
+        right: -20,
+        child: Image.asset(
+          'assets/logo/mujeer_logo.png',
+          width: 185, 
+          height: 75, 
+          fit: BoxFit.contain,
         ),
       ),
 
-      //  البار السفلي
+      //  شريط المحامين 
+      Positioned(
+        left: 0,
+        right: 0,
+        top: 115, 
+        bottom: 10,
+        child: const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: LawyersStripSimple(),
+        ),
+      ),
+
+      // قسم الخدمات  
+      Positioned(
+        left: 16,
+        right: 16,
+        bottom: kBottomNavigationBarHeight + 185,
+        child: const ServicesSection(),
+      ),
+    ],
+  ),
+),
+
+
+      // البار السفلي
       bottomNavigationBar: const AppBottomNav(currentRoute: '/home'),
 
       // الزر العائم في المنتصف
