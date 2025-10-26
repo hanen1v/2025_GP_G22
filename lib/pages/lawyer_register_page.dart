@@ -582,8 +582,8 @@ Future<void> _sendLawyerToServer() async {
       }
       
       _showSuccess('تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك من قبل الإدارة.');
-      Navigator.pop(context);
-    } else {
+Navigator.pushReplacementNamed(context, '/lawyer_more');
+   } else {
       _showError(result['message']);
     }
     

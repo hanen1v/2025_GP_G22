@@ -204,14 +204,14 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       // 2. الاتصال الحقيقي بالسيرفر
-      final loginUser = await ApiClient.login(
+      final user = await ApiClient.login(
       _usernameController.text.trim(),
       _passwordController.text,
     );
       await Session.saveUser(user);     // ← حفظ الجلسة
 
       // 3. التحقق من رقم الجوال
-       _navigateToOTP(loginUser);
+       _navigateToOTP(user);
 
       // 3. التحقق من نوع المستخدم والتوجيه للصفحة المناسبة
       _redirectBasedOnUserType(user);

@@ -74,13 +74,6 @@ error_log("Executing SQL: " . $sql);
 if($conn->query($sql) === TRUE) {
     error_log("SUCCESS: Client registered successfully");
     
-<<<<<<< HEAD
-    echo json_encode([
-        "success" => true, 
-        "message" => "تم تسجيل العميل بنجاح!"
-    ]);
-=======
-  // ——— التعديل المهم يبدأ هنا ———
   $newId = $conn->insert_id;
 
   // اجلب نفس السجل الذي تم إدخاله الآن
@@ -106,8 +99,6 @@ if($conn->query($sql) === TRUE) {
     "message" => "تم تسجيل العميل بنجاح!",
     "user"    => $user
   ], JSON_UNESCAPED_UNICODE);
-  // ——— التعديل المهم ينتهي هنا ———
->>>>>>> 81d635de62acee9cfb11a5abf785461b7d1ab218
 } else {
     error_log("ERROR: Database insert failed - " . $conn->error);
     echo json_encode(["success" => false, "message" => "فشل في التسجيل: " . $conn->error]);

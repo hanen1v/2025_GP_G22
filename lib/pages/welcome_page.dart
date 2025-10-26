@@ -16,19 +16,14 @@ class WelcomePage extends StatelessWidget {
               const Spacer(),
               
               // الشعار
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF5B4FE8).withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.balance,
-                  color: Color(0xFF5B4FE8),
-                  size: 50,
-                ),
-              ),
+Container(
+  width: 120,
+  height: 120,
+  child: Image.asset(
+    'assets/logo/mujeer_logo2.png',
+    fit: BoxFit.contain,
+  ),
+),
               const SizedBox(height: 32),
               
               // العنوان
