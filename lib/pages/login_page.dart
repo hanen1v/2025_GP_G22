@@ -3,6 +3,8 @@ import '../services/api_client.dart';
 import '../models/user.dart';
 import 'requests_management_page.dart';
 import 'otp_screen.dart';
+import '../services/session.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -206,9 +208,14 @@ class _LoginPageState extends State<LoginPage> {
       _usernameController.text.trim(),
       _passwordController.text,
     );
+      await Session.saveUser(user);     // ← حفظ الجلسة
 
       // 3. التحقق من رقم الجوال
        _navigateToOTP(loginUser);
+
+      // 3. التحقق من نوع المستخدم والتوجيه للصفحة المناسبة
+      _redirectBasedOnUserType(user);
+      
     } catch (e) {
       // 4. معالجة الأخطاء
       _showError('فشل تسجيل الدخول: $e');
@@ -290,10 +297,11 @@ void _redirectBasedOnUserType(User user) {
   // التوجيه للصفحة المناسبة حسب نوع المستخدم
   if (user.isAdmin) {
     // الأدمن يروح لصفحة إدارة الطلبات
+    ApiClient.registerAdminDevice();
     Navigator.pushReplacementNamed(context, '/requestsManagement');
   } else if (user.isLawyer) {
-    // المحامي يروح للصفحة الرئيسية
-    Navigator.pushReplacementNamed(context, '/home');
+    // المحامي يروح لصفحة المزيد
+    Navigator.pushReplacementNamed(context, '/lawyer/more');
   } else {
     // العميل يروح للصفحة الرئيسية
     Navigator.pushReplacementNamed(context, '/home');

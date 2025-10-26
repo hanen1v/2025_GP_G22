@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'otp_screen.dart';
+import '../services/session.dart';
+import '../models/user.dart';
 
 class ClientRegisterPage extends StatefulWidget {
   const ClientRegisterPage({super.key});
@@ -236,6 +238,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
   if (!_formKey.currentState!.validate()) {
     _showError('يرجى تعبئة جميع الحقول الإجبارية بشكل صحيح');
     return;
+
   }
 
   // فقط التوجيه لصفحة OTP أول

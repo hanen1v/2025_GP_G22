@@ -12,10 +12,23 @@ import 'pages/lawyer_register_page.dart';
 import 'pages/client_register_page.dart'; 
 import 'pages/requests_management_page.dart';
 import 'pages/otp_screen.dart';
+import 'pages/lawyer_requests_page.dart';
+import 'pages/lawyer_availability_page.dart';
+import 'pages/lawyer_more_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
-void main() {
+
+void main() async{
   runApp(const MyApp());
-}
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+);
+OneSignal.Debug.setLogLevel(OSLogLevel.verbose); 
+OneSignal.initialize('52e7af05-5276-4ccd-9715-1cb9820f4361');
+OneSignal.Notifications.requestPermission(true);
+  }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -52,6 +65,10 @@ class MyApp extends StatelessWidget {
         '/consultation': (context) => const ConsultationPage(),
         '/contractReview': (context) => const ContractReviewPage(),
         '/requestsManagement': (context) => const RequestManagementPage(),
+        '/lawyer/requests':     (_) => const LawyerRequestsPage(),
+        '/lawyer/availability': (_) => const LawyerAvailabilityPage(),
+        '/lawyer/more':         (_) => const LawyerMorePage(),
+
 
       },
     );

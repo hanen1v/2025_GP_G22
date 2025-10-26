@@ -7,6 +7,7 @@ class User {
   final int points;
   final String? profileImage;
   final DateTime? registrationDate;
+  final String? status; // 'Approved' | 'Pending' | 'Rejected' | null
 
   User({
     required this.id,
@@ -17,6 +18,7 @@ class User {
     required this.points,
     this.profileImage,
     this.registrationDate,
+    this.status,
   });
 
   // من JSON لـ User (للاستقبال من السيرفر)
@@ -30,6 +32,7 @@ class User {
       points: int.tryParse('${json['Points'] ?? json['points'] ?? 0}') ?? 0,
       profileImage: (json['LawyerPhoto'] ?? json['ProfileImage'] ?? '').toString(),
       registrationDate: _parseDate(json['RegistrationDate'] ?? json['created_at']),
+      status: (json['Status'] ?? json['status'])?.toString(),
     );
   }
 
@@ -44,6 +47,7 @@ class User {
       'points': points,
       'profileImage': profileImage,
       'registrationDate': registrationDate?.toIso8601String(),
+      'Status': status,
     };
   }
 
@@ -57,6 +61,9 @@ class User {
 
   // دالة مساعدة لتحويل ID
   static int _parseId(Map<String, dynamic> json) {
+  // يدعم رد تسجيل الدخول: UserID
+    if (json['UserID'] != null) return int.tryParse('${json['UserID']}') ?? 0;
+    
     if (json['ClientID'] != null) return int.tryParse('${json['ClientID']}') ?? 0;
     if (json['LawyerID'] != null) return int.tryParse('${json['LawyerID']}') ?? 0;
     if (json['AdminID'] != null) return int.tryParse('${json['AdminID']}') ?? 0;
@@ -105,6 +112,20 @@ class User {
         return 'مستخدم';
     }
   }
+
+  
+// دوال مساعدة لحالة المحامي
+    String get statusNormalized {
+    final s = (status ?? '').trim().toLowerCase();
+    if (s == 'approved') return 'Approved';
+    if (s == 'rejected') return 'Rejected';
+    return 'Pending';
+  }
+
+  bool get isApproved => statusNormalized == 'Approved';
+  bool get isRejected => statusNormalized == 'Rejected';
+  bool get isPending  => statusNormalized == 'Pending';
+
 
   @override
   String toString() {
@@ -161,4 +182,6 @@ class LoginResponse {
       token: json['token']?.toString(),
     );
   }
+
+  
 }

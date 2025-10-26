@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import '../models/lawyer.dart';
 import '../models/user.dart';
 import '../models/lawyer_request.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:flutter/material.dart';
 
 class ApiClient {
   // مهم:
@@ -101,4 +103,66 @@ class ApiClient {
       throw Exception(body['message'] ?? 'Failed to update status');
     }
   }
+
+  
+//send playerID
+  static Future<void> registerAdminDevice() async {
+    final playerId = OneSignal.User.pushSubscription.id;
+
+    if (playerId == null || playerId.isEmpty) {
+      debugPrint('OneSignal playerId not ready yet.');
+      return;
+    }
+
+    final res = await http.post(
+      Uri.parse('$base/register_device.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'admin_id': 1,
+        'player_id': playerId,
+      }),
+    );
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    }
+    final body = jsonDecode(res.body);
+    if (body is! Map || body['ok'] != true) {
+      throw Exception(body['message'] ?? 'Failed to register admin device');
+    }
+  }
+
+
+  static Future<String> getLawyerStatus(int lawyerId) async {
+  try {
+    final res = await http
+        .post(
+          Uri.parse('$base/lawyer_status.php'),
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: {'lawyer_id': '$lawyerId'},
+        )
+        .timeout(const Duration(seconds: 10));
+
+    if (res.statusCode != 200) {
+      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    }
+
+    final m = json.decode(res.body);
+    if (m is Map && m['ok'] == true) {
+      final raw = (m['status'] as String? ?? '').trim().toLowerCase();
+      if (raw == 'approved') return 'Approved';
+      if (raw == 'rejected') return 'Rejected';
+      return 'Pending'; // أي قيمة غير معروفة نرجّعها Pending
+    }
+
+    throw Exception('Bad response: $m');
+  } catch (e) {
+    // في حالة الشبكة/التايم أوت: رجّع القيمة الحالية الافتراضية
+    // تقدر تغيّرها لـ 'Pending' أو ترمي الاستثناء حسب رغبتك
+    return 'Pending';
+  }
 }
+
+
+}
+
