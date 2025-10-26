@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "907336962857",
+    "project_id": "mujeer-f4207",
+    "storage_bucket": "mujeer-f4207.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:907336962857:android:b7e7619422543e8d0cdd38",
+        "android_client_info": {
+          "package_name": "com.example.mujeer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAramB9hAPyY1Mer7hk_lz8Ox7BSAG6ByY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

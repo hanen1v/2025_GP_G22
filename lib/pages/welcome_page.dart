@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'otp_screen.dart'; // تأكدي من هذا الاستيراد
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -13,10 +13,9 @@ class WelcomePage extends StatelessWidget {
           padding: const EdgeInsets.all(24.0),
           child: Column(
             children: [
-              // مساحة للشعار (يمكن إضافته لاحقاً)
               const Spacer(),
               
-              // الشعار أو أيقونة التطبيق
+              // الشعار
               Container(
                 width: 120,
                 height: 120,
@@ -32,7 +31,7 @@ class WelcomePage extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               
-              // عنوان التطبيق
+              // العنوان
               const Text(
                 'مرحباً بك في مُجير',
                 style: TextStyle(
@@ -44,15 +43,16 @@ class WelcomePage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               
-            
               
-              // زر تسجيل الدخول
+              const SizedBox(height: 16),
+              
+              // باقي الأزرار...
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
                   onPressed: () {
-                     Navigator.pushNamed(context, '/login');
+                    Navigator.pushNamed(context, '/login');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0B5345),
@@ -83,7 +83,7 @@ class WelcomePage extends StatelessWidget {
                     _showRegistrationOptions(context);
                   },
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF0B5345),///////////////////////
+                    foregroundColor: const Color(0xFF0B5345),
                     side: const BorderSide(color: Color(0xFF0B5345)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -106,12 +106,12 @@ class WelcomePage extends StatelessWidget {
                 onTap: () {
                   Navigator.pushReplacementNamed(context, '/home');
                 },
-                child: Text(
+                child: const Text(
                   'تابع كضيف',
                   style: TextStyle(
                     fontFamily: 'Tajawal',
                     fontSize: 16,
-                    color: const Color(0xFF0B5345),
+                    color: Color(0xFF0B5345),
                     decoration: TextDecoration.underline,
                   ),
                 ),
@@ -125,90 +125,87 @@ class WelcomePage extends StatelessWidget {
     );
   }
 
-  // نافذة اختيار نوع الحساب
- void _showRegistrationOptions(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (context) => Dialog(
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'اختر نوع الحساب',
-              style: TextStyle(
-                fontFamily: 'Tajawal',
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // زر حساب عميل
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/client_register');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0B5345),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'عميل',
-                  style: TextStyle(
-                    fontFamily: 'Tajawal',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+  void _showRegistrationOptions(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'اختر نوع الحساب',
+                style: TextStyle(
+                  fontFamily: 'Tajawal',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            
-            // زر حساب محامي
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: OutlinedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                 Navigator.pushNamed(context, '/lawyer_register');
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF0B5345),
-                  side: const BorderSide(color: Color(0xFF0B5345)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 16),
+              
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/client_register');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0B5345),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'محامي',
-                  style: TextStyle(
-                    fontFamily: 'Tajawal',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                  child: const Text(
+                    'عميل',
+                    style: TextStyle(
+                      fontFamily: 'Tajawal',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 12),
+              
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/lawyer_register');
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF0B5345),
+                    side: const BorderSide(color: Color(0xFF0B5345)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'محامي',
+                    style: TextStyle(
+                      fontFamily: 'Tajawal',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

@@ -57,8 +57,20 @@ if ($result && $result->num_rows > 0) {
     
     if ($is_hashed) {
         error_log("🎉 تسجيل الدخول ناجح للعميل");
-        unset($user['Password']);
-        echo json_encode(["success" => true, "user" => $user]);
+        
+       echo json_encode([
+    "success" => true, 
+    "message" => "تم تسجيل الدخول بنجاح",
+    "user" => [
+        "id" => $user['UserID'],
+        "userType" => $user['UserType'],
+        "fullName" => $user['FullName'],
+        "phoneNumber" => $user['PhoneNumber'],
+        "username" => $user['Username'],
+        "isAdmin" => false,
+        "isLawyer" => false
+    ]
+]);
         exit;
     } else {
         error_log("❌ فشل التحقق للعميل - كلمة المرور لا تطابق");
@@ -85,21 +97,33 @@ if ($result && $result->num_rows > 0) {
     
     if ($is_hashed) {
         error_log("🎉 تسجيل الدخول ناجح للمحامي");
-        unset($user['Password']);
-        echo json_encode(["success" => true, "user" => $user]);
+        
+        echo json_encode([
+    "success" => true, 
+    "message" => "تم تسجيل الدخول بنجاح",
+    "user" => [
+        "id" => $user['UserID'],
+        "userType" => $user['UserType'],
+        "fullName" => $user['FullName'],
+        "phoneNumber" => $user['PhoneNumber'],
+        "username" => $user['Username'],
+        "isAdmin" => false,
+        "isLawyer" => true
+    ]
+]);
         exit;
     } else {
         error_log("❌ فشل التحقق للمحامي - كلمة المرور لا تطابق");
     }
 } else {
-    error_log("❌ المستخدم غير موجود في جدول lawyer");
+    error_log("❌ المستخدم غير موجود في جدول lawyer أو الحساب غير مفعل");
 }
 
 // البحث في جدول admin
 error_log("=== CHECKING ADMIN TABLE ===");
 $sql = "SELECT AdminID as UserID, Username, 'admin' as UserType, Password, 
                Username as FullName,
-               '' as PhoneNumber
+               PhoneNumber  
         FROM admin WHERE Username = '$username'";
 $result = $conn->query($sql);
 
@@ -115,8 +139,20 @@ if ($result && $result->num_rows > 0) {
     
     if ($is_hashed) {
         error_log("🎉 تسجيل الدخول ناجح للمشرف");
-        unset($user['Password']);
-        echo json_encode(["success" => true, "user" => $user]);
+        
+        echo json_encode([
+    "success" => true, 
+    "message" => "تم تسجيل الدخول بنجاح", 
+    "user" => [
+        "id" => $user['UserID'],
+        "userType" => $user['UserType'],
+        "fullName" => $user['FullName'],
+        "phoneNumber" => $user['PhoneNumber'],
+        "username" => $user['Username'],
+        "isAdmin" => true,
+        "isLawyer" => false
+    ]
+]);
         exit;
     } else {
         error_log("❌ فشل التحقق للمشرف - كلمة المرور لا تطابق");

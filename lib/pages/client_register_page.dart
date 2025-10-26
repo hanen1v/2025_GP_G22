@@ -1,7 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'otp_screen.dart';
 
 class ClientRegisterPage extends StatefulWidget {
   const ClientRegisterPage({super.key});
@@ -51,7 +51,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
                     _buildRegisterForm(),
                     const SizedBox(height: 32),
                     _buildRegisterButton(),
-                    const SizedBox(height: 40), // مسافة لأزرار التنقل
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
@@ -233,62 +233,82 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
 
   // تسجيل العميل
   void _registerClient() async {
-    if (!_formKey.currentState!.validate()) {
-      _showError('يرجى تعبئة جميع الحقول الإجبارية بشكل صحيح');
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      // إعداد البيانات للإرسال
-      Map<String, dynamic> requestData = {
-        'username': _usernameController.text.trim(),
-        'fullName': _fullNameController.text.trim(),
-        'password': _passwordController.text,
-        'phoneNumber': _phoneController.text.trim(),
-      };
-
-      print('📤 إرسال بيانات العميل: $requestData');
-
-      // غيري الرابط حسب سيرفرك
-      String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
-      
-      var response = await http.post(
-        Uri.parse('$baseUrl/register_client.php'), 
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(requestData),
-      ).timeout(const Duration(seconds: 10));
-
-      print('📥 استجابة السيرفر: ${response.statusCode}');
-      print('📦 محتوى الاستجابة: ${response.body}');
-
-      var result = json.decode(response.body);
-      
-      if (result['success'] == true) {
-        _showSuccess(result['message']);
-        await Future.delayed(const Duration(seconds: 2));
-       Navigator.pushReplacementNamed(
-    context, 
-    '/home',
-    arguments: {
-      'userType': 'client',
-      'userName': _fullNameController.text,
-      'username': _usernameController.text,
-    }
-  );
-      } else {
-        _showError(result['message']);
-      }
-      
-    } catch (e) {
-      print('❌ خطأ في الاتصال: $e');
-      _showError('فشل في الاتصال بالسيرفر: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
+  if (!_formKey.currentState!.validate()) {
+    _showError('يرجى تعبئة جميع الحقول الإجبارية بشكل صحيح');
+    return;
   }
 
+  // فقط التوجيه لصفحة OTP أول
+  _navigateToOTP();
+}
+  // التوجيه إلى صفحة OTP
+  void _navigateToOTP() async {
+  String phoneNumber = '+966${_phoneController.text.substring(1)}';
+
+  // ننتظر نتيجة التحقق من شاشة OTP
+  bool? verified = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => OTPScreen(
+        phoneNumber: phoneNumber,
+      ),
+    ),
+  );
+  // بعد العودة من صفحة OTP
+  if (verified == true) {
+    // بعد التحقق الناجح من OTP
+    await _registerInDatabase();
+  } else {
+    _showError('فشل التحقق من رقم الجوال');
+  }
+}
+// التسجيل في الداتابيز بعد التحقق
+Future<void> _registerInDatabase() async {
+  setState(() => _isLoading = true);
+
+  try {
+    Map<String, dynamic> requestData = {
+      'username': _usernameController.text.trim(),
+      'fullName': _fullNameController.text.trim(),
+      'password': _passwordController.text,
+      'phoneNumber': _phoneController.text.trim(),
+    };
+
+    print('📤 إرسال بيانات العميل بعد التحقق: $requestData');
+
+    String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
+    
+    var response = await http.post(
+      Uri.parse('$baseUrl/register_client.php'), 
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(requestData),
+    ).timeout(const Duration(seconds: 10));
+
+    var result = json.decode(response.body);
+    
+    if (result['success'] == true) {
+      _showSuccess('تم إنشاء الحساب بنجاح!');
+      
+      // الانتقال إلى الصفحة الرئيسية
+      Navigator.pushReplacementNamed(
+        context, 
+        '/home',
+        arguments: {
+          'userType': 'client',
+          'userName': _fullNameController.text,
+          'username': _usernameController.text,
+        }
+      );
+    } else {
+      _showError(result['message'] ?? 'حدث خطأ غير متوقع');
+    }
+    
+  } catch (e) {
+    _showError('فشل في التسجيل: $e');
+  } finally {
+    setState(() => _isLoading = false);
+  }
+}
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

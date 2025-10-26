@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_client.dart';
 import '../models/user.dart';
 import 'requests_management_page.dart';
+import 'otp_screen.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -201,14 +202,13 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       // 2. الاتصال الحقيقي بالسيرفر
-      final user = await ApiClient.login(
-        _usernameController.text.trim(),
-        _passwordController.text,
-      );
+      final loginUser = await ApiClient.login(
+      _usernameController.text.trim(),
+      _passwordController.text,
+    );
 
-      // 3. التحقق من نوع المستخدم والتوجيه للصفحة المناسبة
-      _redirectBasedOnUserType(user);
-      
+      // 3. التحقق من رقم الجوال
+       _navigateToOTP(loginUser);
     } catch (e) {
       // 4. معالجة الأخطاء
       _showError('فشل تسجيل الدخول: $e');
@@ -219,7 +219,72 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // دالة التوجيه لصفحة OTP
+  Future<void> _navigateToOTP(User user) async {
+  // 1. جلب الرقم الحقيقي من الداتابيس
+  String phoneNumber = user.phoneNumber ?? '';
   
+  print('الرقم من الداتابيس: $phoneNumber');
+  
+  // 2. تحويل الرقم للتنسيق الدولي
+  String formattedNumber = _convertToInternationalFormat(phoneNumber);
+  
+  print('🌍 الرقم بعد التحويل: $formattedNumber');
+  
+  // 3. التحقق من صحة الرقم قبل الإرسال
+  if (formattedNumber.isEmpty || !formattedNumber.startsWith('+966')) {
+    _showError('رقم الجوال غير صالح لإرسال الرمز: $formattedNumber');
+    return;
+  }
+
+  // 4. الانتقال لصفحة OTP مع الرقم المحول
+  bool? verified = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => OTPScreen(
+        phoneNumber: formattedNumber,
+      ),
+    ),
+  );
+
+  // 5. معالجة النتيجة
+  if (verified == true) {
+    _redirectBasedOnUserType(user);
+  } else {
+    _showError('فشل التحقق من رقم الجوال');
+  }
+}
+
+// دالة مساعدة لتحويل التنسيق
+String _convertToInternationalFormat(String phoneNumber) {
+  if (phoneNumber.isEmpty) return '';
+  
+  // إزالة أي مسافات أو أحرف خاصة
+  String cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
+  
+  print('🔧 تنظيف الرقم: $cleanNumber');
+  
+  // إذا الرقم يبدأ بـ 05 (سعودي)
+  if (cleanNumber.startsWith('05') && cleanNumber.length == 10) {
+    return '+966${cleanNumber.substring(1)}';
+  }
+  
+  // إذا الرقم يبدأ بـ 5 (بدون صفر)
+  else if (cleanNumber.startsWith('5') && cleanNumber.length == 9) {
+    return '+966$cleanNumber';
+  }
+  
+  // إذا الرقم يبدأ بـ +966 (محول مسبقاً)
+  else if (cleanNumber.startsWith('966') && cleanNumber.length == 12) {
+    return '+$cleanNumber';
+  }
+  
+  // إذا الرقم غير معروف
+  else {
+    print('❌ تنسيق الرقم غير معروف: $phoneNumber');
+    return '';
+  }
+}
     // دالة توجيه المستخدم للصفحة المناسبة حسب نوعه
 void _redirectBasedOnUserType(User user) {
   // التوجيه للصفحة المناسبة حسب نوع المستخدم

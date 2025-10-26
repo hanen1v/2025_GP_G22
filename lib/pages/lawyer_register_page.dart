@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
+import 'otp_screen.dart';
 
 class LawyerRegisterPage extends StatefulWidget {
   const LawyerRegisterPage({super.key});
@@ -18,7 +19,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   final _fullNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController(); // ← الجديد
+  final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _licenseController = TextEditingController();
   final _experienceController = TextEditingController();
@@ -37,7 +38,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   String? _selectedEducationLevel;
   String? _selectedAcademicMajor;
   
-  // لإظهار/إخفاء كلمة المرور - الجديد
+  // لإظهار/إخفاء كلمة المرور
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   
@@ -123,7 +124,6 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
               },
             ),
             const SizedBox(height: 12),
-            // حقل كلمة المرور - معدل
             _buildPasswordField(
               controller: _passwordController,
               label: 'كلمة المرور *',
@@ -136,7 +136,6 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
               },
             ),
             const SizedBox(height: 12),
-            // حقل تأكيد كلمة المرور - الجديد
             _buildPasswordField(
               controller: _confirmPasswordController,
               label: 'تأكيد كلمة المرور *',
@@ -359,7 +358,6 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
     );
   }
 
-  // دالة جديدة لحقول كلمة المرور
   Widget _buildPasswordField({
     required TextEditingController controller,
     required String label,
@@ -503,80 +501,96 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
       _showError('حدث خطأ في اختيار الصورة: $e');
     }
   }
-
-  // تسجيل المحامي
-  void _registerLawyer() async {
-    if (!_formKey.currentState!.validate()) {
-      _showError('يرجى تعبئة جميع الحقول الإجبارية بشكل صحيح');
-      return;
-    }
-
-    if (_licenseFile == null) {
-      _showError('يرجى رفع رخصة المحاماة');
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      // إعداد البيانات للإرسال
-      Map<String, dynamic> requestData = {
-        'username': _usernameController.text.trim(),
-        'fullName': _fullNameController.text.trim(),
-        'password': _passwordController.text,
-        'phoneNumber': _phoneController.text.trim(),
-        'licenseNumber': _licenseController.text.trim(),
-        'yearsOfExp': int.parse(_experienceController.text),
-        'gender': _selectedGender,
-        'mainSpecialization': _selectedMainSpecialization,
-        'fSubSpecialization': _selectedSubSpecialization1 ?? '',
-        'sSubSpecialization': _selectedSubSpecialization2 ?? '',
-        'educationQualification': _selectedEducationLevel,
-        'academicMajor': _selectedAcademicMajor,
-      };
-
-      print('📤 إرسال البيانات: $requestData');
-
-      String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
-      
-      // 1. أولاً: تسجيل البيانات الأساسية
-      var response = await http.post(
-        Uri.parse('$baseUrl/register_lawyer.php'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(requestData),
-      ).timeout(const Duration(seconds: 60));
-
-      print('📥 استجابة السيرفر: ${response.statusCode}');
-      print('📦 محتوى الاستجابة: ${response.body}');
-
-      var result = json.decode(response.body);
-      
-      if (result['success'] == true) {
-        // 2. ثانياً: رفع ملف الرخصة إذا كان موجود
-        if (_licenseFile != null && _licenseFile!.path != null) {
-          await _uploadFile(_licenseFile!, result['licenseFileName'], baseUrl);
-        }
-        
-        // 3. ثالثاً: رفع الصورة الشخصية إذا كانت موجودة
-        if (_profileImage != null && _profileImage!.path != null) {
-          await _uploadFile(_profileImage!, result['photoFileName'], baseUrl);
-        }
-        
-        _showSuccess(result['message']);
-        await Future.delayed(const Duration(seconds: 2));
-        Navigator.pop(context);
-      } else {
-        _showError(result['message']);
-      }
-      
-    } catch (e) {
-      print('❌ خطأ في الاتصال: $e');
-      _showError('فشل في الاتصال بالسيرفر: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
+  //تسجيل المحامي
+  Future<void> _registerLawyer() async {
+  // التحقق من البيانات الأساسية
+  if (!_formKey.currentState!.validate()) {
+    _showError('يرجى تعبئة جميع الحقول الإجبارية بشكل صحيح');
+    return;
   }
 
+  if (_licenseFile == null) {
+    _showError('يرجى رفع رخصة المحاماة');
+    return;
+  }
+
+  // استدعاء OTP أولاً والانتظار للنتيجة
+  bool? otpVerified = await _navigateToOTP();
+  
+  // إذا التحقق نجح، أرسل البيانات للسيرفر
+  if (otpVerified == true) {
+    await _sendLawyerToServer();
+  } else {
+    _showError('فشل التحقق من رقم الجوال');
+  }
+}
+  // التوجيه إلى صفحة OTP
+  Future<bool?> _navigateToOTP() async {
+  String phoneNumber = '+966${_phoneController.text.substring(1)}';
+
+  // انتظار نتيجة التحقق من OTP
+  bool? verified = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => OTPScreen(phoneNumber: phoneNumber),
+    ),
+  );
+
+  return verified; // ترجع true أو false أو null
+}
+Future<void> _sendLawyerToServer() async {
+  setState(() => _isLoading = true);
+
+  try {
+    Map<String, dynamic> requestData = {
+      'username': _usernameController.text.trim(),
+      'fullName': _fullNameController.text.trim(),
+      'password': _passwordController.text,
+      'phoneNumber': _phoneController.text.trim(),
+      'licenseNumber': _licenseController.text.trim(),
+      'yearsOfExp': int.parse(_experienceController.text),
+      'gender': _selectedGender,
+      'mainSpecialization': _selectedMainSpecialization,
+      'fSubSpecialization': _selectedSubSpecialization1 ?? '',
+      'sSubSpecialization': _selectedSubSpecialization2 ?? '',
+      'educationQualification': _selectedEducationLevel,
+      'academicMajor': _selectedAcademicMajor,
+    };
+
+    print('📤 إرسال بيانات المحامي بعد التحقق الناجح: $requestData');
+
+    String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
+    
+    var response = await http.post(
+      Uri.parse('$baseUrl/register_lawyer.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(requestData),
+    ).timeout(const Duration(seconds: 60));
+
+    var result = json.decode(response.body);
+    
+    if (result['success'] == true) {
+      // رفع الملفات بعد التسجيل الناجح
+      if (_licenseFile != null && _licenseFile!.path != null) {
+        await _uploadFile(_licenseFile!, result['licenseFileName'], baseUrl);
+      }
+      
+      if (_profileImage != null && _profileImage!.path != null) {
+        await _uploadFile(_profileImage!, result['photoFileName'], baseUrl);
+      }
+      
+      _showSuccess('تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك من قبل الإدارة.');
+      Navigator.pop(context);
+    } else {
+      _showError(result['message']);
+    }
+    
+  } catch (e) {
+    _showError('فشل في التسجيل: $e');
+  } finally {
+    setState(() => _isLoading = false);
+  }
+}
   // دالة مساعدة لرفع الملفات
   Future<void> _uploadFile(PlatformFile file, String fileName, String baseUrl) async {
     try {
@@ -624,7 +638,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
     _fullNameController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose(); // ← الجديد
+    _confirmPasswordController.dispose();
     _phoneController.dispose();
     _licenseController.dispose();
     _experienceController.dispose();

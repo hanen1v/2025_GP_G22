@@ -95,7 +95,7 @@ $sql = "INSERT INTO lawyer (Username, FullName, PhoneNumber, Password, LicenseNu
 error_log("Executing SQL: " . $sql);
 
 if($conn->query($sql) === TRUE) {
-     $lawyerID = $conn->insert_id; // جلب الـ ID الجديد
+    $lawyerID = $conn->insert_id; // جلب الـ ID الجديد
     
     // إنشاء طلب في جدول request
     $request_sql = "INSERT INTO request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status, RequestDate) 

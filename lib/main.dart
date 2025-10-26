@@ -11,6 +11,8 @@ import 'pages/login_page.dart';
 import 'pages/lawyer_register_page.dart';
 import 'pages/client_register_page.dart'; 
 import 'pages/requests_management_page.dart';
+import 'pages/otp_screen.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -38,6 +40,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/welcome',
       routes: {
         '/welcome': (context) => const WelcomePage(),
+         '/otp_screen': (context) => const OTPScreen(phoneNumber: '+966500000000'),
         '/home': (context) => const HomePage(),
         '/login': (context) => const LoginPage(),
         '/lawyer_register': (context) => const LawyerRegisterPage(),
