@@ -323,6 +323,7 @@ class _LoginPageState extends State<LoginPage> {
     // التوجيه للصفحة المناسبة حسب نوع المستخدم
     if (user.isAdmin) {
       // تم تسجيل الجهاز بالفعل في _navigateToOTP
+      ApiClient.registerAdminDevice();
       Navigator.pushReplacementNamed(context, '/requestsManagement');
     } else if (user.isLawyer) {
       // المحامي يروح لصفحة المزيد
