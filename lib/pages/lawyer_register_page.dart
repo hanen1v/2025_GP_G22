@@ -503,96 +503,128 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
       _showError('حدث خطأ في اختيار الصورة: $e');
     }
   }
+
   //تسجيل المحامي
   Future<void> _registerLawyer() async {
-  // التحقق من البيانات الأساسية
-  if (!_formKey.currentState!.validate()) {
-    _showError('يرجى تعبئة جميع الحقول الإجبارية بشكل صحيح');
-    return;
+    // التحقق من البيانات الأساسية
+    if (!_formKey.currentState!.validate()) {
+      _showError('يرجى تعبئة جميع الحقول الإجبارية بشكل صحيح');
+      return;
+    }
+
+    if (_licenseFile == null) {
+      _showError('يرجى رفع رخصة المحاماة');
+      return;
+    }
+
+    // استدعاء OTP أولاً والانتظار للنتيجة
+    bool? otpVerified = await _navigateToOTP();
+    
+    // إذا التحقق نجح، أرسل البيانات للسيرفر
+    if (otpVerified == true) {
+      await _sendLawyerToServer();
+    } else {
+      _showError('فشل التحقق من رقم الجوال');
+    }
   }
 
-  if (_licenseFile == null) {
-    _showError('يرجى رفع رخصة المحاماة');
-    return;
-  }
-
-  // استدعاء OTP أولاً والانتظار للنتيجة
-  bool? otpVerified = await _navigateToOTP();
-  
-  // إذا التحقق نجح، أرسل البيانات للسيرفر
-  if (otpVerified == true) {
-    await _sendLawyerToServer();
-  } else {
-    _showError('فشل التحقق من رقم الجوال');
-  }
-}
   // التوجيه إلى صفحة OTP
   Future<bool?> _navigateToOTP() async {
-  String phoneNumber = '+966${_phoneController.text.substring(1)}';
+    String phoneNumber = '+966${_phoneController.text.substring(1)}';
 
-  // انتظار نتيجة التحقق من OTP
-  bool? verified = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => OTPScreen(phoneNumber: phoneNumber),
-    ),
-  );
+    // انتظار نتيجة التحقق من OTP
+    bool? verified = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OTPScreen(phoneNumber: phoneNumber),
+      ),
+    );
 
-  return verified; // ترجع true أو false أو null
-}
-Future<void> _sendLawyerToServer() async {
-  setState(() => _isLoading = true);
-
-  try {
-    Map<String, dynamic> requestData = {
-      'username': _usernameController.text.trim(),
-      'fullName': _fullNameController.text.trim(),
-      'password': _passwordController.text,
-      'phoneNumber': _phoneController.text.trim(),
-      'licenseNumber': _licenseController.text.trim(),
-      'yearsOfExp': int.parse(_experienceController.text),
-      'gender': _selectedGender,
-      'mainSpecialization': _selectedMainSpecialization,
-      'fSubSpecialization': _selectedSubSpecialization1 ?? '',
-      'sSubSpecialization': _selectedSubSpecialization2 ?? '',
-      'educationQualification': _selectedEducationLevel,
-      'academicMajor': _selectedAcademicMajor,
-    };
-
-    print('📤 إرسال بيانات المحامي بعد التحقق الناجح: $requestData');
-
-    String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
-    
-    var response = await http.post(
-      Uri.parse('$baseUrl/register_lawyer.php'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(requestData),
-    ).timeout(const Duration(seconds: 60));
-
-    var result = json.decode(response.body);
-    
-    if (result['success'] == true) {
-      // رفع الملفات بعد التسجيل الناجح
-      if (_licenseFile != null && _licenseFile!.path != null) {
-        await _uploadFile(_licenseFile!, result['licenseFileName'], baseUrl);
-      }
-      
-      if (_profileImage != null && _profileImage!.path != null) {
-        await _uploadFile(_profileImage!, result['photoFileName'], baseUrl);
-      }
-      
-      _showSuccess('تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك من قبل الإدارة.');
-Navigator.pushReplacementNamed(context, '/lawyer_more');
-   } else {
-      _showError(result['message']);
-    }
-    
-  } catch (e) {
-    _showError('فشل في التسجيل: $e');
-  } finally {
-    setState(() => _isLoading = false);
+    return verified; // ترجع true أو false أو null
   }
-}
+
+  Future<void> _sendLawyerToServer() async {
+    setState(() => _isLoading = true);
+
+    try {
+      Map<String, dynamic> requestData = {
+        'username': _usernameController.text.trim(),
+        'fullName': _fullNameController.text.trim(),
+        'password': _passwordController.text,
+        'phoneNumber': _phoneController.text.trim(),
+        'licenseNumber': _licenseController.text.trim(),
+        'yearsOfExp': int.parse(_experienceController.text),
+        'gender': _selectedGender,
+        'mainSpecialization': _selectedMainSpecialization,
+        'fSubSpecialization': _selectedSubSpecialization1 ?? '',
+        'sSubSpecialization': _selectedSubSpecialization2 ?? '',
+        'educationQualification': _selectedEducationLevel,
+        'academicMajor': _selectedAcademicMajor,
+      };
+
+      print('📤 إرسال بيانات المحامي بعد التحقق الناجح: $requestData');
+
+      String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
+      
+      var response = await http.post(
+        Uri.parse('$baseUrl/register_lawyer.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(requestData),
+      ).timeout(const Duration(seconds: 60));
+
+      var result = json.decode(response.body);
+      
+      if (result['success'] == true) {
+        int lawyerId = result['lawyer']?['UserID'] ?? result['userId'] ?? 0;
+        // ✅ حفظ بيانات المستخدم في الجلسة - باستخدام المنشئ الصحيح
+        User lawyerUser = User(
+          id: result['userId'] ?? 0,
+          fullName: _fullNameController.text.trim(),
+          username: _usernameController.text.trim(),
+          phoneNumber: _phoneController.text.trim(),
+          userType: 'lawyer',
+          points: 0, // نقاط افتراضية
+          status: 'Pending', // حالة افتراضية
+        );
+        
+        await Session.saveUser(lawyerUser);
+        
+        // ✅ رفع الملفات في الخلفية (بدون انتظار)
+        _uploadFilesInBackground(result, baseUrl);
+        
+        // ✅ عرض رسالة النجاح والتوجيه
+        _showSuccessAndNavigate();
+        
+      } else {
+        _showError(result['message'] ?? 'حدث خطأ غير معروف');
+      }
+      
+    } catch (e) {
+      _showError('فشل في التسجيل: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  // رفع الملفات في الخلفية بدون منع التوجيه
+  void _uploadFilesInBackground(Map<String, dynamic> result, String baseUrl) {
+    Future(() async {
+      try {
+        if (_licenseFile != null && _licenseFile!.path != null) {
+          await _uploadFile(_licenseFile!, result['licenseFileName'] ?? 'license_${_usernameController.text}', baseUrl);
+        }
+        
+        if (_profileImage != null && _profileImage!.path != null) {
+          await _uploadFile(_profileImage!, result['photoFileName'] ?? 'profile_${_usernameController.text}', baseUrl);
+        }
+        
+        print('✅ تم رفع جميع الملفات بنجاح');
+      } catch (e) {
+        print('⚠️ حدث خطأ في رفع الملفات: $e');
+      }
+    });
+  }
+
   // دالة مساعدة لرفع الملفات
   Future<void> _uploadFile(PlatformFile file, String fileName, String baseUrl) async {
     try {
@@ -617,20 +649,33 @@ Navigator.pushReplacementNamed(context, '/lawyer_more');
     }
   }
 
+  // عرض النجاح والتوجيه
+  void _showSuccessAndNavigate() {
+    // عرض رسالة النجاح
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك من قبل الإدارة.',
+          style: const TextStyle(fontFamily: 'Tajawal'),
+        ),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+    
+    // التوجيه بعد فترة بسيطة
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/lawyer_more');
+      }
+    });
+  }
+
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, style: const TextStyle(fontFamily: 'Tajawal')),
         backgroundColor: Colors.red,
-      ),
-    );
-  }
-
-  void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: const TextStyle(fontFamily: 'Tajawal')),
-        backgroundColor: Colors.green,
       ),
     );
   }
