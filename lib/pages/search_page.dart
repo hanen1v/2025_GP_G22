@@ -57,7 +57,7 @@ List<Map<String, dynamic>> lawyers = [];
   List<String> selectedSpeciality = [];
 
   final List<String> academicOptions = ['القانون', 'الشريعة'];
-  final List<String> degreeOptions = ['بكالوريوس', 'ماجستير', 'دكتوراه'];
+  final List<String> degreeOptions = ['دبلوم','بكالوريوس', 'ماجستير', 'دكتوراه'];
   final List<String> specialityOptions = [
     'القضايا الجنائية',
     'القضايا الأسرية',
