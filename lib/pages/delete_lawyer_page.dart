@@ -33,7 +33,8 @@ class _DeleteLawyerPageState extends State<DeleteLawyerPage> {
     await Session.clear();
     Navigator.of(context).pushReplacementNamed('/welcome');
   }
-  /// يجلب المحامين كـ List<Lawyer> ويحدث الحالة
+
+//get pending lawyers
   Future<void> _fetchLawyers() async {
     setState(() => _initialLoading = true);
     try {
@@ -54,7 +55,7 @@ class _DeleteLawyerPageState extends State<DeleteLawyerPage> {
     }
   }
 
-  /// تأكيد ثم حذف عبر Api.deleteLawyer (POST + JSON + ok == true)
+  //confirm and delete lawyer
   Future<void> _confirmAndDelete(Lawyer lw) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -62,8 +63,12 @@ class _DeleteLawyerPageState extends State<DeleteLawyerPage> {
         title: const Text('تأكيد الحذف'),
         content: Text('هل تريد حذف "${lw.fullName}"؟'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('حذف')),
+          TextButton(onPressed: () => Navigator.pop(context, false),
+          style: TextButton.styleFrom(foregroundColor: Color.fromARGB(255, 9, 44, 36)),
+          child: const Text('إلغاء')),
+          FilledButton(onPressed: () => Navigator.pop(context, true),
+          style: FilledButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Color.fromARGB(255, 9, 44, 36)),
+          child: const Text('حذف')),
         ],
       ),
     );
@@ -98,7 +103,7 @@ class _DeleteLawyerPageState extends State<DeleteLawyerPage> {
     }
   }
 
-  /// الكارد — يعتمد على Lawyer.fullName و Lawyer.photoUrl فقط
+  //lawyers card
   Widget _buildLawyerCard(Lawyer lw) {
     final isDeleting = _deletingIds.contains(lw.id);
     return Container(
