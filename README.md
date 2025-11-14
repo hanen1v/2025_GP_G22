@@ -96,7 +96,7 @@ flutter run -d emulator-5554
 
 ### 7. Admin Dashboard
 Access the admin request panel here:
-http://localhost:8888/mujeer_api/admin
+http://localhost:8888/mujeer_api/get_pending_requests
 
 Admins can:
 - Approve/Reject lawyers
