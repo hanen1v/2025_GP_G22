@@ -18,8 +18,14 @@ if (!file_exists($uploadDir)) {
 error_log("=== FILE UPLOAD ATTEMPT ===");
 error_log("Upload directory: " . $uploadDir);
 
-if(isset($_FILES['file']) && isset($_POST['fileName'])) {
-    $uploadedFile = $_FILES['file'];
+if (
+    (isset($_FILES['file']) || isset($_FILES['license_file']) || isset($_FILES['profile_image'])) 
+    && isset($_POST['fileName'])
+) {
+    $uploadedFile = $_FILES['file'] 
+        ?? $_FILES['license_file'] 
+        ?? $_FILES['profile_image'];
+
     $fileName = $_POST['fileName'];
     
     $targetPath = $uploadDir . $fileName;

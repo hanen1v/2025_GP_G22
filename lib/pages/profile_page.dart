@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import '../services/session.dart';
+import '../models/user.dart';
+import '../services/api_client.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key, required this.username});
+  const ProfilePage({
+    super.key,
+    required this.fullName,
+    required this.username,
+  });
+
+  final String fullName;
   final String username;
 
   @override
@@ -9,24 +18,200 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  late final TextEditingController _nameCtrl;
+  // Controllers
+  late final TextEditingController _usernameCtrl; // نعرض اليوزرنيم داخل البوكس
+  final TextEditingController _phoneCtrl = TextEditingController();
+  final TextEditingController _passCtrl = TextEditingController();
+  final TextEditingController _confirmPassCtrl = TextEditingController();
+
+  bool _obscurePassword = true;
+  User? _user;
 
   @override
   void initState() {
     super.initState();
-    _nameCtrl = TextEditingController(text: widget.username);
+    // مبدئياً خليه من اللي وصل من MorePage
+    _usernameCtrl = TextEditingController(text: widget.username);
+    _loadUser(); // ← يسحب الاسم/الجوال الحقيقيين من الـ Session
+  }
+
+  Future<void> _loadUser() async {
+    final u = await Session.getUser();
+    if (!mounted) return;
+    setState(() {
+      _user = u;
+      // نحدّث الحقول من الجلسة إذا متوفرة
+      if ((u?.username ?? '').isNotEmpty) _usernameCtrl.text = u!.username;
+      if ((u?.phoneNumber ?? '').isNotEmpty) _phoneCtrl.text = u!.phoneNumber;
+      _passCtrl.clear(); // لا نخزن الباسوورد محليًا
+    });
   }
 
   @override
   void dispose() {
-    _nameCtrl.dispose();
+    _usernameCtrl.dispose();
+    _phoneCtrl.dispose();
+    _passCtrl.dispose();
+    _confirmPassCtrl.dispose();
     super.dispose();
   }
 
-  void _save() {
+  void _save() async {
+    final newUsername = _usernameCtrl.text.trim();
+    final newPhone = _phoneCtrl.text.trim();
+    final newPass = _passCtrl.text; // ممكن يكون فاضي
+
+    // فالديشن بسيط
+    if (newUsername.isEmpty) {
+      _toast('اسم المستخدم مطلوب');
+      return;
+    }
+    if (!RegExp(r'^05\d{8}$').hasMatch(newPhone)) {
+      _toast('رقم الجوال يجب أن يبدأ بـ 05 ويحتوي 10 أرقام');
+      return;
+    }
+
+    final current = _user;
+    if (current == null) {
+      _toast('لم يتم تحميل بيانات المستخدم');
+      return;
+    }
+
+    try {
+      // استدعاء API
+      final updated = await ApiClient.updateProfile(
+        userId: current.id,
+        userType: current.userType, // 'client' أو 'lawyer'
+        username: newUsername,
+        phoneNumber: newPhone,
+        newPassword: newPass.isNotEmpty ? newPass : null,
+      );
+
+      // حدث الجلسة محليًا
+      await Session.saveUser(updated);
+
+      // نظّف حقل الباسوورد
+      _passCtrl.clear();
+
+      if (!mounted) return;
+      _toast('تم حفظ التعديلات بنجاح', success: true);
+      // اختياري: ارجعي شاشة وراء
+      // Navigator.pop(context);
+    } catch (e) {
+      _toast('فشل حفظ التعديلات: $e');
+    }
+  }
+
+  void _toast(String msg, {bool success = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('حفظ التعديلات (قريباً)')),
+      SnackBar(
+        content: Text(msg, style: const TextStyle(fontFamily: 'Tajawal')),
+        backgroundColor: success ? Colors.green : Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
     );
+  }
+
+  Future<void> _confirmDelete() async {
+    final u = _user;
+    if (u == null) {
+      _toast('لم يتم تحميل بيانات المستخدم');
+      return;
+    }
+
+    _confirmPassCtrl.clear();
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            title: const Text('حذف الحساب'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'هل أنت متأكد من حذف الحساب؟ هذا الإجراء لا يمكن التراجع عنه.',
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _confirmPassCtrl,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'كلمة المرور '),
+                ),
+              ],
+            ),
+            actions: [
+  // زر إلغاء
+  TextButton(
+    onPressed: () => Navigator.pop(context, false),
+    child: const Text(
+      'إلغاء',
+      style: TextStyle(
+        fontFamily: 'Tajawal',
+        color: Color(0xFF0B5345), // أخضر
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  ),
+
+  // زر حذف
+  ElevatedButton(
+    onPressed: () {
+      if (_confirmPassCtrl.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('يجب إدخال كلمة المرور لحذف الحساب'),
+          ),
+        );
+        return;
+      }
+      Navigator.pop(context, true);
+    },
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Color(0xFF0B5345), // أخضر
+      foregroundColor: Colors.white,       // نص أبيض
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      elevation: 0,
+    ),
+    child: const Text(
+      'حذف',
+      style: TextStyle(
+        fontFamily: 'Tajawal',
+        fontSize: 15,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+      ),
+    ),
+  ),
+],
+
+          ),
+        );
+      },
+    );
+
+    if (ok != true) return;
+
+    try {
+      await ApiClient.deleteAccount(
+        userId: u.id,
+        userType: u.userType, // 'client' أو 'lawyer'
+        password: _confirmPassCtrl.text, // كلمة المرور مطلوبة
+      );
+
+      await Session.clear();
+
+      if (!mounted) return;
+      _toast('تم حذف الحساب بنجاح', success: true);
+      Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (_) => false);
+    } catch (e) {
+      _toast('فشل حذف الحساب: $e');
+    }
   }
 
   @override
@@ -53,47 +238,50 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 24), // ←   مساحة فوق حقل الاسم
-              // حقل الاسم   
+              const SizedBox(height: 24),
+
+              // Username
               TextField(
-                controller: _nameCtrl,
+                controller: _usernameCtrl,
                 textAlign: TextAlign.right,
-                decoration: InputDecoration(
-                  labelText: 'الاسم',
-                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                  floatingLabelAlignment: FloatingLabelAlignment.start,
-                  labelStyle: const TextStyle(
-                    fontFamily: 'Tajawal',
-                    fontSize: 13,
-                    color: Colors.grey,
-                  ),
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 14,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    gapPadding: 4,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide:
-                        const BorderSide(color: Color(0xFFBDBDBD), width: 1),
-                    gapPadding: 4,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide:
-                        const BorderSide(color: Color(0xFF0B5345), width: 1.5),
-                    gapPadding: 4,
+                decoration: _inputDecoration('اسم المستخدم'),
+              ),
+              const SizedBox(height: 16),
+
+              // رقم الجوال
+              TextField(
+                controller: _phoneCtrl,
+                keyboardType: TextInputType.phone,
+                textAlign: TextAlign.right,
+                decoration: _inputDecoration(
+                  'رقم الجوال',
+                ).copyWith(hintText: '05XXXXXXXX'),
+              ),
+              const SizedBox(height: 16),
+
+              // كلمة المرور (اختياري للتغيير)
+              TextField(
+                controller: _passCtrl,
+                obscureText: _obscurePassword,
+                textAlign: TextAlign.right,
+                decoration: _inputDecoration('كلمة المرور').copyWith(
+                  hintText: 'اتركه فارغًا إذا لا تريد تغييره',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
               ),
 
               const SizedBox(height: 40),
 
-              // زر حفظ
+              // زر حفظ (عرض فقط الآن)
               SizedBox(
                 height: 52,
                 child: ElevatedButton(
@@ -119,26 +307,48 @@ class _ProfilePageState extends State<ProfilePage> {
 
               const SizedBox(height: 16),
 
-              // حذف حسابي (عرض فقط)
+              // حذف حسابي ()
               Center(
                 child: TextButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('حذف الحساب (قريباً)')),
-                    );
-                  },
+                  onPressed: _confirmDelete,
                   child: const Text(
                     'حذف حسابي',
-                    style: TextStyle(
-                      fontFamily: 'Tajawal',
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontFamily: 'Tajawal', color: Colors.grey),
                   ),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      floatingLabelBehavior: FloatingLabelBehavior.always,
+      floatingLabelAlignment: FloatingLabelAlignment.start,
+      labelStyle: const TextStyle(
+        fontFamily: 'Tajawal',
+        fontSize: 13,
+        color: Colors.grey,
+      ),
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        gapPadding: 4,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFFBDBDBD), width: 1),
+        gapPadding: 4,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFF0B5345), width: 1.5),
+        gapPadding: 4,
       ),
     );
   }

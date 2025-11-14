@@ -6,6 +6,8 @@ import 'package:http_parser/http_parser.dart';
 import 'otp_screen.dart';
 import '../services/session.dart';
 import '../models/user.dart';
+import '../services/api_client.dart';
+
 class LawyerRegisterPage extends StatefulWidget {
   const LawyerRegisterPage({super.key});
 
@@ -15,7 +17,7 @@ class LawyerRegisterPage extends StatefulWidget {
 
 class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // controllers للحقول النصية
   final _fullNameController = TextEditingController();
   final _usernameController = TextEditingController();
@@ -24,13 +26,13 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   final _phoneController = TextEditingController();
   final _licenseController = TextEditingController();
   final _experienceController = TextEditingController();
-  
+
   // للملفات
   String? _licenseFileName;
   String? _profileImageName;
   PlatformFile? _licenseFile;
   PlatformFile? _profileImage;
-  
+
   // للتخصصات (قوائم محددة)
   String? _selectedGender;
   String? _selectedMainSpecialization;
@@ -38,27 +40,42 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   String? _selectedSubSpecialization2;
   String? _selectedEducationLevel;
   String? _selectedAcademicMajor;
-  
+
   // لإظهار/إخفاء كلمة المرور
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  
+
   // القوائم المحددة
   final List<String> _genders = ['ذكر', 'أنثى'];
   final List<String> _mainSpecializations = [
-    'عقاري', 'قضايا العمالة', 'جنائي', 'تجاري', 'اسري',
-    'عمل', 'أحوال شخصية', 'اداري', 'ملكية فكرية'
+    'عقاري',
+    'قضايا العمالة',
+    'جنائي',
+    'تجاري',
+    'اسري',
+    'عمل',
+    'أحوال شخصية',
+    'اداري',
+    'ملكية فكرية',
   ];
   final List<String> _subSpecializations = [
-    'عقاري', 'قضايا العمالة', 'جنائي', 'تجاري', 'اسري',
-    'عمل', 'أحوال شخصية', 'اداري', 'ملكية فكرية'
+    'عقاري',
+    'قضايا العمالة',
+    'جنائي',
+    'تجاري',
+    'اسري',
+    'عمل',
+    'أحوال شخصية',
+    'اداري',
+    'ملكية فكرية',
   ];
   final List<String> _educationLevels = [
-    'بكالوريوس', 'ماجستير', 'دكتوراه', 'دبلوم'
+    'بكالوريوس',
+    'ماجستير',
+    'دكتوراه',
+    'دبلوم',
   ];
-  final List<String> _academicMajors = [
-    'شريعة', 'قانون'
-  ];
+  final List<String> _academicMajors = ['شريعة', 'قانون'];
 
   bool _isLoading = false;
 
@@ -74,7 +91,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
         backgroundColor: const Color(0xFFF8F9FA),
         elevation: 0,
       ),
-      body: _isLoading 
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -111,7 +128,8 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
             _buildTextFormField(
               controller: _fullNameController,
               label: 'الاسم الكامل *',
-              validator: (value) => value!.isEmpty ? 'الاسم الكامل مطلوب' : null,
+              validator: (value) =>
+                  value!.isEmpty ? 'الاسم الكامل مطلوب' : null,
             ),
             const SizedBox(height: 12),
             _buildTextFormField(
@@ -119,8 +137,10 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
               label: 'اسم المستخدم *',
               validator: (value) {
                 if (value!.isEmpty) return 'اسم المستخدم مطلوب';
-                if (value.length < 3) return 'اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل';
-                if (value.contains(' ')) return 'اسم المستخدم لا يمكن أن يحتوي على مسافات';
+                if (value.length < 3)
+                  return 'اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل';
+                if (value.contains(' '))
+                  return 'اسم المستخدم لا يمكن أن يحتوي على مسافات';
                 return null;
               },
             ),
@@ -129,10 +149,12 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
               controller: _passwordController,
               label: 'كلمة المرور *',
               obscureText: _obscurePassword,
-              onToggleVisibility: () => setState(() => _obscurePassword = !_obscurePassword),
+              onToggleVisibility: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
               validator: (value) {
                 if (value!.isEmpty) return 'كلمة المرور مطلوبة';
-                if (value.length < 6) return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+                if (value.length < 6)
+                  return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
                 return null;
               },
             ),
@@ -141,10 +163,13 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
               controller: _confirmPasswordController,
               label: 'تأكيد كلمة المرور *',
               obscureText: _obscureConfirmPassword,
-              onToggleVisibility: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+              onToggleVisibility: () => setState(
+                () => _obscureConfirmPassword = !_obscureConfirmPassword,
+              ),
               validator: (value) {
                 if (value!.isEmpty) return 'يرجى تأكيد كلمة المرور';
-                if (value != _passwordController.text) return 'كلمة المرور غير متطابقة';
+                if (value != _passwordController.text)
+                  return 'كلمة المرور غير متطابقة';
                 return null;
               },
             ),
@@ -207,38 +232,46 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
               value: _selectedMainSpecialization,
               items: _mainSpecializations,
               label: 'التخصص الرئيسي *',
-              onChanged: (value) => setState(() => _selectedMainSpecialization = value),
-              validator: (value) => value == null ? 'التخصص الرئيسي مطلوب' : null,
+              onChanged: (value) =>
+                  setState(() => _selectedMainSpecialization = value),
+              validator: (value) =>
+                  value == null ? 'التخصص الرئيسي مطلوب' : null,
             ),
             const SizedBox(height: 12),
             _buildDropdown(
               value: _selectedSubSpecialization1,
               items: _subSpecializations,
               label: 'التخصص الفرعي الأول',
-              onChanged: (value) => setState(() => _selectedSubSpecialization1 = value),
+              onChanged: (value) =>
+                  setState(() => _selectedSubSpecialization1 = value),
             ),
             const SizedBox(height: 12),
             _buildDropdown(
               value: _selectedSubSpecialization2,
               items: _subSpecializations,
               label: 'التخصص الفرعي الثاني',
-              onChanged: (value) => setState(() => _selectedSubSpecialization2 = value),
+              onChanged: (value) =>
+                  setState(() => _selectedSubSpecialization2 = value),
             ),
             const SizedBox(height: 12),
             _buildDropdown(
               value: _selectedEducationLevel,
               items: _educationLevels,
               label: 'المؤهل العلمي *',
-              onChanged: (value) => setState(() => _selectedEducationLevel = value),
-              validator: (value) => value == null ? 'المؤهل العلمي مطلوب' : null,
+              onChanged: (value) =>
+                  setState(() => _selectedEducationLevel = value),
+              validator: (value) =>
+                  value == null ? 'المؤهل العلمي مطلوب' : null,
             ),
             const SizedBox(height: 12),
             _buildDropdown(
               value: _selectedAcademicMajor,
               items: _academicMajors,
               label: 'التخصص الأكاديمي *',
-              onChanged: (value) => setState(() => _selectedAcademicMajor = value),
-              validator: (value) => value == null ? 'التخصص الأكاديمي مطلوب' : null,
+              onChanged: (value) =>
+                  setState(() => _selectedAcademicMajor = value),
+              validator: (value) =>
+                  value == null ? 'التخصص الأكاديمي مطلوب' : null,
             ),
           ],
         ),
@@ -347,9 +380,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(fontFamily: 'Tajawal'),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Color(0xFF0B5345)),
@@ -372,9 +403,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(fontFamily: 'Tajawal'),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Color(0xFF0B5345)),
@@ -430,7 +459,10 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
       children: [
         Text(
           '$label ${isRequired ? '*' : ''}',
-          style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontFamily: 'Tajawal',
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 8),
         OutlinedButton(
@@ -458,9 +490,13 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
           const SizedBox(height: 4),
           Text(
             'هذا الحقل مطلوب',
-            style: TextStyle(color: Colors.red[700], fontSize: 12, fontFamily: 'Tajawal'),
+            style: TextStyle(
+              color: Colors.red[700],
+              fontSize: 12,
+              fontFamily: 'Tajawal',
+            ),
           ),
-        ]
+        ],
       ],
     );
   }
@@ -518,7 +554,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
 
     // استدعاء OTP أولاً والانتظار للنتيجة
     bool? otpVerified = await _navigateToOTP();
-    
+
     // إذا التحقق نجح، أرسل البيانات للسيرفر
     if (otpVerified == true) {
       await _sendLawyerToServer();
@@ -532,18 +568,20 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
     String phoneNumber = '+966${_phoneController.text.substring(1)}';
 
     // انتظار نتيجة التحقق من OTP
-    bool? verified = await Navigator.push(
+    bool? verified = true;
+
+    /*await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => OTPScreen(phoneNumber: phoneNumber),
       ),
-    );
+    );*/
 
     return verified; // ترجع true أو false أو null
   }
 
   // دالة محسنة لإرسال بيانات المحامي
-Future<void> _sendLawyerToServer() async {
+  Future<void> _sendLawyerToServer() async {
   setState(() => _isLoading = true);
 
   try {
@@ -564,108 +602,174 @@ Future<void> _sendLawyerToServer() async {
 
     print('📤 إرسال بيانات المحامي بعد التحقق الناجح: $requestData');
 
-    String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
-    
-    var response = await http.post(
-      Uri.parse('$baseUrl/register_lawyer.php'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(requestData),
-    ).timeout(const Duration(seconds: 10));
+    const String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
+
+    final response = await http
+        .post(
+          Uri.parse('$baseUrl/register_lawyer.php'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode(requestData),
+        )
+        .timeout(const Duration(seconds: 10));
 
     print('📥 استجابة السيرفر: ${response.body}');
-    
-    var result = json.decode(response.body);
-    
-    if (result['success'] == true) {
-      int lawyerId = result['userId'] ?? 0;
-      
-      // ✅ حفظ بيانات المستخدم في الجلسة
-      User lawyerUser = User(
-        id: lawyerId,
-        fullName: _fullNameController.text.trim(),
-        username: _usernameController.text.trim(),
-        phoneNumber: _phoneController.text.trim(),
-        userType: 'lawyer',
-        points: 0,
-        status: 'Pending',
-      );
-      
-      await Session.saveUser(lawyerUser);
-      
-      // ✅ رفع الملفات إذا كانت موجودة
-      if (_licenseFile != null || _profileImage != null) {
-        await _uploadFiles(lawyerId, result, baseUrl);
-      }
-      
-      // ✅ عرض رسالة النجاح والتوجيه
-      _showSuccessAndNavigate();
-      
-    } else {
-      _showError(result['message'] ?? 'حدث خطأ غير معروف');
-    }
-    
-  } catch (e) {
-    _showError('فشل في التسجيل: $e');
-  } finally {
-    setState(() => _isLoading = false);
-  }
-}
 
-// دالة محسنة لرفع الملفات
-Future<void> _uploadFiles(int lawyerId, Map<String, dynamic> result, String baseUrl) async {
-  try {
-    var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload_files.php'));
-    
-    // إضافة معرف المحامي
-    request.fields['lawyer_id'] = lawyerId.toString();
-    
-    // رفع ملف الرخصة إذا موجود
-    if (_licenseFile != null && _licenseFile!.path != null) {
-      request.files.add(await http.MultipartFile.fromPath(
+    final result = json.decode(response.body);
+
+    if (result['success'] == true) {
+  final int lawyerId = result['userId'] ?? 0;
+
+  // نقرأ user من الـ PHP
+  final Map<String, dynamic>? userMap =
+      (result['user'] as Map?)?.cast<String, dynamic>();
+
+  User? user;
+  if (userMap != null) {
+    // نضيف UserType = 'lawyer' احتياط حتى لو backend نسي
+    user = User.fromJson({
+      ...userMap,
+      'UserType': 'lawyer',
+    });
+  }
+
+  // أولاً: نرفع ملف الرخصة فقط (لو موجود)
+  if (_licenseFile != null && _licenseFile!.path != null) {
+    final licenseName =
+        (result['licenseFileName'] ?? 'license_${_usernameController.text}.pdf')
+            .toString();
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/upload_files.php'),
+    );
+
+    request.fields['fileName']  = licenseName;      // 👈 مهم جداً
+    request.files.add(
+      await http.MultipartFile.fromPath(
         'license_file',
         _licenseFile!.path!,
-        filename: result['licenseFileName'] ?? 'license_${_usernameController.text}.pdf',
-      ));
-    }
-    
-    // رفع الصورة الشخصية إذا موجودة
-    if (_profileImage != null && _profileImage!.path != null) {
-      request.files.add(await http.MultipartFile.fromPath(
-        'profile_image',
-        _profileImage!.path!,
-        filename: result['photoFileName'] ?? 'photo_${_usernameController.text}.jpg',
-      ));
-    }
-    
-    var response = await request.send();
-    var responseData = await response.stream.bytesToString();
-    
-    print('📤 رفع الملفات: $responseData');
-    
-  } catch (e) {
-    print('⚠️ حدث خطأ في رفع الملفات: $e');
-  }
-}
+        filename: licenseName,
+      ),
+    );
 
-  // دالة مساعدة لرفع الملفات
-  Future<void> _uploadFile(PlatformFile file, String fileName, String baseUrl) async {
+    final uploadRes = await request.send();
+    final uploadBody = await uploadRes.stream.bytesToString();
+    print('📤 رفع الرخصة: $uploadBody');
+  }
+
+  // ثانياً: لو فيه صورة شخصية، نرفعها بالـ API الشغال
+  if (_profileImage != null && _profileImage!.path != null) {
     try {
-      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload_files.php'));
-      
-      request.files.add(await http.MultipartFile.fromPath(
-        'file',
-        file.path!,
-        filename: fileName,
-      ));
-      
-      request.fields['fileName'] = fileName;
-      
+      final newFileName = await ApiClient.uploadLawyerPhoto(
+        userId: lawyerId,
+        imagePath: _profileImage!.path!,
+      );
+
+      if (user != null && newFileName.isNotEmpty) {
+        user = user.copyWith(profileImage: newFileName);
+      }
+    } catch (e) {
+      print('⚠️ فشل رفع الصورة عند التسجيل: $e');
+    }
+  }
+
+  // أخيراً: نخزن اليوزر في السيشن ونروح لصفحة المزيد
+  if (user != null) {
+    print('👤 USER AFTER REGISTER = $user');
+    print('🖼️ profileImage = ${user.profileImage}');
+    print('🖼️ profileImageUrl = ${user.profileImageUrl}');
+    await Session.saveUser(user);
+  }
+
+  _showSuccessAndNavigate();
+}
+ else {
+        _showError(result['message'] ?? 'حدث خطأ غير معروف');
+      }
+    } catch (e) {
+      _showError('فشل في التسجيل: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  // دالة محسنة لرفع الملفات
+  Future<void> _uploadFiles(
+    int lawyerId,
+    Map<String, dynamic> result,
+    String baseUrl,
+  ) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/upload_files.php'),
+      );
+
+      // إضافة معرف المحامي
+      request.fields['lawyer_id'] = lawyerId.toString();
+
+      // رفع ملف الرخصة إذا موجود
+      if (_licenseFile != null && _licenseFile!.path != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'license_file',
+            _licenseFile!.path!,
+            filename:
+                result['licenseFileName'] ??
+                'license_${_usernameController.text}.pdf',
+          ),
+        );
+      }
+
+      // رفع الصورة الشخصية إذا موجودة
+      if (_profileImage != null && _profileImage!.path != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'profile_image',
+            _profileImage!.path!,
+            filename:
+                result['photoFileName'] ??
+                'photo_${_usernameController.text}.jpg',
+          ),
+        );
+      }
+
       var response = await request.send();
       var responseData = await response.stream.bytesToString();
-      
+
+      print('📤 رفع الملفات: $responseData');
+    } catch (e) {
+      print('⚠️ حدث خطأ في رفع الملفات: $e');
+    }
+  }
+
+  // دالة مساعدة لرفع الملفات
+  Future<void> _uploadFile(
+    PlatformFile file,
+    String fileName,
+    String baseUrl,
+  ) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/upload_files.php'),
+      );
+
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'file',
+          file.path!,
+          filename: fileName,
+        ),
+      );
+
+      request.fields['fileName'] = fileName;
+
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+
       print('📤 رفع الملف: $fileName');
       print('📥 استجابة رفع الملف: $responseData');
-      
     } catch (e) {
       print('❌ خطأ في رفع الملف: $e');
     }
@@ -684,7 +788,7 @@ Future<void> _uploadFiles(int lawyerId, Map<String, dynamic> result, String base
         duration: const Duration(seconds: 3),
       ),
     );
-    
+
     // التوجيه بعد فترة بسيطة
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {

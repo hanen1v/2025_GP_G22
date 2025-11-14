@@ -14,14 +14,14 @@ class ClientRegisterPage extends StatefulWidget {
 
 class _ClientRegisterPageState extends State<ClientRegisterPage> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // controllers للحقول النصية
   final _fullNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -42,7 +42,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: _isLoading 
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -77,7 +77,8 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
               label: 'الاسم الكامل *',
               validator: (value) {
                 if (value!.isEmpty) return 'الاسم الكامل مطلوب';
-                if (value.length < 3) return 'الاسم يجب أن يحتوي على 3 أحرف على الأقل';
+                if (value.length < 3)
+                  return 'الاسم يجب أن يحتوي على 3 أحرف على الأقل';
                 return null;
               },
             ),
@@ -87,8 +88,10 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
               label: 'اسم المستخدم *',
               validator: (value) {
                 if (value!.isEmpty) return 'اسم المستخدم مطلوب';
-                if (value.length < 3) return 'اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل';
-                if (value.contains(' ')) return 'اسم المستخدم لا يمكن أن يحتوي على مسافات';
+                if (value.length < 3)
+                  return 'اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل';
+                if (value.contains(' '))
+                  return 'اسم المستخدم لا يمكن أن يحتوي على مسافات';
                 return null;
               },
             ),
@@ -97,10 +100,12 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
               controller: _passwordController,
               label: 'كلمة المرور *',
               obscureText: _obscurePassword,
-              onToggleVisibility: () => setState(() => _obscurePassword = !_obscurePassword),
+              onToggleVisibility: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
               validator: (value) {
                 if (value!.isEmpty) return 'كلمة المرور مطلوبة';
-                if (value.length < 6) return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+                if (value.length < 6)
+                  return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
                 return null;
               },
             ),
@@ -109,10 +114,13 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
               controller: _confirmPasswordController,
               label: 'تأكيد كلمة المرور *',
               obscureText: _obscureConfirmPassword,
-              onToggleVisibility: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+              onToggleVisibility: () => setState(
+                () => _obscureConfirmPassword = !_obscureConfirmPassword,
+              ),
               validator: (value) {
                 if (value!.isEmpty) return 'يرجى تأكيد كلمة المرور';
-                if (value != _passwordController.text) return 'كلمة المرور غير متطابقة';
+                if (value != _passwordController.text)
+                  return 'كلمة المرور غير متطابقة';
                 return null;
               },
             ),
@@ -189,9 +197,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(fontFamily: 'Tajawal'),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Color(0xFF0B5345)),
@@ -214,9 +220,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(fontFamily: 'Tajawal'),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Color(0xFF0B5345)),
@@ -235,83 +239,95 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
 
   // تسجيل العميل
   void _registerClient() async {
-  if (!_formKey.currentState!.validate()) {
-    _showError('يرجى تعبئة جميع الحقول الإجبارية بشكل صحيح');
-    return;
+    if (!_formKey.currentState!.validate()) {
+      _showError('يرجى تعبئة جميع الحقول الإجبارية بشكل صحيح');
+      return;
+    }
 
+    // فقط التوجيه لصفحة OTP أول
+    _navigateToOTP();
   }
 
-  // فقط التوجيه لصفحة OTP أول
-  _navigateToOTP();
-}
   // التوجيه إلى صفحة OTP
   void _navigateToOTP() async {
-  String phoneNumber = '+966${_phoneController.text.substring(1)}';
+    String phoneNumber = '+966${_phoneController.text.substring(1)}';
 
-  // ننتظر نتيجة التحقق من شاشة OTP
-  bool? verified = await Navigator.push(
+    // ننتظر نتيجة التحقق من شاشة OTP
+    bool? verified = true;
+    /*await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => OTPScreen(
         phoneNumber: phoneNumber,
       ),
     ),
-  );
-  // بعد العودة من صفحة OTP
-  if (verified == true) {
-    // بعد التحقق الناجح من OTP
-    await _registerInDatabase();
-  } else {
-    _showError('فشل التحقق من رقم الجوال');
-  }
-}
-// التسجيل في الداتابيز بعد التحقق
-Future<void> _registerInDatabase() async {
-  setState(() => _isLoading = true);
+  );*/
 
-  try {
-    Map<String, dynamic> requestData = {
-      'username': _usernameController.text.trim(),
-      'fullName': _fullNameController.text.trim(),
-      'password': _passwordController.text,
-      'phoneNumber': _phoneController.text.trim(),
-    };
-
-    print('📤 إرسال بيانات العميل بعد التحقق: $requestData');
-
-    String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
-    
-    var response = await http.post(
-      Uri.parse('$baseUrl/register_client.php'), 
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(requestData),
-    ).timeout(const Duration(seconds: 10));
-
-    var result = json.decode(response.body);
-    
-    if (result['success'] == true) {
-      _showSuccess('تم إنشاء الحساب بنجاح!');
-      
-      // الانتقال إلى الصفحة الرئيسية
-      Navigator.pushReplacementNamed(
-        context, 
-        '/home',
-        arguments: {
-          'userType': 'client',
-          'userName': _fullNameController.text,
-          'username': _usernameController.text,
-        }
-      );
+    // بعد العودة من صفحة OTP
+    if (verified == true) {
+      // بعد التحقق الناجح من OTP
+      await _registerInDatabase();
     } else {
-      _showError(result['message'] ?? 'حدث خطأ غير متوقع');
+      _showError('فشل التحقق من رقم الجوال');
     }
-    
-  } catch (e) {
-    _showError('فشل في التسجيل: $e');
-  } finally {
-    setState(() => _isLoading = false);
   }
-}
+
+  // التسجيل في الداتابيز بعد التحقق
+  Future<void> _registerInDatabase() async {
+    setState(() => _isLoading = true);
+
+    try {
+      Map<String, dynamic> requestData = {
+        'username': _usernameController.text.trim(),
+        'fullName': _fullNameController.text.trim(),
+        'password': _passwordController.text,
+        'phoneNumber': _phoneController.text.trim(),
+      };
+
+      print('📤 إرسال بيانات العميل بعد التحقق: $requestData');
+
+      String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
+
+      var response = await http
+          .post(
+            Uri.parse('$baseUrl/register_client.php'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode(requestData),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      var result = json.decode(response.body);
+
+      if (result['success'] == true) {
+        final Map<String, dynamic>? userMap = result['user'];
+
+        if (userMap != null) {
+          final user = User.fromJson(userMap);
+          await Session.saveUser(user); // <-- هذا هو الأهم
+        }
+
+        _showSuccess('تم إنشاء الحساب بنجاح!');
+
+        // الانتقال إلى الصفحة الرئيسية
+        Navigator.pushReplacementNamed(
+          context,
+          '/home',
+          arguments: {
+            'userType': 'client',
+            'userName': _fullNameController.text,
+            'username': _usernameController.text,
+          },
+        );
+      } else {
+        _showError(result['message'] ?? 'حدث خطأ غير متوقع');
+      }
+    } catch (e) {
+      _showError('فشل في التسجيل: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

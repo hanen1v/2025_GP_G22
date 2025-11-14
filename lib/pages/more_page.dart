@@ -45,7 +45,8 @@ class _MorePageState extends State<MorePage> {
 
   @override
   Widget build(BuildContext context) {
-    final username = _user?.username ?? 'ضيف';
+    final fullName = _user?.fullName ?? 'ضيف';
+    final username = _user?.username ?? '';
     final points = _user?.points ?? 0; // ← رصيد النقاط
 
     return Directionality(
@@ -78,7 +79,7 @@ class _MorePageState extends State<MorePage> {
       ),
     ),
     subtitle: Text(
-      username,
+      fullName,
       style: const TextStyle(
         fontFamily: 'Tajawal',
         fontSize: 14,
@@ -87,12 +88,23 @@ class _MorePageState extends State<MorePage> {
     ),
     trailing: const Icon(Icons.chevron_right),
   onTap: () async {
+  if (_user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('سجّل دخول أولاً')),
+    );
+    return;
+  }
   await Navigator.push(
     context,
-    MaterialPageRoute(builder: (_) => ProfilePage(username: username)),
+    MaterialPageRoute(
+      builder: (_) => ProfilePage(
+        fullName: fullName,
+        username: username,
+      ),
+    ),
   );
   if (!mounted) return;
-  _loadUser(); // ← يحدث البيانات بعد الرجوع من الملف الشخصي
+  _loadUser();
 },
 
   ),
