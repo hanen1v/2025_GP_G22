@@ -94,14 +94,12 @@ flutter run
 Or specify a device:
 flutter run -d emulator-5554
 
-### 7. Admin Dashboard
-Access the admin request panel here:
-http://localhost:8888/mujeer_api/get_pending_requests
-
-Admins can:
-- Approve/Reject lawyers
-- Approve/Reject license updates
-- Manage requests
+### 7. Admin Workflow
+- Once the backend is running, the admin can sign in through the internal admin panel.
+- The admin is responsible for:
+- Reviewing lawyer registration requests.
+- Verifying uploaded license files.
+- Approving or rejecting lawyers in order to activate their accounts.
 
 ### Done!
 Your Mujeer application is now fully set up and ready for testing and development.
