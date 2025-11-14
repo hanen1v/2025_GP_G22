@@ -22,14 +22,14 @@ Follow the steps below to run the Mujeer application in a local development envi
 ### 1. Prerequisites
 
 Before launching the project, make sure the following tools are installed:
--Flutter SDK (version 3.0 or above)
--Android Studio (for Android emulator + SDK tools)
--VS Code or Android Studio for development
--MySQL Server (MAMP/XAMPP/WAMP)
--PHP 8+ (for backend APIs)
--Git
--OneSignal Account (for notifications)
--Firebase Project (for mobile services)
+- Flutter SDK (version 3.0 or above)
+- Android Studio (for Android emulator + SDK tools)
+- VS Code or Android Studio for development
+- MySQL Server (MAMP/XAMPP/WAMP)
+- PHP 8+ (for backend APIs)
+- Git
+- OneSignal Account (for notifications)
+- Firebase Project (for mobile services)
 
 ### 2. Backend Setup
 
