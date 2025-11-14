@@ -19,7 +19,7 @@ Mujeer supports Saudi Arabia’s digital-justice goals by implementing a **manua
 ## Launching Instructions
 Follow the steps below to run the Mujeer application in a local development environment.
 
-###1. Prerequisites
+### 1. Prerequisites
 
 Before launching the project, make sure the following tools are installed:
 -Flutter SDK (version 3.0 or above)
@@ -31,14 +31,14 @@ Before launching the project, make sure the following tools are installed:
 -OneSignal Account (for notifications)
 -Firebase Project (for mobile services)
 
-###2. Backend Setup
+### 2. Backend Setup
 
-####2.1 Import the Database
+#### 2.1 Import the Database
 1. Open phpMyAdmin
 2. Create a new database (example: mujeer)
 3. Import the SQL file in the database/ folder of the project.
 
-####2.2 Configure API files
+#### 2.2 Configure API files
 1. Move the folder mujeer_api/ to your local server path:
 C:/MAMP/htdocs/mujeer_api/
 
@@ -48,18 +48,18 @@ $username = "root";
 $password = "root";   // Or your password
 $dbname = "mujeer";
 
-####2.3 Check the upload directory
+#### 2.3 Check the upload directory
 Inside mujeer_api, ensure this folder exists:
 uploads/
 If not, create it manually.
 
-###3. Flutter Setup
+### 3. Flutter Setup
 
-####3.1 Install Dependencies
+#### 3.1 Install Dependencies
 Inside your Flutter project folder run:
 flutter pub get
 
-####3.2 Connect to Backend
+#### 3.2 Connect to Backend
 If using Android Emulator, the backend base URL should be:
 static const String base = "http://10.0.2.2:8888/mujeer_api";
 
@@ -67,7 +67,7 @@ For a real Android device:
 Replace with your laptop IP:
 static const String base = "http://YOUR_LOCAL_IP:8888/mujeer_api";
 
-###4. Firebase Setup
+### 4. Firebase Setup
 
 The project uses Firebase for:
 -OTP (optional depending on your build)
@@ -82,7 +82,7 @@ Build again after adding:
 flutter clean
 flutter pub get
 
-###5. OneSignal Setup
+### 5. OneSignal Setup
 
 Add your OneSignal app ID in:
 OneSignal.initialize("YOUR-ONESIGNAL-ID");
@@ -90,7 +90,7 @@ OneSignal.initialize("YOUR-ONESIGNAL-ID");
 Enable push permission:
 OneSignal.Notifications.requestPermission(true);
 
-###6. Running the App
+### 6. Running the App
 
 To launch the app on Android:
 flutter run
@@ -98,7 +98,7 @@ flutter run
 Or specify a device:
 flutter run -d emulator-5554
 
-###7. Admin Dashboard
+### 7. Admin Dashboard
 
 Access the admin request panel here:
 http://localhost:8888/mujeer_api/admin
@@ -108,6 +108,6 @@ Approve/Reject lawyers
 Approve/Reject license updates
 Manage requests
 
-###Done!
+### Done!
 Your Mujeer application is now fully set up and ready for testing and development.
    
