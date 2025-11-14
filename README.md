@@ -20,7 +20,6 @@ Mujeer supports Saudi Arabia’s digital-justice goals by implementing a **manua
 Follow the steps below to run the Mujeer application in a local development environment.
 
 ### 1. Prerequisites
-
 Before launching the project, make sure the following tools are installed:
 - Flutter SDK (version 3.0 or above)
 - Android Studio (for Android emulator + SDK tools)
@@ -68,7 +67,6 @@ Replace with your laptop IP:
 static const String base = "http://YOUR_LOCAL_IP:8888/mujeer_api";
 
 ### 4. Firebase Setup
-
 The project uses Firebase for:
 -OTP (optional depending on your build)
 -Notifications
@@ -83,7 +81,6 @@ flutter clean
 flutter pub get
 
 ### 5. OneSignal Setup
-
 Add your OneSignal app ID in:
 OneSignal.initialize("YOUR-ONESIGNAL-ID");
 
@@ -91,7 +88,6 @@ Enable push permission:
 OneSignal.Notifications.requestPermission(true);
 
 ### 6. Running the App
-
 To launch the app on Android:
 flutter run
 
@@ -99,14 +95,13 @@ Or specify a device:
 flutter run -d emulator-5554
 
 ### 7. Admin Dashboard
-
 Access the admin request panel here:
 http://localhost:8888/mujeer_api/admin
 
 Admins can:
-Approve/Reject lawyers
-Approve/Reject license updates
-Manage requests
+- Approve/Reject lawyers
+- Approve/Reject license updates
+- Manage requests
 
 ### Done!
 Your Mujeer application is now fully set up and ready for testing and development.
