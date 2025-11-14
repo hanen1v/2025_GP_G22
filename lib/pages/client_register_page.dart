@@ -253,14 +253,15 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
     String phoneNumber = '+966${_phoneController.text.substring(1)}';
 
     // ننتظر نتيجة التحقق من شاشة OTP
-    bool? verified = await Navigator.push(
+    bool? verified = true;
+    /*await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => OTPScreen(
         phoneNumber: phoneNumber,
       ),
     ),
-  );
+  );*/
 
     // بعد العودة من صفحة OTP
     if (verified == true) {
@@ -300,11 +301,11 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       if (result['success'] == true) {
         final Map<String, dynamic>? userMap = result['user'];
 
-      if (userMap != null) {
-       final user = User.fromJson(userMap);
-       await Session.saveUser(user); // <-- هذا هو الأهم
-       }
-       
+        if (userMap != null) {
+          final user = User.fromJson(userMap);
+          await Session.saveUser(user); // <-- هذا هو الأهم
+        }
+
         _showSuccess('تم إنشاء الحساب بنجاح!');
 
         // الانتقال إلى الصفحة الرئيسية

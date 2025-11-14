@@ -26,7 +26,7 @@ class _SearchPageState extends State<SearchPage> {
 
 
 Future<void> _fetchLawyers() async {
-  final url = Uri.parse('http://10.0.2.2:8888/mujeer_api/get_lawyers.php');
+  final url = Uri.parse('http://10.0.2.2:8888/mujeer_api');
   try {
     final response = await http.get(url);
     if (response.statusCode == 200) {

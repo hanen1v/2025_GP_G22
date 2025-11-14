@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
         textDirection: TextDirection.rtl, // ← اتجاه عربي
         child: child!,
       ),
-      initialRoute: '/DeleteLawyerPage',
+      initialRoute: '/requestsManagement',
       routes: {
         '/welcome': (context) => const WelcomePage(),
          '/otp_screen': (context) => const OTPScreen(phoneNumber: '+966500000000'),

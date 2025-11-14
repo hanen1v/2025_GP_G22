@@ -84,8 +84,25 @@ if ($result && $result->num_rows > 0) {
 
 // البحث في جدول lawyer
 error_log("=== CHECKING LAWYER TABLE ===");
-$sql = "SELECT LawyerID as UserID, FullName, Username, PhoneNumber, Status, 'lawyer' as UserType, Password 
-        FROM lawyer WHERE Username = ?";
+$sql = "SELECT 
+    LawyerID AS UserID,
+    FullName,
+    Username,
+    PhoneNumber,
+    Points,
+    Status,
+    YearsOfExp,
+    MainSpecialization,
+    FSubSpecialization,
+    SSubSpecialization,
+    EducationQualification,
+    AcademicMajor,
+    LawyerPhoto,
+    'lawyer' AS UserType,
+    Password
+FROM lawyer 
+WHERE Username = ?";
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $username);
 $stmt->execute();
@@ -105,7 +122,7 @@ if ($result && $result->num_rows > 0) {
         error_log("🎉 تسجيل الدخول ناجح للمحامي");
         
         echo json_encode([
-            "success" => true, 
+            "success" => true,
             "message" => "تم تسجيل الدخول بنجاح",
             "user" => [
                 "id" => $user['UserID'],
@@ -113,10 +130,19 @@ if ($result && $result->num_rows > 0) {
                 "fullName" => $user['FullName'],
                 "phoneNumber" => $user['PhoneNumber'],
                 "username" => $user['Username'],
+                "points" => $user['Points'],
+                "status" => $user['Status'],
+                "yearsOfExp" => $user['YearsOfExp'],
+                "mainSpecialization" => $user['MainSpecialization'],
+                "fSubSpecialization" => $user['FSubSpecialization'],
+                "sSubSpecialization" => $user['SSubSpecialization'],
+                "educationQualification" => $user['EducationQualification'],
+                "academicMajor" => $user['AcademicMajor'],
+                "LawyerPhoto" => $user['LawyerPhoto'],
                 "isAdmin" => false,
                 "isLawyer" => true
             ]
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
         exit;
     } else {
         error_log("❌ فشل التحقق للمحامي - كلمة المرور لا تطابق");
