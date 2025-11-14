@@ -15,19 +15,25 @@ import 'pages/otp_screen.dart';
 import 'pages/lawyer_requests_page.dart';
 import 'pages/lawyer_availability_page.dart';
 import 'pages/lawyer_more_page.dart';
+import 'pages/delete_lawyer_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 
 void main() async{
-  runApp(const MyApp());
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-);
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
 OneSignal.Debug.setLogLevel(OSLogLevel.verbose); 
 OneSignal.initialize('52e7af05-5276-4ccd-9715-1cb9820f4361');
 OneSignal.Notifications.requestPermission(true);
+runApp(const MyApp());
+
   }
 
 class MyApp extends StatelessWidget {
@@ -68,6 +74,7 @@ class MyApp extends StatelessWidget {
         '/lawyer/requests':     (_) => const LawyerRequestsPage(),
         '/lawyer/availability': (_) => const LawyerAvailabilityPage(),
         '/lawyer/more':         (_) => const LawyerMorePage(),
+        '/DeleteLawyerPage': (context) => const DeleteLawyerPage(),
 
 
       },
