@@ -8,7 +8,7 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
 
-require_once __DIR__ . '/config.php';
+
 
 $sql = "SELECT 
             LawyerID, 
@@ -39,7 +39,10 @@ if ($result && $result->num_rows > 0) {
             $avgRate = round(floatval($rateRow['avgRate'] ?? 0), 1);
         }
 
-    
+     $imagePath = "";
+        if (!empty($row['LawyerPhoto'])) {
+            $imagePath = "http://" . $_SERVER['HTTP_HOST'] . "/mujeer_api/uploads/" . $row['LawyerPhoto'];
+        }
         $lawyers[] = [
             "id" => $row['LawyerID'],
             "name" => $row['FullName'],
@@ -50,7 +53,7 @@ if ($result && $result->num_rows > 0) {
             "ssubSpeciality" => $row['SSubSpecialization'],
             "academic" => $row['AcademicMajor'],
             "degree" => $row['EducationQualification'],
-            "image" => $row['LawyerPhoto'], // مسار الصورة كما في قاعدة البيانات
+            "image" => $imagePath, // مسار الصورة كما في قاعدة البيانات
             "price" => floatval($row['Price'])
         ];
     }
