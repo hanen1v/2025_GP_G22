@@ -1,0 +1,413 @@
+import 'package:flutter/material.dart';
+import '../widgets/app_bottom_nav.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'case_details_page.dart';
+
+class LawyerDetailsPage extends StatefulWidget {
+  final int lawyerId;
+
+  const LawyerDetailsPage({super.key, required this.lawyerId});
+
+  @override
+  State<LawyerDetailsPage> createState() => _LawyerDetailsPageState();
+}
+
+class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
+  Map<String, dynamic>? lawyer;
+  bool isLoading = true;
+
+  // ⭐ التقييمات
+  Map<String, dynamic>? ratings;
+  bool loadingRatings = true;
+
+  // جلب بيانات المحامي
+  Future<void> _fetchLawyerDetails() async {
+    final url = Uri.parse(
+        'http://10.0.2.2:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        setState(() {
+          lawyer = jsonDecode(response.body);
+          isLoading = false;
+        });
+      } else {
+        setState(() => isLoading = false);
+      }
+    } catch (e) {
+      print('خطأ أثناء جلب البيانات: $e');
+      setState(() => isLoading = false);
+    }
+  }
+
+  // جلب التقييمات
+  Future<void> _fetchRatings() async {
+    final url = Uri.parse(
+        'http://10.0.2.2:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          ratings = jsonDecode(response.body);
+          loadingRatings = false;
+        });
+      } else {
+        setState(() => loadingRatings = false);
+      }
+    } catch (e) {
+      print('خطأ أثناء جلب التقييمات: $e');
+      setState(() => loadingRatings = false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLawyerDetails();
+    _fetchRatings();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[100],
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                  color: Color.fromARGB(255, 6, 61, 65)))
+          : Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 100, 16, 50),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: const [
+                        BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 8,
+                            offset: Offset(0, 3)),
+                      ],
+                    ),
+
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // الصورة والتقييم
+                        CircleAvatar(
+                          radius: 45,
+                          backgroundImage: NetworkImage(lawyer!['image']),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.star,
+                                color: Colors.amber, size: 22),
+                            const SizedBox(width: 4),
+                            Text(
+                              lawyer!['rating'].toString(),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
+
+                        // رقم الرخصة
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 4, horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            'رقم الرخصة: ${lawyer!['license']}',
+                            style: TextStyle(
+                                color: Colors.grey[700], fontSize: 12),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        Text(
+                          lawyer!['name'],
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color.fromARGB(255, 6, 61, 65),
+                          ),
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _roundedBox(Icons.work_outline, 'الخبرة',
+                                lawyer!['experience']),
+                            _roundedBox(Icons.school_outlined,
+                                'التخصص الأكاديمي', lawyer!['academic']),
+                            _roundedBox(Icons.workspace_premium_outlined,
+                                'الدرجة العلمية', lawyer!['degree']),
+                          ],
+                        ),
+
+                        const SizedBox(height: 50),
+
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            'التخصصات القانونية:',
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 6, 61, 65),
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            _smallTag(lawyer!['speciality']),
+                            _smallTag(lawyer!['subSpeciality']),
+                            _smallTag(lawyer!['ssubSpeciality']),
+                          ],
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        // ⭐⭐ قسم التقييمات
+                        loadingRatings
+                            ? const CircularProgressIndicator(
+                                color: Color.fromARGB(255, 6, 61, 65))
+                            : ratings == null
+                                ? const Text("لا يوجد تقييمات")
+                                : _buildRatingsSection(),
+
+                        const SizedBox(height: 40),
+
+                        // زر حجز موعد
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                            Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => CaseDetailsPage(
+      lawyerId: widget.lawyerId,
+       price: (lawyer!['price'] as num).toDouble(),
+    ),
+  ),
+);
+
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  const Color.fromARGB(255, 6, 61, 65),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: const Text(
+                              'حجز موعد',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  top: 45,
+                  right: 16,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.grey),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ],
+            ),
+      bottomNavigationBar: const AppBottomNav(currentRoute: '/search'),
+    );
+  }
+
+  // ---------------------------- Widgets ----------------------------
+
+  Widget _roundedBox(IconData icon, String title, String value) {
+    return Container(
+      width: 100,
+      height: 100,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.grey[700], size: 22),
+          const SizedBox(height: 6),
+          Text(title,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center),
+          const SizedBox(height: 4),
+          Text(value,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
+
+  Widget _smallTag(String text) {
+    if (text.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(color: Colors.black87, fontSize: 13),
+      ),
+    );
+  }
+
+  // ⭐⭐⭐ واجهة التقييمات، شكل مطابق للصورة
+  Widget _buildRatingsSection() {
+    final avg = ratings!['average'];
+    final count = ratings!['count'];
+    final stars = ratings!['stars'];
+
+    double percent(int s) {
+      if (count == 0) return 0;
+      return (stars[s.toString()] / count) * 100;
+    }
+
+    return Column(
+      children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text(
+            "التقييمات:",
+            style: TextStyle(
+              color: Color.fromARGB(255, 6, 61, 65),
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 15),
+
+        Align(
+  alignment: Alignment.centerRight,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.end,
+    children: [
+      Text(
+        "$avg / 5",
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+        textAlign: TextAlign.right,
+      ),
+      SizedBox(height: 4),
+      Text(
+        "$count من التقييمات",
+        style: const TextStyle(
+          fontSize: 14,
+          color: Colors.grey,
+        ),
+        textAlign: TextAlign.right,
+      ),
+    ],
+  ),
+),
+
+
+
+
+
+        const SizedBox(height: 15),
+
+        Column(
+          children: List.generate(5, (i) {
+            int star = 5 - i;
+            double p = percent(star);
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Text("${p.toStringAsFixed(2)}%"),
+                  const SizedBox(width: 6),
+
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        Container(
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        Container(
+                          height: 8,
+                          width: (p * 2),
+                          decoration: BoxDecoration(
+                            color: star == 5
+                                ? Color.fromARGB(255, 6, 61, 65)
+                                : Colors.grey[400],
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 6),
+
+                  Row(
+                    children: List.generate(
+                      star,
+                      (x) =>
+                          const Icon(Icons.star, size: 18, color: Colors.amber),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+}
