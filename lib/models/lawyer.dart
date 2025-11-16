@@ -11,20 +11,23 @@ class Lawyer {
     required this.rating,
   });
 
-  factory Lawyer.fromJson(Map<String, dynamic> j) {
-    // نقرأ التقييم من Rating فقط (اللي يجي من feedback.Rate)
-    final rating = double.tryParse('${j['Rating'] ?? 0}') ?? 0.0;
+factory Lawyer.fromJson(Map<String, dynamic> j) {
+  final idVal    = j['LawyerID'] ?? j['lawyer_id'] ?? j['id'];
+  final nameVal  = j['FullName'] ?? j['full_name'] ?? j['name'] ?? '';
+  final rawPhoto = (j['LawyerPhoto'] ?? j['photo'] ?? j['image'] ?? '').toString().trim();
+  final ratingVal= j['Rating'] ?? j['rating'] ?? 0;
 
-    // نكوّن رابط الصورة الكامل
-    final photoName = (j['LawyerPhoto'] ?? '').toString().trim();
-    const baseUrl = 'http://10.0.2.2:8888/mujeer_api'; // غيّريه لو تغيّر المسار
-    final fullPhotoUrl = photoName.isEmpty ? '' : '$baseUrl/uploads/$photoName';
+  const baseUrl = 'http://10.0.2.2:8888/mujeer_api';
+  final photoUrl = rawPhoto.isEmpty
+      ? ''
+      : (rawPhoto.startsWith('http') ? rawPhoto : '$baseUrl/uploads/$rawPhoto');
 
-    return Lawyer(
-      id: int.tryParse('${j['LawyerID']}') ?? 0,
-      fullName: (j['FullName'] ?? '').toString(),
-      photoUrl: fullPhotoUrl,
-      rating: rating,
-    );
-  }
+  return Lawyer(
+    id: int.tryParse('$idVal') ?? 0,
+    fullName: nameVal.toString(),
+    photoUrl: photoUrl,
+    rating: double.tryParse('$ratingVal') ?? 0.0,
+  );
+}
+
 }

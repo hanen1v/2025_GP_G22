@@ -7,7 +7,7 @@ import 'package:iconsax/iconsax.dart';
 import '../models/lawyer_request.dart';
 import '../services/api_client.dart';
 import '../services/session.dart';
-
+import '../widgets/admin_bottom_nav.dart';
 class RequestManagementPage extends StatefulWidget {
   const RequestManagementPage({super.key});
 
@@ -101,6 +101,7 @@ class _RequestManagementPageState extends State<RequestManagementPage> {
                     onDecline: _onDecline,
                   ),
                 ),
+                bottomNavigationBar: const AdminBottomNav(currentRoute: '/requestsManagement'),
               );
              }
           }
