@@ -66,14 +66,14 @@ class _PaymentPageState extends State<PaymentPage> {
       ok = false;
     } else {
       int month = int.parse(expiry.split('/')[0]);
-      int year = int.parse(expiry.split('/')[1]) + 2000; // 25 -> 2025 مثلاً
+      int year = int.parse(expiry.split('/')[1]) + 2000; 
       if (month < 1 || month > 12) {
         _expiryError = 'شهر غير صالح';
         ok = false;
       } else {
         final now = DateTime.now();
         final lastDay =
-            DateTime(year, month + 1, 0); // آخر يوم في شهر الانتهاء
+            DateTime(year, month + 1, 0); 
         if (lastDay.isBefore(DateTime(now.year, now.month, now.day))) {
           _expiryError = 'انتهت صلاحية البطاقة';
           ok = false;
@@ -155,14 +155,14 @@ final int realClientId = currentUser.id;
             ),
           ),
 
-          // زر الإغلاق (X)
+         
           Positioned(
             top: 8,
             right: 8,
             child: GestureDetector(
               onTap: () {
-                Navigator.pop(context); // اغلاق البوب-أب
-                Navigator.popUntil(context, (route) => route.isFirst); // الرجوع للهوم بيج
+                Navigator.pop(context); 
+                Navigator.popUntil(context, (route) => route.isFirst); 
               },
               child: const Icon(
                 Icons.close,
@@ -285,10 +285,10 @@ final int realClientId = currentUser.id;
 
                       const SizedBox(height: 24),
 
-                      // الصف: تاريخ الانتهاء + CVV
+                     
                       Row(
                         children: [
-                          // CVV يسار
+                         
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,7 +311,7 @@ final int realClientId = currentUser.id;
                             ),
                           ),
                           const SizedBox(width: 16),
-                          // تاريخ الانتهاء يمين
+                         
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
@@ -336,7 +336,7 @@ final int realClientId = currentUser.id;
 
                       const SizedBox(height: 30),
 
-                      // عرض السعر
+                      
                       Align(
                         alignment: Alignment.centerRight,
                         child: Text(
@@ -388,9 +388,10 @@ final int realClientId = currentUser.id;
         ),
       ),
 
-      // نفس الناف بار
+      
       bottomNavigationBar:
           const AppBottomNav(currentRoute: '/payment'),
     );
   }
 }
+
