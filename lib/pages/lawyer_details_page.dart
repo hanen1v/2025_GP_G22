@@ -17,11 +17,11 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
   Map<String, dynamic>? lawyer;
   bool isLoading = true;
 
-  // ⭐ التقييمات
+  //  التقييمات
   Map<String, dynamic>? ratings;
   bool loadingRatings = true;
 
-  // جلب بيانات المحامي
+  //  بيانات المحامي
   Future<void> _fetchLawyerDetails() async {
     final url = Uri.parse(
         'http://10.0.2.2:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
@@ -186,7 +186,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
 
                         const SizedBox(height: 30),
 
-                        // ⭐⭐ قسم التقييمات
+                        //  قسم التقييمات
                         loadingRatings
                             ? const CircularProgressIndicator(
                                 color: Color.fromARGB(255, 6, 61, 65))
@@ -299,7 +299,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
     );
   }
 
-  // ⭐⭐⭐ واجهة التقييمات، شكل مطابق للصورة
+  // واجهة التقييمات
   Widget _buildRatingsSection() {
     final avg = ratings!['average'];
     final count = ratings!['count'];
@@ -411,3 +411,4 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
     );
   }
 }
+
