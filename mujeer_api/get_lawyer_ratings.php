@@ -13,7 +13,7 @@ if (!isset($_GET['id'])) {
 
 $lawyerId = intval($_GET['id']);
 
-// ⭐ استخدمي $conn وليس $connection
+
 $sql = "SELECT Rate FROM feedback WHERE LawyerID = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $lawyerId);
@@ -65,3 +65,4 @@ echo json_encode([
 
 $conn->close();
 ?>
+
