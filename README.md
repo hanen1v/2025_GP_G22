@@ -14,7 +14,7 @@ Mujeer supports Saudi Arabia’s digital-justice goals by implementing a **manua
 - **APIs & Services:**
   - **OpenAI GPT-4o API** – Generates customized legal contract drafts using artificial intelligence.  
   - **Agora API** – Enables real-time chat and communication between clients and lawyers.  
-  - **Twilio API** – Handles OTP (One-Time Password) verification for secure account login.
+  - **Firebase API** – Handles OTP (One-Time Password) verification for secure account login.
 
 ## Launching Instructions
 Follow the steps below to run the Mujeer application in a local development environment.
