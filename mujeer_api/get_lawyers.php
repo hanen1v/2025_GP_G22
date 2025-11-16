@@ -53,7 +53,7 @@ if ($result && $result->num_rows > 0) {
             "ssubSpeciality" => $row['SSubSpecialization'],
             "academic" => $row['AcademicMajor'],
             "degree" => $row['EducationQualification'],
-            "image" => $imagePath, // مسار الصورة كما في قاعدة البيانات
+            "image" => $imagePath, 
             "price" => floatval($row['Price'])
         ];
     }
