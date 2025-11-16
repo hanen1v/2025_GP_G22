@@ -340,6 +340,24 @@ static Future<void> uploadLicenseUpdateFile({
     throw Exception('فشل رفع ملف الرخصة: HTTP ${response.statusCode}: $respBody');
   }
 }
+//delete lawyer function
+  static Future<void> deleteLawyer({
+    required int lawyerId,
+    required String base,
+  }) async {
+    final res = await http.post(
+      Uri.parse('$base/delete_lawyer.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'LawyerID': lawyerId}),
+    );
+
+    if (res.statusCode != 200) {
+      if (res.statusCode == 409) {
+        // decline delete (lawyer have appoinments)
+        throw Exception('LAWYER_HAS_APPOINTMENTS');
+      }
+      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    }
 
 static Future<List<Appointment>> getClientAppointments(int clientId) async {
   final res = await http.post(
@@ -383,5 +401,15 @@ static Future<void> cancelAppointment(int appointmentId) async {
 }
 
 
+    final body = json.decode(res.body);
+    if (body is! Map || body['ok'] != true) {
+      final code = (body is Map) ? (body['code']?.toString() ?? '') : '';
+      final msg = (body is Map) ? (body['message']?.toString() ?? 'Failed to delete lawyer') : '';
+      if (code.toUpperCase().contains('APPOINT')) {
+        throw Exception('LAWYER_HAS_APPOINTMENTS');
+      }
+      throw Exception(msg);
+    }
+  }
 }
 
