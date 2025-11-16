@@ -3,8 +3,10 @@ import 'package:http/http.dart' as http;
 import '../models/lawyer.dart';
 import '../models/user.dart';
 import '../models/lawyer_request.dart';
+import '../models/appointment.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:flutter/material.dart';
+
 
 class ApiClient {
   // مهم:
@@ -12,6 +14,10 @@ class ApiClient {
   static const String base = 'http://10.0.2.2:8888/mujeer_api';
   // على iOS Simulator أو Flutter Web على نفس الجهاز:
   // static const String base = 'http://localhost:8888/mujeer_api';
+
+
+  static const String profileImageBase = "$base/uploads";
+
 
   static Future<List<Lawyer>> getLatestLawyers() async {
     final res = await http.get(Uri.parse('$base/lawyers_latest.php'));
@@ -334,6 +340,48 @@ static Future<void> uploadLicenseUpdateFile({
     throw Exception('فشل رفع ملف الرخصة: HTTP ${response.statusCode}: $respBody');
   }
 }
+
+static Future<List<Appointment>> getClientAppointments(int clientId) async {
+  final res = await http.post(
+    Uri.parse('$base/get_client_appointments.php'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'clientId': clientId}),
+  );
+
+  if (res.statusCode < 200 || res.statusCode >= 300) {
+    throw Exception('HTTP ${res.statusCode}: ${res.body}');
+  }
+
+  final body = jsonDecode(res.body);
+  if (body is! Map || body['success'] != true) {
+    throw Exception(body['message'] ?? 'فشل تحميل المواعيد');
+  }
+
+  final List list = body['appointments'] ?? [];
+  return list
+      .cast<Map<String, dynamic>>()
+      .map((m) => Appointment.fromJson(m))
+      .toList();
+}
+
+
+static Future<void> cancelAppointment(int appointmentId) async {
+  final res = await http.post(
+    Uri.parse('$base/cancel_appointment.php'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'appointmentId': appointmentId}),
+  );
+
+  if (res.statusCode < 200 || res.statusCode >= 300) {
+    throw Exception('HTTP ${res.statusCode}: ${res.body}');
+  }
+
+  final body = jsonDecode(res.body);
+  if (body is! Map || body['success'] != true) {
+    throw Exception(body['message'] ?? 'فشل إلغاء الموعد');
+  }
+}
+
 
 }
 
