@@ -162,7 +162,7 @@ final int realClientId = currentUser.id;
             child: GestureDetector(
               onTap: () {
                 Navigator.pop(context); 
-                Navigator.popUntil(context, (route) => route.isFirst); 
+                Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
               },
               child: const Icon(
                 Icons.close,
