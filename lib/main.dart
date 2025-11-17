@@ -16,6 +16,10 @@ import 'pages/lawyer_requests_page.dart';
 import 'pages/lawyer_availability_page.dart';
 import 'pages/lawyer_more_page.dart';
 import 'pages/delete_lawyer_page.dart';
+import 'pages/feedback_page.dart';
+import 'pages/thank_you_page.dart';
+//import 'pages/lawyer_profile_page.dart';
+//import 'pages/lawyer_update_license_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -23,11 +27,15 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-
-  if (Firebase.apps.isEmpty) {
-    //await Firebase.initializeApp(
-      //options: DefaultFirebaseOptions.currentPlatform,
-    //);
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('✅ Firebase initialized successfully');
+  } catch (e) {
+    // إذا كان مسبقاً موجود، استخدمه
+    Firebase.app();
+    print('✅ Using existing Firebase app');
   }
 OneSignal.Debug.setLogLevel(OSLogLevel.verbose); 
 OneSignal.initialize('52e7af05-5276-4ccd-9715-1cb9820f4361');
@@ -56,7 +64,7 @@ class MyApp extends StatelessWidget {
         textDirection: TextDirection.rtl, // ← اتجاه عربي
         child: child!,
       ),
-      initialRoute: '/requestsManagement',
+      initialRoute: '/welcome',
       routes: {
         '/welcome': (context) => const WelcomePage(),
          '/otp_screen': (context) => const OTPScreen(phoneNumber: '+966500000000'),
@@ -75,6 +83,8 @@ class MyApp extends StatelessWidget {
         '/lawyer/availability': (_) => const LawyerAvailabilityPage(),
         '/lawyer/more':         (_) => const LawyerMorePage(),
         '/DeleteLawyerPage': (context) => const DeleteLawyerPage(),
+        '/FeedbackPage': (context) => const FeedbackPage(),
+        '/thankYouPage': (context) => const ThankYouPage(),
 
 
       },

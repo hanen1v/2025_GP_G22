@@ -16,7 +16,10 @@ $lawyerId = intval($_GET['lawyer_id']);
 
 $sql = "SELECT id, day, time 
         FROM timeslot 
-        WHERE lawyer_id = ? AND is_booked = 0";
+        WHERE lawyer_id = ? AND is_booked = 0
+        ORDER BY 
+            FIELD(day, 'sunday','monday','tuesday','wednesday','thursday','friday','saturday'),
+            time ASC";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $lawyerId);
