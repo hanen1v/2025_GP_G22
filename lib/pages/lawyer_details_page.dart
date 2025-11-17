@@ -17,9 +17,13 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
   Map<String, dynamic>? lawyer;
   bool isLoading = true;
 
-  //  التقييمات
+  // التقييمات
   Map<String, dynamic>? ratings;
   bool loadingRatings = true;
+
+  // التعليقات
+  List<dynamic> comments = [];
+  bool loadingComments = true;
 
   //  بيانات المحامي
   Future<void> _fetchLawyerDetails() async {
@@ -36,7 +40,6 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
         setState(() => isLoading = false);
       }
     } catch (e) {
-      print('خطأ أثناء جلب البيانات: $e');
       setState(() => isLoading = false);
     }
   }
@@ -57,8 +60,26 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
         setState(() => loadingRatings = false);
       }
     } catch (e) {
-      print('خطأ أثناء جلب التقييمات: $e');
       setState(() => loadingRatings = false);
+    }
+  }
+
+  // جلب التعليقات
+  Future<void> _fetchComments() async {
+    final url = Uri.parse(
+        'http://10.0.2.2:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
+    try {
+      final res = await http.get(url);
+      if (res.statusCode == 200) {
+        setState(() {
+          comments = jsonDecode(res.body);
+          loadingComments = false;
+        });
+      } else {
+        setState(() => loadingComments = false);
+      }
+    } catch (e) {
+      setState(() => loadingComments = false);
     }
   }
 
@@ -67,6 +88,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
     super.initState();
     _fetchLawyerDetails();
     _fetchRatings();
+    _fetchComments();
   }
 
   @override
@@ -75,8 +97,8 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
       backgroundColor: Colors.grey[100],
       body: isLoading
           ? const Center(
-              child: CircularProgressIndicator(
-                  color: Color.fromARGB(255, 6, 61, 65)))
+              child:
+                  CircularProgressIndicator(color: Color.fromARGB(255, 6, 61, 65)))
           : Stack(
               children: [
                 SingleChildScrollView(
@@ -94,7 +116,6 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                             offset: Offset(0, 3)),
                       ],
                     ),
-
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -129,8 +150,8 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                           ),
                           child: Text(
                             'رقم الرخصة: ${lawyer!['license']}',
-                            style: TextStyle(
-                                color: Colors.grey[700], fontSize: 12),
+                            style:
+                                TextStyle(color: Colors.grey[700], fontSize: 12),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -186,13 +207,18 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
 
                         const SizedBox(height: 30),
 
-                        //  قسم التقييمات
+                        // ====== قسم التقييمات ======
                         loadingRatings
                             ? const CircularProgressIndicator(
                                 color: Color.fromARGB(255, 6, 61, 65))
-                            : ratings == null
+                            : (ratings == null
                                 ? const Text("لا يوجد تقييمات")
-                                : _buildRatingsSection(),
+                                : _buildRatingsSection()),
+
+                        const SizedBox(height: 40),
+
+                        // ====== قسم التعليقات ======
+                        _buildCommentsSection(),
 
                         const SizedBox(height: 40),
 
@@ -201,16 +227,16 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                            Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => CaseDetailsPage(
-      lawyerId: widget.lawyerId,
-       price: (lawyer!['price'] as num).toDouble(),
-    ),
-  ),
-);
-
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CaseDetailsPage(
+                                    lawyerId: widget.lawyerId,
+                                    price:
+                                        (lawyer!['price'] as num).toDouble(),
+                                  ),
+                                ),
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
@@ -299,7 +325,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
     );
   }
 
-  // واجهة التقييمات
+  // ====== قسم التقييمات القديم كدالة مستقلة ======
   Widget _buildRatingsSection() {
     final avg = ratings!['average'];
     final count = ratings!['count'];
@@ -324,39 +350,32 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
           ),
         ),
         const SizedBox(height: 15),
-
         Align(
-  alignment: Alignment.centerRight,
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.end,
-    children: [
-      Text(
-        "$avg / 5",
-        style: const TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
+          alignment: Alignment.centerRight,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                "$avg / 5",
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.right,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "$count من التقييمات",
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.right,
+              ),
+            ],
+          ),
         ),
-        textAlign: TextAlign.right,
-      ),
-      SizedBox(height: 4),
-      Text(
-        "$count من التقييمات",
-        style: const TextStyle(
-          fontSize: 14,
-          color: Colors.grey,
-        ),
-        textAlign: TextAlign.right,
-      ),
-    ],
-  ),
-),
-
-
-
-
-
         const SizedBox(height: 15),
-
         Column(
           children: List.generate(5, (i) {
             int star = 5 - i;
@@ -368,7 +387,6 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                 children: [
                   Text("${p.toStringAsFixed(2)}%"),
                   const SizedBox(width: 6),
-
                   Expanded(
                     child: Stack(
                       children: [
@@ -384,7 +402,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                           width: (p * 2),
                           decoration: BoxDecoration(
                             color: star == 5
-                                ? Color.fromARGB(255, 6, 61, 65)
+                                ? const Color.fromARGB(255, 6, 61, 65)
                                 : Colors.grey[400],
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -392,14 +410,12 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                       ],
                     ),
                   ),
-
                   const SizedBox(width: 6),
-
                   Row(
                     children: List.generate(
                       star,
-                      (x) =>
-                          const Icon(Icons.star, size: 18, color: Colors.amber),
+                      (x) => const Icon(Icons.star,
+                          size: 18, color: Colors.amber),
                     ),
                   ),
                 ],
@@ -410,5 +426,160 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
       ],
     );
   }
-}
 
+  // ====== قسم التعليقات الجديد ======
+  Widget _buildCommentsSection() {
+    if (loadingComments) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: Color.fromARGB(255, 6, 61, 65),
+        ),
+      );
+    }
+
+    if (comments.isEmpty) {
+      return const Text("لا توجد تعليقات");
+    }
+
+    final firstThree = comments.take(3).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text(
+            "آراء العملاء:",
+            style: TextStyle(
+              color: Color.fromARGB(255, 6, 61, 65),
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Column(
+          children: firstThree.map((c) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+              Row(
+  textDirection: TextDirection.ltr, 
+  children: [
+    
+    Row(
+      children: List.generate(
+        c["rate"],
+        (x) => const Icon(Icons.star, size: 18, color: Colors.amber),
+      ),
+    ),
+
+    const SizedBox(width: 8),
+
+   
+    Expanded(
+      child: Text(
+        c["username"],
+        textDirection: TextDirection.rtl, 
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 15,
+        ),
+      ),
+    ),
+  ],
+),
+
+
+                const SizedBox(height: 6),
+                Text(
+                  c["review"],
+                  style: const TextStyle(fontSize: 14),
+                ),
+                const Divider(height: 25),
+              ],
+            );
+          }).toList(),
+        ),
+        if (comments.length > 3)
+          Center(
+            child: TextButton(
+              onPressed: _showAllComments,
+              child: const Text(
+                "المزيد",
+                style: TextStyle(
+                    color: Color.fromARGB(255, 6, 61, 65),
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _showAllComments() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: comments.map((c) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  Row(
+  textDirection: TextDirection.ltr, 
+  children: [
+   
+    Row(
+      children: List.generate(
+        c["rate"],
+        (x) => const Icon(Icons.star, size: 18, color: Colors.amber),
+      ),
+    ),
+
+    const SizedBox(width: 8),
+
+    // الاسم يمين
+    Expanded(
+      child: Text(
+        c["username"],
+        textDirection: TextDirection.rtl, 
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 15,
+        ),
+      ),
+    ),
+  ],
+),
+
+
+                      const SizedBox(height: 6),
+                      Text(
+                        c["review"],
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      const Divider(),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
