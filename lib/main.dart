@@ -25,9 +25,9 @@ void main() async{
   WidgetsFlutterBinding.ensureInitialized();
 
   if (Firebase.apps.isEmpty) {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    //await Firebase.initializeApp(
+      //options: DefaultFirebaseOptions.currentPlatform,
+    //);
   }
 OneSignal.Debug.setLogLevel(OSLogLevel.verbose); 
 OneSignal.initialize('52e7af05-5276-4ccd-9715-1cb9820f4361');
