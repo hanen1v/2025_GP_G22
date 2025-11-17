@@ -369,7 +369,7 @@ static Future<void> uploadLicenseUpdateFile({
     }
   }
 
-static Future<List<Appointment>> getClientAppointments(int clientId) async {
+ Future<List<Appointment>> getClientAppointments(int clientId) async {
   final res = await http.post(
     Uri.parse('$base/get_client_appointments.php'),
     headers: {'Content-Type': 'application/json'},
@@ -393,7 +393,7 @@ static Future<List<Appointment>> getClientAppointments(int clientId) async {
 }
 
 
-static Future<void> cancelAppointment(int appointmentId) async {
+ Future<void> cancelAppointment(int appointmentId) async {
   final res = await http.post(
     Uri.parse('$base/cancel_appointment.php'),
     headers: {'Content-Type': 'application/json'},

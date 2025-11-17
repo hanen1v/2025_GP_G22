@@ -100,6 +100,7 @@ class _StatusPageState extends State<StatusPage> {
       final user = await Session.getUser();
       if (user == null || !user.isClient) {
         throw Exception('المستخدم الحالي ليس عميلًا');
+        
       }
 
       final res = await http.post(
