@@ -661,6 +661,7 @@ void _checkLicenseAvailability() async {
           ),
       ),
     );
+    print('✅ نتيجة OTP: $verified');
 
     return verified; // ترجع true أو false أو null
   }

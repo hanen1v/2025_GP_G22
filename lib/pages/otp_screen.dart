@@ -109,16 +109,17 @@ void initState() {
 
 // ✅ دالة جديدة للتوجيه حسب نوع التسجيل
 void _handleRegistrationSuccess() {
-  switch (widget.registrationType) {
-    case 'client':
-      Navigator.pushReplacementNamed(context, '/home');
-      break;
-    case 'lawyer':
-      Navigator.pushReplacementNamed(context, '/lawyer/more');
-      break;
-    default:
-      Navigator.pop(context, true);
-  }
+  Navigator.pop(context, true);
+    Future.delayed(Duration.zero, () {
+    switch (widget.registrationType) {
+      case 'client':
+        Navigator.pushNamed(context, '/home');
+        break;
+      case 'lawyer':
+        Navigator.pushNamed(context, '/lawyer/more');
+        break;
+    }
+  });
 }
 
   Future<void> _verifyOTP() async {

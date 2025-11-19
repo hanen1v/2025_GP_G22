@@ -101,62 +101,41 @@ $stmt->bind_param("sssssissssssss",
     $photo_file_name   // ⭐ اسم ملف الصورة
 );
 
-<<<<<<< HEAD
+// ⭐⭐ التصحيح: نفذ الإدخال أولاً ثم أرسل الإشعارات
 if ($stmt->execute()) {
     $lawyerId = $conn->insert_id;
     
     // ⭐ إضافة طلب للمشرفين
-    $request_sql = "INSERT INTO request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status) VALUES (1, ?, ?, ?, ?, 'Pending')";
-=======
-
-//get id to send notifications
-    $q = $conn->prepare("SELECT player_id FROM admin_devices");
-    $q->execute();
-    $res = $q->get_result();
-    $players = [];
-    while ($row = $res->fetch_assoc()) {
-        if (!empty($row['player_id'])) {
-            $players[] = $row['player_id'];         }
-    }
-    $q->close();
-
-    $pushResult = null;
-    if (!empty($players)) {
-        $title = 'طلب جديد';
-                $body  = "محامي جديد سجل الدخول";
-        $data  = [];
-
-        $pushResult = send_push($players, $title, $body, $data); 
-    }
-
-    
-if ($stmt->execute()) {
-    $lawyerId = $conn->insert_id;
-    
-    //  إضافة طلب للمشرفين ()
     $request_sql = "INSERT INTO request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status)
                     VALUES (1, ?, ?, ?, ?, 'Pending')";
->>>>>>> d314d5dd75ed36b3837bd2d6d2eab010344b0a09
     $request_stmt = $conn->prepare($request_sql);
     if ($request_stmt) {
         $request_stmt->bind_param("isss", $lawyerId, $license_file_name, $fullName, $licenseNumber);
         $request_stmt->execute();
         $request_stmt->close();
     }
-<<<<<<< HEAD
-    
-    echo json_encode([
-        "success" => true, 
-        "message" => "تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك",
-        "userId" => $lawyerId,
-        "licenseFileName" => $license_file_name,
-        "photoFileName" => $photo_file_name
-    ]);
-} else {
-    // ⭐ التحقق من وجود مستخدم مكرر
-=======
 
-    //  هنا نجيب بيانات المحامي اللي انضاف للتو ونرجعها في حقل user
+    // ⭐ إرسال إشعارات للمشرفين (بعد نجاح الإدخال)
+    $q = $conn->prepare("SELECT player_id FROM admin_devices");
+    $q->execute();
+    $res = $q->get_result();
+    $players = [];
+    while ($row = $res->fetch_assoc()) {
+        if (!empty($row['player_id'])) {
+            $players[] = $row['player_id'];
+        }
+    }
+    $q->close();
+
+    $pushResult = null;
+    if (!empty($players)) {
+        $title = 'طلب جديد';
+        $body  = "محامي جديد سجل الدخول";
+        $data  = [];
+        $pushResult = send_push($players, $title, $body, $data); 
+    }
+
+    // ⭐ جلب بيانات المحامي المسجل
     $user = null;
     $uRes = $conn->query("
         SELECT
@@ -183,9 +162,9 @@ if ($stmt->execute()) {
     }
 
     if ($user) {
-    $user['LawyerID'] = $lawyerId;   // عشان Dart يعرف إنه محامي
-    $user['UserType'] = 'lawyer';    // احتياط برضه
-}
+        $user['LawyerID'] = $lawyerId;
+        $user['UserType'] = 'lawyer';
+    }
 
     echo json_encode([
         "success"        => true,
@@ -193,12 +172,11 @@ if ($stmt->execute()) {
         "userId"         => $lawyerId,
         "licenseFileName"=> $license_file_name,
         "photoFileName"  => $photo_file_name,
-        "user"           => $user   //  أهم سطر
+        "user"           => $user
     ], JSON_UNESCAPED_UNICODE);
 
 } else {
-    //  التحقق من وجود مستخدم مكرر
->>>>>>> d314d5dd75ed36b3837bd2d6d2eab010344b0a09
+    // التحقق من وجود مستخدم مكرر
     if ($conn->errno == 1062) {
         echo json_encode(["success" => false, "message" => "اسم المستخدم أو رقم الجوال أو رقم الرخصة مسجل مسبقاً"]);
     } else {
