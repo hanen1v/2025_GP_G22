@@ -76,10 +76,7 @@ class _DeleteLawyerPageState extends State<DeleteLawyerPage> {
 
     setState(() => _deletingIds.add(lw.id));
     try {
-      await http.post(
-  Uri.parse('$base/delete_lawyer.php'),
-  body: {'lawyer_id': lw.id.toString()}
-);
+      await ApiClient.deleteLawyer(lawyerId: lw.id, base: base);
       setState(() => _lawyers.removeWhere((x) => x.id == lw.id));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -6,6 +6,8 @@ import 'package:http_parser/http_parser.dart';
 import 'otp_screen.dart';
 import '../services/session.dart';
 import '../models/user.dart';
+import '../services/api_client.dart';
+
 class LawyerRegisterPage extends StatefulWidget {
   const LawyerRegisterPage({super.key});
 

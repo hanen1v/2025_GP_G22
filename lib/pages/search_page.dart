@@ -3,6 +3,7 @@ import '../widgets/app_bottom_nav.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+ import 'lawyer_details_page.dart';
 
 
 class SearchPage extends StatefulWidget {
@@ -26,7 +27,7 @@ class _SearchPageState extends State<SearchPage> {
 
 
 Future<void> _fetchLawyers() async {
-  final url = Uri.parse('http://192.168.3.10:8888/mujeer_api/get_lawyers.php');
+  final url = Uri.parse('http://10.0.2.2:8888/mujeer_api/get_lawyers.php');
   try {
     final response = await http.get(url);
     if (response.statusCode == 200) {
@@ -293,13 +294,26 @@ onTap: () {
 
   Widget _buildLawyerCard(Map<String, dynamic> lawyer) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))],
-      ),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+     padding: const EdgeInsets.all(12),
+     decoration: BoxDecoration(
+       color: const Color.fromARGB(255, 255, 255, 255),
+       borderRadius: BorderRadius.circular(12),
+       boxShadow: [
+         BoxShadow(
+           color: const Color.fromARGB(255, 147, 147, 147).withOpacity(0.1),
+          blurRadius: 6,
+          offset: const Offset(0, 3),
+        ),
+      ],
+    ),
+      // margin: const EdgeInsets.only(bottom: 16),
+      // padding: const EdgeInsets.all(16),
+      // decoration: BoxDecoration(
+      //   color: Colors.white,
+      //   borderRadius: BorderRadius.circular(12),
+      //   boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))],
+      // ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -327,47 +341,226 @@ onTap: () {
             ],
           ),
           const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _infoChip(lawyer['experience']),
-              _infoChip(lawyer['speciality']),
-              _infoChip(lawyer['subSpeciality']),
-              _infoChip(lawyer['ssubSpeciality']),
-              _infoChip(lawyer['academic']),
-              _infoChip(lawyer['degree']),
-            ],
-          ),
+  Wrap(
+  spacing: 8,
+  runSpacing: 8,
+  children: [
+    if (lawyer['experience'] != null && lawyer['experience'].toString().isNotEmpty)
+      _infoChip(
+        Icons.work_outline,
+        lawyer['experience'],
+      ),
+    if (lawyer['academic'] != null && lawyer['academic'].toString().isNotEmpty)
+      _infoChip(
+        Icons.school_outlined,
+        lawyer['academic'],
+      ),
+    if (lawyer['speciality'] != null && lawyer['speciality'].toString().isNotEmpty)
+      _infoChip(
+        Icons.balance, // ⚖️ رمز العدالة للتخصص الرئيسي
+        lawyer['speciality'],
+      ),
+  ],
+),
+
+
           const SizedBox(height: 12),
           const Divider(color: Colors.grey, thickness: 0.5),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${lawyer['price']} ر.س',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 6, 61, 65))),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 6, 61, 65),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Text('حجز موعد',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              ),
-            ],
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    Text(
+      '${lawyer['price']} ر.س',
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: Color.fromARGB(255, 6, 61, 65),
+      ),
+    ),
+    GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+builder: (context) => LawyerDetailsPage(lawyerId: int.parse(lawyer['id'].toString())),
           ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 6, 61, 65),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Text(
+          'عرض التفاصيل',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ),
+// GestureDetector(
+//   onTap: () {
+//     Navigator.push(
+//       context,
+//       MaterialPageRoute(
+//         builder: (context) => LawyerDetailsPage(
+//           lawyerId: int.parse(lawyer['id'].toString()),
+//         ),
+//       ),
+//     );
+//   },
+//   child: Container(
+//     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+//     decoration: BoxDecoration(
+//       color: const Color.fromARGB(255, 6, 61, 65),
+//       borderRadius: BorderRadius.circular(10),
+//     ),
+//     child: const Text(
+//       'عرض التفاصيل',
+//       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+//     ),
+//   ),
+// ),
+
+  ],
+)
+,
         ],
       ),
     );
   }
 
-  Widget _infoChip(String text) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(10)),
-        child: Text(text, style: const TextStyle(fontSize: 13, color: Colors.black87)),
-      );
+// Widget _buildLawyerCard(Map<String, dynamic> lawyer) {
+//   return Container(
+//     margin: const EdgeInsets.symmetric(vertical: 8),
+//     padding: const EdgeInsets.all(12),
+//     decoration: BoxDecoration(
+//       color: Colors.white,
+//       borderRadius: BorderRadius.circular(12),
+//       boxShadow: [
+//         BoxShadow(
+//           color: Colors.grey.withOpacity(0.1),
+//           blurRadius: 6,
+//           offset: const Offset(0, 3),
+//         ),
+//       ],
+//     ),
+//     child: Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Row(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             // صورة المحامي
+//             ClipRRect(
+//               borderRadius: BorderRadius.circular(10),
+//               child: Image.network(
+//                 lawyer['image'],
+//                 width: 70,
+//                 height: 70,
+//                 fit: BoxFit.cover,
+//                 errorBuilder: (context, error, stackTrace) => const Icon(
+//                   Icons.person,
+//                   size: 70,
+//                   color: Colors.grey,
+//                 ),
+//               ),
+//             ),
+//             const SizedBox(width: 12),
+
+//             // الاسم والتقييم
+//             Expanded(
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Text(
+//                     lawyer['name'],
+//                     style: const TextStyle(
+//                       fontSize: 16,
+//                       fontWeight: FontWeight.bold,
+//                     ),
+//                   ),
+//                   const SizedBox(height: 4),
+//                   Row(
+//                     children: [
+//                       const Icon(Icons.star, color: Colors.amber, size: 18),
+//                       const SizedBox(width: 4),
+//                       Text(
+//                         "${lawyer['rating']}",
+//                         style: const TextStyle(fontSize: 14),
+//                       ),
+//                     ],
+//                   ),
+//                 ],
+//               ),
+//             ),
+//           ],
+//         ),
+
+//         const SizedBox(height: 10),
+
+        
+//         Row(
+//           mainAxisAlignment: MainAxisAlignment.start,
+//           children: [
+//             _infoChip(Icons.work_outline, lawyer['experience']),      // 🧳 الخبرة
+//             const SizedBox(width: 8),
+//             _infoChip(Icons.balance, lawyer['speciality']),            // ⚖️ التخصص الرئيسي
+//             const SizedBox(width: 8),
+//             _infoChip(Icons.school_outlined, lawyer['academic']),      // 🎓 المؤهل الأكاديمي
+//           ],
+//         ),
+
+//         const SizedBox(height: 10),
+
+//         // السعر
+//         Text(
+//           "السعر: ${lawyer['price']} ريال",
+//           style: const TextStyle(
+//             fontSize: 14,
+//             color: Colors.black87,
+//             fontWeight: FontWeight.w500,
+//           ),
+//         ),
+//       ],
+//     ),
+//   );
+// }
+
+
+  Widget _infoChip(IconData icon, String? label) {
+  if (label == null || label.isEmpty) return const SizedBox.shrink();
+
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+     decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(10)), 
+    // padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    // decoration: BoxDecoration(
+    //   color: const Color(0xFFF9FAFB), // الرمادي الفاتح مثل أول
+    //   borderRadius: BorderRadius.circular(20),
+    //   border: Border.all(color: const Color(0xFFE5E7EB)), // نفس لون الحدود القديم
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 18, color: const Color(0xFF374151)), // نفس لون الأيقونة القديمة
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF374151),
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
 
   Widget _buildFab(BuildContext context) => Container(
         width: 65,

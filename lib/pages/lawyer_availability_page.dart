@@ -3,7 +3,7 @@ import 'package:iconsax/iconsax.dart';
 import '../services/api_client.dart';
 import '../services/session.dart';
 import '../models/user.dart';
-
+import '../widgets/lawyer_bottom_nav.dart';
 class LawyerAvailabilityPage extends StatefulWidget {
   const LawyerAvailabilityPage({super.key});
 
@@ -482,6 +482,7 @@ Widget build(BuildContext context) {
           ),
         ),
       ),
+      bottomNavigationBar: const LawyerBottomNav(currentRoute: '/lawyer/availability'),
     ),
   );
 }

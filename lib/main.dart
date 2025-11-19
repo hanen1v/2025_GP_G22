@@ -18,6 +18,10 @@ import 'pages/lawyer_more_page.dart';
 import 'pages/delete_lawyer_page.dart';
 import 'pages/identity_verification_page.dart';
 import 'pages/reset_password_page.dart';
+import 'pages/feedback_page.dart';
+import 'pages/thank_you_page.dart';
+//import 'pages/lawyer_profile_page.dart';
+//import 'pages/lawyer_update_license_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -31,28 +35,16 @@ void main() async {
     );
     print('✅ Firebase initialized successfully');
   } catch (e) {
-    if (e.toString().contains('duplicate-app')) {
-      print('✅ Firebase already initialized');
-    } else {
-      print('❌ Firebase initialization error: $e');
-      rethrow;
-    }
+    // إذا كان مسبقاً موجود، استخدمه
+    Firebase.app();
+    print('✅ Using existing Firebase app');
   }
-  
-  OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
-  
-  // انتظر قليلاً قبل تهيئة OneSignal
-  await Future.delayed(const Duration(seconds: 1));
-  
-  OneSignal.initialize("52e7af05-5276-4ccd-9715-1cb9820f4361");
-  
-  // انتظر أكثر قبل طلب الإذن
-  await Future.delayed(const Duration(seconds: 2));
-  
-  OneSignal.Notifications.requestPermission(true);
-  
-  runApp(const MyApp());
-}
+OneSignal.Debug.setLogLevel(OSLogLevel.verbose); 
+OneSignal.initialize('52e7af05-5276-4ccd-9715-1cb9820f4361');
+OneSignal.Notifications.requestPermission(true);
+runApp(const MyApp());
+
+  }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -63,15 +55,15 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Mujeer',
       theme: ThemeData(
-        fontFamily: 'Tajawal',
+        fontFamily: 'Tajawal', // ←   الخط موحد في كل التطبيق
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF5B4FE8)),
         textTheme: const TextTheme().apply(
-          bodyColor: Colors.black,
-          displayColor: Colors.black,
+          bodyColor: Colors.black, // لون النصوص العادية
+          displayColor: Colors.black, // لون العناوين
         ),
       ),
       builder: (context, child) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: TextDirection.rtl, // ← اتجاه عربي
         child: child!,
       ),
       initialRoute: '/welcome',
@@ -94,6 +86,10 @@ class MyApp extends StatelessWidget {
         '/DeleteLawyerPage': (context) => const DeleteLawyerPage(),
         '/identity_verification': (context) => const IdentityVerificationPage(),
         '/reset_password': (context) => const ResetPasswordPage(username: ''),
+        '/FeedbackPage': (context) => const FeedbackPage(),
+        '/thankYouPage': (context) => const ThankYouPage(),
+
+
       },
     );
   }

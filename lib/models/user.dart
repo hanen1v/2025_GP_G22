@@ -9,6 +9,14 @@ class User {
   final DateTime? registrationDate;
   final String? status; // 'Approved' | 'Pending' | 'Rejected' | null
 
+  // 🟣 حقول المحامي الإضافية
+  final int? yearsOfExp;
+  final String? mainSpecialization;
+  final String? fSubSpecialization;
+  final String? sSubSpecialization;
+  final String? educationQualification;
+  final String? academicMajor;
+
   User({
     required this.id,
     required this.fullName,
@@ -19,6 +27,12 @@ class User {
     this.profileImage,
     this.registrationDate,
     this.status,
+    this.yearsOfExp,
+    this.mainSpecialization,
+    this.fSubSpecialization,
+    this.sSubSpecialization,
+    this.educationQualification,
+    this.academicMajor,
   });
 
   // من JSON لـ User (للاستقبال من السيرفر)
@@ -27,27 +41,60 @@ class User {
       id: _parseId(json),
       fullName: (json['FullName'] ?? json['fullName'] ?? '').toString(),
       username: (json['Username'] ?? json['username'] ?? '').toString(),
-      phoneNumber: (json['PhoneNumber'] ?? json['phoneNumber'] ?? '').toString(),
+      phoneNumber:
+          (json['PhoneNumber'] ?? json['phoneNumber'] ?? '').toString(),
       userType: _determineUserType(json),
       points: int.tryParse('${json['Points'] ?? json['points'] ?? 0}') ?? 0,
-      profileImage: (json['LawyerPhoto'] ?? json['ProfileImage'] ?? '').toString(),
-      registrationDate: _parseDate(json['RegistrationDate'] ?? json['created_at']),
+      profileImage:
+          (json['lawyerPhoto'] ??
+           json['LawyerPhoto'] ??
+           json['profileImage'] ??
+           json['ProfileImage'] ??
+           '').toString(),
+      registrationDate:
+          _parseDate(json['RegistrationDate'] ?? json['created_at']),
       status: (json['Status'] ?? json['status'])?.toString(),
+
+      // 🟣 الحقول الإضافية
+      yearsOfExp: int.tryParse(
+              '${json['YearsOfExp'] ?? json['yearsOfExp'] ?? ''}') ??
+          null,
+      mainSpecialization:
+          (json['MainSpecialization'] ?? json['mainSpecialization'])
+              ?.toString(),
+      fSubSpecialization:
+          (json['FSubSpecialization'] ?? json['fSubSpecialization'])
+              ?.toString(),
+      sSubSpecialization:
+          (json['SSubSpecialization'] ?? json['sSubSpecialization'])
+              ?.toString(),
+      educationQualification:
+          (json['EducationQualification'] ?? json['educationQualification'])
+              ?.toString(),
+      academicMajor:
+          (json['AcademicMajor'] ?? json['academicMajor'])?.toString(),
     );
   }
 
-  // من User لـ JSON (للالرسال للسيرفر)
+  // من User لـ JSON (للالرسال للسيرفر أو الحفظ)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'fullName': fullName,
-      'username': username,
-      'phoneNumber': phoneNumber,
-      'userType': userType,
-      'points': points,
-      'profileImage': profileImage,
-      'registrationDate': registrationDate?.toIso8601String(),
+      'FullName': fullName,
+      'Username': username,
+      'PhoneNumber': phoneNumber,
+      'UserType': userType,
+      'Points': points,
+      'ProfileImage': profileImage,
+      'RegistrationDate': registrationDate?.toIso8601String(),
       'Status': status,
+
+      'YearsOfExp': yearsOfExp,
+      'MainSpecialization': mainSpecialization,
+      'FSubSpecialization': fSubSpecialization,
+      'SSubSpecialization': sSubSpecialization,
+      'EducationQualification': educationQualification,
+      'AcademicMajor': academicMajor,
     };
   }
 
@@ -61,12 +108,18 @@ class User {
 
   // دالة مساعدة لتحويل ID
   static int _parseId(Map<String, dynamic> json) {
-  // يدعم رد تسجيل الدخول: UserID
-    if (json['UserID'] != null) return int.tryParse('${json['UserID']}') ?? 0;
-    
-    if (json['ClientID'] != null) return int.tryParse('${json['ClientID']}') ?? 0;
-    if (json['LawyerID'] != null) return int.tryParse('${json['LawyerID']}') ?? 0;
-    if (json['AdminID'] != null) return int.tryParse('${json['AdminID']}') ?? 0;
+    if (json['UserID'] != null) {
+      return int.tryParse('${json['UserID']}') ?? 0;
+    }
+    if (json['ClientID'] != null) {
+      return int.tryParse('${json['ClientID']}') ?? 0;
+    }
+    if (json['LawyerID'] != null) {
+      return int.tryParse('${json['LawyerID']}') ?? 0;
+    }
+    if (json['AdminID'] != null) {
+      return int.tryParse('${json['AdminID']}') ?? 0;
+    }
     return int.tryParse('${json['id'] ?? json['Id'] ?? 0}') ?? 0;
   }
 
@@ -75,7 +128,7 @@ class User {
     if (date == null) return null;
     try {
       return DateTime.parse(date.toString());
-    } catch (e) {
+    } catch (_) {
       return null;
     }
   }
@@ -88,14 +141,12 @@ class User {
   // دالة للحصول على الصورة (مع صورة افتراضية)
   String get profileImageUrl {
     if (profileImage == null || profileImage!.isEmpty) {
-      return ''; // يمكن إرجاع صورة افتراضية
+      return '';
     }
-    
     const baseUrl = 'http://192.168.3.10:8888/mujeer_api';
     return '$baseUrl/uploads/$profileImage';
   }
 
-  // دالة لعرض معلومات المستخدم بشكل جميل
   String get displayInfo {
     return '$fullName ($username) - ${_getUserTypeArabic()}';
   }
@@ -113,9 +164,8 @@ class User {
     }
   }
 
-  
-// دوال مساعدة لحالة المحامي
-    String get statusNormalized {
+  // دوال مساعدة لحالة المحامي
+  String get statusNormalized {
     final s = (status ?? '').trim().toLowerCase();
     if (s == 'approved') return 'Approved';
     if (s == 'rejected') return 'Rejected';
@@ -140,7 +190,49 @@ class User {
 
   @override
   int get hashCode => id.hashCode;
+
+
+    User copyWith({
+    String? fullName,
+    String? username,
+    String? phoneNumber,
+    String? userType,
+    int? points,
+    String? profileImage,
+    DateTime? registrationDate,
+    String? status,
+    
+    int? yearsOfExp,
+    String? mainSpecialization,
+    String? fSubSpecialization,
+    String? sSubSpecialization,
+    String? educationQualification,
+    String? academicMajor,
+  }) {
+    return User(
+      id: id,
+      fullName: fullName ?? this.fullName,
+      username: username ?? this.username,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      userType: userType ?? this.userType,
+      points: points ?? this.points,
+      profileImage: profileImage ?? this.profileImage,
+      registrationDate: registrationDate ?? this.registrationDate,
+      status: status ?? this.status,
+
+      yearsOfExp: yearsOfExp ?? this.yearsOfExp,
+      mainSpecialization: mainSpecialization ?? this.mainSpecialization,
+      fSubSpecialization: fSubSpecialization ?? this.fSubSpecialization,
+      sSubSpecialization: sSubSpecialization ?? this.sSubSpecialization,
+      educationQualification:
+        educationQualification ?? this.educationQualification,
+      academicMajor: academicMajor ?? this.academicMajor,
+    );
+  }
+
 }
+
+
 
 // نموذج لبيانات تسجيل الدخول
 class LoginRequest {

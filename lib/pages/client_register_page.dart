@@ -473,7 +473,7 @@ void dispose() {
 
       print('📤 إرسال بيانات العميل بعد التحقق: $requestData');
 
-      String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
+      String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
 
       var response = await http
           .post(

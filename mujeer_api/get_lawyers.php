@@ -8,6 +8,8 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
 
+
+
 $sql = "SELECT 
             LawyerID, 
             FullName, 
@@ -37,7 +39,14 @@ if ($result && $result->num_rows > 0) {
             $avgRate = round(floatval($rateRow['avgRate'] ?? 0), 1);
         }
 
+<<<<<<< HEAD
     
+=======
+     $imagePath = "";
+        if (!empty($row['LawyerPhoto'])) {
+            $imagePath = "http://" . $_SERVER['HTTP_HOST'] . "/mujeer_api/uploads/" . $row['LawyerPhoto'];
+        }
+>>>>>>> d314d5dd75ed36b3837bd2d6d2eab010344b0a09
         $lawyers[] = [
             "id" => $row['LawyerID'],
             "name" => $row['FullName'],
@@ -48,7 +57,11 @@ if ($result && $result->num_rows > 0) {
             "ssubSpeciality" => $row['SSubSpecialization'],
             "academic" => $row['AcademicMajor'],
             "degree" => $row['EducationQualification'],
+<<<<<<< HEAD
             "image" => $row['LawyerPhoto'], // مسار الصورة كما في قاعدة البيانات
+=======
+            "image" => $imagePath, 
+>>>>>>> d314d5dd75ed36b3837bd2d6d2eab010344b0a09
             "price" => floatval($row['Price'])
         ];
     }

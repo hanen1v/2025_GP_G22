@@ -368,10 +368,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           content: Text(
             '${user.fullName} - ${_getUserTypeArabic(user.userType)}',
-            style: TextStyle(
-              fontFamily: 'Tajawal',
-              color: Colors.black87,
-            ),
+            style: TextStyle(fontFamily: 'Tajawal', color: Colors.black87),
           ),
           actions: [
             TextButton(
@@ -404,15 +401,10 @@ class _LoginPageState extends State<LoginPage> {
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(fontFamily: 'Tajawal'),
-        ),
+        content: Text(message, style: const TextStyle(fontFamily: 'Tajawal')),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
