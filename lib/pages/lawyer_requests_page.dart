@@ -440,7 +440,7 @@ class _LawyerRequestsPageState extends State<LawyerRequestsPage> {
 
     if (ap.status == 'Active') {
       return InkWell(
-        onTap: () => _openChatWithClient(ap.clientId),
+        onTap: () => _openChatWithClient(ap),
         borderRadius: BorderRadius.circular(30),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
@@ -485,9 +485,26 @@ class _LawyerRequestsPageState extends State<LawyerRequestsPage> {
 
   // ================== LOGIC ==================
 
-  void _openChatWithClient(int clientId) {
-    debugPrint('فتح الشات مع العميل: $clientId');
+  //navigate to chat screen
+void _openChatWithClient(LawyerAppointment ap) async {
+  final user = await Session.getUser();
+  if (user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('يجب تسجيل الدخول أولاً')),
+    );
+    return;
   }
+  
+  Navigator.pushNamed(
+    context,
+    '/ChatScreen',
+    arguments: {
+      'senderID': 'L${user.id}',         
+      'receiverID': 'C${ap.clientId}',   
+      'appointmentID': ap.id,
+    },
+  );
+}
 
     /// عرض تفاصيل الموعد    
   void _showDetails(LawyerAppointment ap) {
