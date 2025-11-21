@@ -81,6 +81,7 @@ class _StatusPageState extends State<StatusPage> {
   bool _loading = true;
   String? _error;
 
+
   List<Appointment> get _filteredAppointments =>
       _allAppointments.where((ap) => ap.status == _currentTab).toList();
 
@@ -501,7 +502,7 @@ Directionality(
       label: 'محادثة المحامي',
       textColor: primaryGreen,
       bgColor: primaryGreen.withOpacity(0.08),
-      onTap: () => _openChatWithLawyer(ap.lawyerId),
+      onTap: () => _openChatWithLawyer(ap),
     );
   } else {
     // Past
@@ -687,17 +688,32 @@ Future<void> _cancelAppointment(int appointmentId) async {
 
 
 
-/// فتح صفحة الشات)
-void _openChatWithLawyer(int lawyerId) {
-  // Navigator.pushNamed(context, '/chatPage', arguments: {'lawyerId': lawyerId});
-  debugPrint('فتح الشات مع المحامي: $lawyerId');
+//navigate to chat screen
+void _openChatWithLawyer(Appointment ap) async {
+  final user = await Session.getUser();
+  if (user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('يجب تسجيل الدخول أولاً')),
+    );
+    return;
+  }
+  
+  Navigator.pushNamed(
+    context,
+    '/ChatScreen',
+    arguments: {
+      'senderID': 'C${user.id}',         
+      'receiverID': 'L${ap.lawyerId}',   
+      'appointmentID': ap.id,
+    },
+  );
 }
 
-/// فتح صفحة التقييم وتمرير ID المحامي
+//navigate to feedback page
 void _openRatingPage(int lawyerId) {
   Navigator.pushNamed(
     context,
-    '/', //  اسم صفحة التقييم  
+    '/FeedbackPage', //  اسم صفحة التقييم  
     arguments: {
       'lawyerId': lawyerId,
     },
