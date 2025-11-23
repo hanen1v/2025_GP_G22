@@ -3,9 +3,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
+import 'otp_screen.dart';
 import '../services/session.dart';
 import '../models/user.dart';
-
+import '../services/api_client.dart';
 
 class LawyerRegisterPage extends StatefulWidget {
   const LawyerRegisterPage({super.key});
@@ -21,7 +22,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   final _fullNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController(); // ← الجديد
+  final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _licenseController = TextEditingController();
   final _experienceController = TextEditingController();
@@ -40,7 +41,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   String? _selectedEducationLevel;
   String? _selectedAcademicMajor;
   
-  // لإظهار/إخفاء كلمة المرور - الجديد
+  // لإظهار/إخفاء كلمة المرور
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   
@@ -62,6 +63,143 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   ];
 
   bool _isLoading = false;
+  bool _isCheckingUsername = false;
+  bool _isCheckingPhone = false;
+  bool _isCheckingLicense = false;
+  bool _isUsernameAvailable = false;
+  bool _isPhoneAvailable = false;
+  bool _isLicenseAvailable = false;
+  String? _usernameMessage;
+  String? _phoneMessage;
+  String? _licenseMessage;
+  @override
+void initState() {
+  super.initState();
+  // إضافة مستمعين للتحقق الفوري
+  _usernameController.addListener(_checkUsernameAvailability);
+  _phoneController.addListener(_checkPhoneAvailability);
+  _licenseController.addListener(_checkLicenseAvailability);
+}
+
+@override
+void dispose() {
+  _usernameController.removeListener(_checkUsernameAvailability);
+  _phoneController.removeListener(_checkPhoneAvailability);
+  _licenseController.removeListener(_checkLicenseAvailability);
+  _fullNameController.dispose();
+  _usernameController.dispose();
+  _passwordController.dispose();
+  _confirmPasswordController.dispose();
+  _phoneController.dispose();
+  _licenseController.dispose();
+  _experienceController.dispose();
+  super.dispose();
+}
+
+// التحقق الفوري من اسم المستخدم
+void _checkUsernameAvailability() async {
+  String username = _usernameController.text.trim();
+  if (username.length < 3) {
+    setState(() {
+      _usernameMessage = null;
+      _isUsernameAvailable = false;
+    });
+    return;
+  }
+
+  setState(() => _isCheckingUsername = true);
+
+  try {
+    var response = await http.post(
+      Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'username': username,
+        'userType': 'lawyer'
+      }),
+    );
+
+    var result = json.decode(response.body);
+    setState(() {
+      _isUsernameAvailable = result['available'];
+      _usernameMessage = result['message'];
+    });
+  } catch (e) {
+    print('خطأ في التحقق من اسم المستخدم: $e');
+  } finally {
+    setState(() => _isCheckingUsername = false);
+  }
+}
+
+// التحقق الفوري من رقم الجوال
+void _checkPhoneAvailability() async {
+  String phone = _phoneController.text.trim();
+  if (phone.length < 10 || !RegExp(r'^05\d{8}$').hasMatch(phone)) {
+    setState(() {
+      _phoneMessage = null;
+      _isPhoneAvailable = false;
+    });
+    return;
+  }
+
+  setState(() => _isCheckingPhone = true);
+
+  try {
+    var response = await http.post(
+      Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'phoneNumber': phone,
+        'userType': 'lawyer'
+      }),
+    );
+
+    var result = json.decode(response.body);
+    setState(() {
+      _isPhoneAvailable = result['available'];
+      _phoneMessage = result['message'];
+    });
+  } catch (e) {
+    print('خطأ في التحقق من رقم الجوال: $e');
+  } finally {
+    setState(() => _isCheckingPhone = false);
+  }
+}
+
+// التحقق الفوري من رقم الرخصة
+void _checkLicenseAvailability() async {
+  String license = _licenseController.text.trim();
+  if (license.isEmpty) {
+    setState(() {
+      _licenseMessage = null;
+      _isLicenseAvailable = false;
+    });
+    return;
+  }
+
+  setState(() => _isCheckingLicense = true);
+
+  try {
+    var response = await http.post(
+      Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'licenseNumber': license,
+        'userType': 'lawyer'
+      }),
+    );
+
+    var result = json.decode(response.body);
+    setState(() {
+      _isLicenseAvailable = result['available'];
+      _licenseMessage = result['message'];
+    });
+  } catch (e) {
+    print('خطأ في التحقق من رقم الرخصة: $e');
+  } finally {
+    setState(() => _isCheckingLicense = false);
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -115,18 +253,8 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
               validator: (value) => value!.isEmpty ? 'الاسم الكامل مطلوب' : null,
             ),
             const SizedBox(height: 12),
-            _buildTextFormField(
-              controller: _usernameController,
-              label: 'اسم المستخدم *',
-              validator: (value) {
-                if (value!.isEmpty) return 'اسم المستخدم مطلوب';
-                if (value.length < 3) return 'اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل';
-                if (value.contains(' ')) return 'اسم المستخدم لا يمكن أن يحتوي على مسافات';
-                return null;
-              },
-            ),
+            _buildUsernameField(),
             const SizedBox(height: 12),
-            // حقل كلمة المرور - معدل
             _buildPasswordField(
               controller: _passwordController,
               label: 'كلمة المرور *',
@@ -139,7 +267,6 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
               },
             ),
             const SizedBox(height: 12),
-            // حقل تأكيد كلمة المرور - الجديد
             _buildPasswordField(
               controller: _confirmPasswordController,
               label: 'تأكيد كلمة المرور *',
@@ -152,18 +279,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
               },
             ),
             const SizedBox(height: 12),
-            _buildTextFormField(
-              controller: _phoneController,
-              label: 'رقم الجوال *',
-              keyboardType: TextInputType.phone,
-              validator: (value) {
-                if (value!.isEmpty) return 'رقم الجوال مطلوب';
-                if (!RegExp(r'^05\d{8}$').hasMatch(value)) {
-                  return 'رقم الجوال يجب أن يبدأ بـ 05 ويحتوي 10 أرقام';
-                }
-                return null;
-              },
-            ),
+            _buildPhoneField(),
           ],
         ),
       ),
@@ -181,11 +297,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
           children: [
             _buildSectionTitle('المعلومات المهنية'),
             const SizedBox(height: 16),
-            _buildTextFormField(
-              controller: _licenseController,
-              label: 'رقم الرخصة *',
-              validator: (value) => value!.isEmpty ? 'رقم الرخصة مطلوب' : null,
-            ),
+            _buildLicenseField(),
             const SizedBox(height: 12),
             _buildTextFormField(
               controller: _experienceController,
@@ -362,7 +474,6 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
     );
   }
 
-  // دالة جديدة لحقول كلمة المرور
   Widget _buildPasswordField({
     required TextEditingController controller,
     required String label,
@@ -507,8 +618,14 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
     }
   }
 
-  // تسجيل المحامي
-  void _registerLawyer() async {
+  //تسجيل المحامي
+  Future<void> _registerLawyer() async {
+      //التحقق من اليونيكية أولاً
+     if (!_isUsernameAvailable || !_isPhoneAvailable || !_isLicenseAvailable) {
+    _showError('يرجى التأكد من أن اسم المستخدم ورقم الجوال ورقم الرخصة متاحين');
+    return;
+  }
+    // التحقق من البيانات الأساسية
     if (!_formKey.currentState!.validate()) {
       _showError('يرجى تعبئة جميع الحقول الإجبارية بشكل صحيح');
       return;
@@ -519,71 +636,140 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
       return;
     }
 
-    setState(() => _isLoading = true);
-
-    try {
-      // إعداد البيانات للإرسال
-      Map<String, dynamic> requestData = {
-        'username': _usernameController.text.trim(),
-        'fullName': _fullNameController.text.trim(),
-        'password': _passwordController.text,
-        'phoneNumber': _phoneController.text.trim(),
-        'licenseNumber': _licenseController.text.trim(),
-        'yearsOfExp': int.parse(_experienceController.text),
-        'gender': _selectedGender,
-        'mainSpecialization': _selectedMainSpecialization,
-        'fSubSpecialization': _selectedSubSpecialization1 ?? '',
-        'sSubSpecialization': _selectedSubSpecialization2 ?? '',
-        'educationQualification': _selectedEducationLevel,
-        'academicMajor': _selectedAcademicMajor,
-      };
-
-      print('📤 إرسال البيانات: $requestData');
-
-      String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
-      
-      // 1. أولاً: تسجيل البيانات الأساسية
-      var response = await http.post(
-        Uri.parse('$baseUrl/register_lawyer.php'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(requestData),
-      ).timeout(const Duration(seconds: 60));
-
-      print('📥 استجابة السيرفر: ${response.statusCode}');
-      print('📦 محتوى الاستجابة: ${response.body}');
-
-      var result = json.decode(response.body);
-      
-      if (result['success'] == true) {
-        // 2. ثانياً: رفع ملف الرخصة إذا كان موجود
-        if (_licenseFile != null && _licenseFile!.path != null) {
-          await _uploadFile(_licenseFile!, result['licenseFileName'], baseUrl);
-        }
-        
-        // 3. ثالثاً: رفع الصورة الشخصية إذا كانت موجودة
-        if (_profileImage != null && _profileImage!.path != null) {
-          await _uploadFile(_profileImage!, result['photoFileName'], baseUrl);
-        }
-        
-        // خزّن المستخدم في الجلسة
-  final user = User.fromJson(result['lawyer']);
-  await Session.saveUser(user);
-  
-        _showSuccess(result['message']);
-        await Future.delayed(const Duration(seconds: 2));
-      Navigator.pushReplacementNamed(context, '/lawyer/requests');
-
-      } else {
-        _showError(result['message']);
-      }
-      
-    } catch (e) {
-      print('❌ خطأ في الاتصال: $e');
-      _showError('فشل في الاتصال بالسيرفر: $e');
-    } finally {
-      setState(() => _isLoading = false);
+    // استدعاء OTP أولاً والانتظار للنتيجة
+    bool? otpVerified = await _navigateToOTP();
+    
+    // إذا التحقق نجح، أرسل البيانات للسيرفر
+    if (otpVerified == true) {
+      await _sendLawyerToServer();
+    } else {
+      _showError('فشل التحقق من رقم الجوال');
     }
   }
+
+  // التوجيه إلى صفحة OTP
+  Future<bool?> _navigateToOTP() async {
+    String phoneNumber = '+966${_phoneController.text.substring(1)}';
+
+    // انتظار نتيجة التحقق من OTP
+    bool? verified = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OTPScreen(
+          phoneNumber: phoneNumber,
+          registrationType: 'lawyer',
+          ),
+      ),
+    );
+    print('✅ نتيجة OTP: $verified');
+
+    return verified; // ترجع true أو false أو null
+  }
+
+  // دالة محسنة لإرسال بيانات المحامي
+Future<void> _sendLawyerToServer() async {
+  setState(() => _isLoading = true);
+
+  try {
+    Map<String, dynamic> requestData = {
+      'username': _usernameController.text.trim(),
+      'fullName': _fullNameController.text.trim(),
+      'password': _passwordController.text,
+      'phoneNumber': _phoneController.text.trim(),
+      'licenseNumber': _licenseController.text.trim(),
+      'yearsOfExp': int.parse(_experienceController.text),
+      'gender': _selectedGender,
+      'mainSpecialization': _selectedMainSpecialization,
+      'fSubSpecialization': _selectedSubSpecialization1 ?? '',
+      'sSubSpecialization': _selectedSubSpecialization2 ?? '',
+      'educationQualification': _selectedEducationLevel,
+      'academicMajor': _selectedAcademicMajor,
+    };
+
+    print('📤 إرسال بيانات المحامي بعد التحقق الناجح: $requestData');
+
+    String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
+    
+    var response = await http.post(
+      Uri.parse('$baseUrl/register_lawyer.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(requestData),
+    ).timeout(const Duration(seconds: 10));
+
+    print('📥 استجابة السيرفر: ${response.body}');
+    
+    var result = json.decode(response.body);
+    
+    if (result['success'] == true) {
+      int lawyerId = result['userId'] ?? 0;
+      
+      // ✅ حفظ بيانات المستخدم في الجلسة
+      User lawyerUser = User(
+        id: lawyerId,
+        fullName: _fullNameController.text.trim(),
+        username: _usernameController.text.trim(),
+        phoneNumber: _phoneController.text.trim(),
+        userType: 'lawyer',
+        points: 0,
+        status: 'Pending',
+      );
+      
+      await Session.saveUser(lawyerUser);
+      
+      // ✅ رفع الملفات إذا كانت موجودة
+      if (_licenseFile != null || _profileImage != null) {
+        await _uploadFiles(lawyerId, result, baseUrl);
+      }
+      
+      // ✅ عرض رسالة النجاح والتوجيه
+      _showSuccessAndNavigate();
+      
+    } else {
+      _showError(result['message'] ?? 'حدث خطأ غير معروف');
+    }
+    
+  } catch (e) {
+    _showError('فشل في التسجيل: $e');
+  } finally {
+    setState(() => _isLoading = false);
+  }
+}
+
+// دالة محسنة لرفع الملفات
+Future<void> _uploadFiles(int lawyerId, Map<String, dynamic> result, String baseUrl) async {
+  try {
+    var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload_files.php'));
+    
+    // إضافة معرف المحامي
+    request.fields['lawyer_id'] = lawyerId.toString();
+    
+    // رفع ملف الرخصة إذا موجود
+    if (_licenseFile != null && _licenseFile!.path != null) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'license_file',
+        _licenseFile!.path!,
+        filename: result['licenseFileName'] ?? 'license_${_usernameController.text}.pdf',
+      ));
+    }
+    
+    // رفع الصورة الشخصية إذا موجودة
+    if (_profileImage != null && _profileImage!.path != null) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'profile_image',
+        _profileImage!.path!,
+        filename: result['photoFileName'] ?? 'photo_${_usernameController.text}.jpg',
+      ));
+    }
+    
+    var response = await request.send();
+    var responseData = await response.stream.bytesToString();
+    
+    print('📤 رفع الملفات: $responseData');
+    
+  } catch (e) {
+    print('⚠️ حدث خطأ في رفع الملفات: $e');
+  }
+}
 
   // دالة مساعدة لرفع الملفات
   Future<void> _uploadFile(PlatformFile file, String fileName, String baseUrl) async {
@@ -609,6 +795,28 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
     }
   }
 
+  // عرض النجاح والتوجيه
+  void _showSuccessAndNavigate() {
+    // عرض رسالة النجاح
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك من قبل الإدارة.',
+          style: const TextStyle(fontFamily: 'Tajawal'),
+        ),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+    
+    // التوجيه بعد فترة بسيطة
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/lawyer/more');
+      }
+    });
+  }
+
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -618,24 +826,152 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
     );
   }
 
-  void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: const TextStyle(fontFamily: 'Tajawal')),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
-
   @override
-  void dispose() {
-    _fullNameController.dispose();
-    _usernameController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose(); // ← الجديد
-    _phoneController.dispose();
-    _licenseController.dispose();
-    _experienceController.dispose();
-    super.dispose();
-  }
+  Widget _buildUsernameField() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      TextFormField(
+        controller: _usernameController,
+        decoration: InputDecoration(
+          labelText: 'اسم المستخدم *',
+          labelStyle: const TextStyle(fontFamily: 'Tajawal'),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFF0B5345)),
+          ),
+          suffixIcon: _isCheckingUsername
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : _usernameController.text.length >= 3
+                  ? Icon(
+                      _isUsernameAvailable ? Icons.check_circle : Icons.error,
+                      color: _isUsernameAvailable ? Colors.green : Colors.red,
+                    )
+                  : null,
+        ),
+        validator: (value) {
+          if (value!.isEmpty) return 'اسم المستخدم مطلوب';
+          if (value.length < 3) return 'يجب أن يحتوي على 3 أحرف على الأقل';
+          if (value.contains(' ')) return 'لا يمكن أن يحتوي على مسافات';
+          if (!_isUsernameAvailable && value.length >= 3) return 'اسم المستخدم محجوز';
+          return null;
+        },
+      ),
+      if (_usernameMessage != null) ...[
+        const SizedBox(height: 4),
+        Text(
+          _usernameMessage!,
+          style: TextStyle(
+            color: _isUsernameAvailable ? Colors.green : Colors.red,
+            fontSize: 12,
+            fontFamily: 'Tajawal',
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
+Widget _buildPhoneField() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      TextFormField(
+        controller: _phoneController,
+        keyboardType: TextInputType.phone,
+        decoration: InputDecoration(
+          labelText: 'رقم الجوال *',
+          labelStyle: const TextStyle(fontFamily: 'Tajawal'),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFF0B5345)),
+          ),
+          suffixIcon: _isCheckingPhone
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : _phoneController.text.length >= 10
+                  ? Icon(
+                      _isPhoneAvailable ? Icons.check_circle : Icons.error,
+                      color: _isPhoneAvailable ? Colors.green : Colors.red,
+                    )
+                  : null,
+        ),
+        validator: (value) {
+          if (value!.isEmpty) return 'رقم الجوال مطلوب';
+          if (!RegExp(r'^05\d{8}$').hasMatch(value)) {
+            return 'يجب أن يبدأ بـ 05 ويحتوي 10 أرقام';
+          }
+          if (!_isPhoneAvailable && value.length == 10) return 'رقم الجوال مسجل مسبقاً';
+          return null;
+        },
+      ),
+      if (_phoneMessage != null) ...[
+        const SizedBox(height: 4),
+        Text(
+          _phoneMessage!,
+          style: TextStyle(
+            color: _isPhoneAvailable ? Colors.green : Colors.red,
+            fontSize: 12,
+            fontFamily: 'Tajawal',
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
+Widget _buildLicenseField() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      TextFormField(
+        controller: _licenseController,
+        decoration: InputDecoration(
+          labelText: 'رقم الرخصة *',
+          labelStyle: const TextStyle(fontFamily: 'Tajawal'),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFF0B5345)),
+          ),
+          suffixIcon: _isCheckingLicense
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : _licenseController.text.isNotEmpty
+                  ? Icon(
+                      _isLicenseAvailable ? Icons.check_circle : Icons.error,
+                      color: _isLicenseAvailable ? Colors.green : Colors.red,
+                    )
+                  : null,
+        ),
+        validator: (value) {
+          if (value!.isEmpty) return 'رقم الرخصة مطلوب';
+          if (!_isLicenseAvailable && value.isNotEmpty) return 'رقم الرخصة مسجل مسبقاً';
+          return null;
+        },
+      ),
+      if (_licenseMessage != null) ...[
+        const SizedBox(height: 4),
+        Text(
+          _licenseMessage!,
+          style: TextStyle(
+            color: _isLicenseAvailable ? Colors.green : Colors.red,
+            fontSize: 12,
+            fontFamily: 'Tajawal',
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
 }

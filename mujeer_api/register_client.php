@@ -1,4 +1,3 @@
-
 <?php
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
@@ -49,16 +48,17 @@ $check_sql = "SELECT Username, PhoneNumber FROM client
 $check_result = $conn->query($check_sql);
 
 if($check_result && $check_result->num_rows > 0) {
-    $existing = $check_result->fetch_assoc();
-    if($existing['Username'] == $username) {
-        error_log("ERROR: Username already exists");
-        echo json_encode(["success" => false, "message" => "اسم المستخدم موجود مسبقاً"]);
-        exit;
-    }
-    if($existing['PhoneNumber'] == $phoneNumber) {
-        error_log("ERROR: Phone number already exists");
-        echo json_encode(["success" => false, "message" => "رقم الجوال موجود مسبقاً"]);
-        exit;
+    while($existing = $check_result->fetch_assoc()) {
+        if($existing['Username'] == $username) {
+            error_log("ERROR: Username already exists");
+            echo json_encode(["success" => false, "message" => "اسم المستخدم موجود مسبقاً"]);
+            exit;
+        }
+        if($existing['PhoneNumber'] == $phoneNumber) {
+            error_log("ERROR: Phone number already exists");
+            echo json_encode(["success" => false, "message" => "رقم الجوال موجود مسبقاً"]);
+            exit;
+        }
     }
 }
 
@@ -74,7 +74,6 @@ error_log("Executing SQL: " . $sql);
 if($conn->query($sql) === TRUE) {
     error_log("SUCCESS: Client registered successfully");
     
-  // ——— التعديل المهم يبدأ هنا ———
   $newId = $conn->insert_id;
 
   // اجلب نفس السجل الذي تم إدخاله الآن
@@ -100,7 +99,6 @@ if($conn->query($sql) === TRUE) {
     "message" => "تم تسجيل العميل بنجاح!",
     "user"    => $user
   ], JSON_UNESCAPED_UNICODE);
-  // ——— التعديل المهم ينتهي هنا ———
 } else {
     error_log("ERROR: Database insert failed - " . $conn->error);
     echo json_encode(["success" => false, "message" => "فشل في التسجيل: " . $conn->error]);

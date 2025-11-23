@@ -1,6 +1,6 @@
 <?php
 $DB_HOST = 'localhost';
-$DB_PORT = '3306';
+$DB_PORT = '8889';
 $DB_NAME = 'mujeer'; 
 $DB_USER = 'root';
 $DB_PASS = 'root';

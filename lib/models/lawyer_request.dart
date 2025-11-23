@@ -15,7 +15,7 @@ class LawyerRequest {
 
   factory LawyerRequest.fromJson(Map<String, dynamic> j) {
         final fileName = (j['LawyerLicense'] ?? '').toString().trim();
-        const baseUrl = 'http://10.0.2.2/mujeer_api'; // غيّريه لو تغيّر المسار
+        const baseUrl = 'http://192.168.3.10:8888/mujeer_api'; // غيّريه لو تغيّر المسار
         final fullFileUrl = fileName.isEmpty ? '' : '$baseUrl/uploads/$fileName';
     return LawyerRequest(
       id: int.parse(j['RequestID'].toString()),

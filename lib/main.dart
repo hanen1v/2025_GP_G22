@@ -11,22 +11,39 @@ import 'pages/login_page.dart';
 import 'pages/lawyer_register_page.dart';
 import 'pages/client_register_page.dart'; 
 import 'pages/requests_management_page.dart';
+import 'pages/otp_screen.dart';
 import 'pages/lawyer_requests_page.dart';
 import 'pages/lawyer_availability_page.dart';
 import 'pages/lawyer_more_page.dart';
+import 'pages/delete_lawyer_page.dart';
+import 'pages/identity_verification_page.dart';
+import 'pages/reset_password_page.dart';
+import 'pages/feedback_page.dart';
+import 'pages/thank_you_page.dart';
+//import 'pages/lawyer_profile_page.dart';
+//import 'pages/lawyer_update_license_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
-
-void main() async{
-  runApp(const MyApp());
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-);
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('✅ Firebase initialized successfully');
+  } catch (e) {
+    // إذا كان مسبقاً موجود، استخدمه
+    Firebase.app();
+    print('✅ Using existing Firebase app');
+  }
 OneSignal.Debug.setLogLevel(OSLogLevel.verbose); 
 OneSignal.initialize('52e7af05-5276-4ccd-9715-1cb9820f4361');
 OneSignal.Notifications.requestPermission(true);
+runApp(const MyApp());
+
   }
 
 class MyApp extends StatelessWidget {
@@ -66,6 +83,11 @@ class MyApp extends StatelessWidget {
         '/lawyer/requests':     (_) => const LawyerRequestsPage(),
         '/lawyer/availability': (_) => const LawyerAvailabilityPage(),
         '/lawyer/more':         (_) => const LawyerMorePage(),
+        '/DeleteLawyerPage': (context) => const DeleteLawyerPage(),
+        '/identity_verification': (context) => const IdentityVerificationPage(),
+        '/reset_password': (context) => const ResetPasswordPage(username: ''),
+        '/FeedbackPage': (context) => const FeedbackPage(),
+        '/thankYouPage': (context) => const ThankYouPage(),
 
 
       },

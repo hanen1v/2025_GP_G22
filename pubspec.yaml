@@ -3,23 +3,24 @@ description: "A new Flutter project."
 publish_to: 'none'
 
 version: 1.0.0+1
-
 environment:
   sdk: ^3.9.2
 
 dependencies:
   flutter:
     sdk: flutter
-  file_picker: ^10.3.3
+  firebase_core: ^4.2.0
+  firebase_auth: ^6.1.1 
+  file_picker: ^8.0.7
   http: ^1.2.2
   cupertino_icons: ^1.0.8
   iconsax: ^0.0.8
   path_provider: ^2.0.1
   open_file: ^3.0.1
   shared_preferences: ^2.2.3
-  firebase_core: ^4.2.0
   firebase_messaging: ^16.0.3
   onesignal_flutter: ^5.1.0 
+  cloud_firestore: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -30,7 +31,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/icons/
+    - assets/logo/
 
   fonts:
     - family: Tajawal

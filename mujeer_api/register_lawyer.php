@@ -4,176 +4,186 @@ header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// تفعيل السجلات
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 include 'config.php';
 
-// سجل البيانات المستلمة
+// قراءة البيانات المرسلة من Flutter
 $raw_input = file_get_contents("php://input");
-error_log("=== LAWYER REGISTRATION ATTEMPT ===");
-error_log("Raw input: " . $raw_input);
+$data = json_decode($raw_input, true);
 
-$data = json_decode($raw_input);
-
-if($data === null) {
-    error_log("ERROR: JSON decode failed");
-    echo json_encode(["success" => false, "message" => "بيانات غير صالحة"]);
+if ($data === null) {
+    echo json_encode(["success" => false, "message" => "البيانات غير صالحة"]);
     exit;
 }
 
-// التحقق من البيانات المطلوبة
-$required_fields = ['username', 'fullName', 'password', 'phoneNumber', 'licenseNumber', 
-                   'yearsOfExp', 'gender', 'mainSpecialization', 'educationQualification', 'academicMajor'];
+// استخراج البيانات
+$fullName = $data["fullName"] ?? "";
+$username = $data["username"] ?? "";
+$password = $data["password"] ?? "";
+$phoneNumber = $data["phoneNumber"] ?? "";
+$licenseNumber = $data["licenseNumber"] ?? "";
+$yearsOfExp = $data["yearsOfExp"] ?? "";
+$gender = $data["gender"] ?? "";
+$mainSpecialization = $data["mainSpecialization"] ?? "";
+$educationQualification = $data["educationQualification"] ?? "";
+$academicMajor = $data["academicMajor"] ?? "";
+$fSubSpecialization = $data["fSubSpecialization"] ?? "";
+$sSubSpecialization = $data["sSubSpecialization"] ?? "";
 
+// ⭐ تحويل الجنس من عربي لإنجليزي
+$gender_english = ($gender == 'ذكر') ? 'Male' : 'Female';
+
+// ⭐ تشفير كلمة المرور
+$hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+// ⭐ إنشاء أسماء ملفات افتراضية (سيتم تحديثها لاحقاً عند رفع الملفات)
+$license_file_name = "license_" . $username . "_" . time() . ".pdf";
+$photo_file_name = "photo_" . $username . "_" . time() . ".jpg";
+
+// التحقق من الحقول المطلوبة
+$required_fields = ['fullName', 'username', 'password', 'phoneNumber', 'licenseNumber', 'yearsOfExp', 'gender', 'mainSpecialization', 'educationQualification', 'academicMajor'];
 foreach($required_fields as $field) {
-    if(!isset($data->$field) || empty($data->$field)) {
-        error_log("ERROR: Missing field: " . $field);
+    if(empty($data[$field])) {
         echo json_encode(["success" => false, "message" => "حقل {$field} مطلوب"]);
         exit;
     }
 }
 
-// استخراج البيانات
-$username = $conn->real_escape_string($data->username);
-$fullName = $conn->real_escape_string($data->fullName);
-$password = $data->password;
-$phoneNumber = $conn->real_escape_string($data->phoneNumber);
-$licenseNumber = $conn->real_escape_string($data->licenseNumber);
-$yearsOfExp = intval($data->yearsOfExp);
-$gender = $conn->real_escape_string($data->gender);
-$mainSpecialization = $conn->real_escape_string($data->mainSpecialization);
-$educationQualification = $conn->real_escape_string($data->educationQualification);
-$academicMajor = $conn->real_escape_string($data->academicMajor);
-
-// الحقول الاختيارية
-$fSubSpecialization = isset($data->fSubSpecialization) ? $conn->real_escape_string($data->fSubSpecialization) : '';
-$sSubSpecialization = isset($data->sSubSpecialization) ? $conn->real_escape_string($data->sSubSpecialization) : '';
-
-// تحويل الجنس من العربية إلى الإنجليزية
-$gender_english = ($gender == 'ذكر') ? 'Male' : 'Female';
-
-// إنشاء أسماء فريدة للملفات
-$licenseFileName = 'license_' . $username . '_' . time() . '.pdf';
-$photoFileName = 'photo_' . $username . '_' . time() . '.jpg';
-
-error_log("Processing registration for: " . $username);
-
-// التحقق من عدم تكرار اسم المستخدم أو رقم الجوال
-$check_sql = "SELECT Username, PhoneNumber FROM lawyer 
-              WHERE Username = '$username' OR PhoneNumber = '$phoneNumber'";
-$check_result = $conn->query($check_sql);
-
-if($check_result && $check_result->num_rows > 0) {
-    while($existing = $check_result->fetch_assoc()) {
-        if($existing['Username'] == $username) {
-            error_log("ERROR: Username already exists");
-            echo json_encode(["success" => false, "message" => "اسم المستخدم موجود مسبقاً"]);
-            exit;
-        }
-        if($existing['PhoneNumber'] == $phoneNumber) {
-            error_log("ERROR: Phone number already exists");
-            echo json_encode(["success" => false, "message" => "رقم الجوال موجود مسبقاً"]);
-            exit;
-        }
-    }
+// تأكد من نجاح الاتصال بقاعدة البيانات
+if ($conn->connect_error) {
+    echo json_encode(["success" => false, "message" => "فشل الاتصال بقاعدة البيانات: " . $conn->connect_error]);
+    exit;
 }
 
-// تشفير كلمة المرور
-$hashed_password = password_hash($password, PASSWORD_DEFAULT);
+// ⭐⭐ استعلام الإدخال مع جميع الأعمدة المطلوبة
+$sql = "INSERT INTO lawyer (
+    FullName, 
+    Username, 
+    Password, 
+    PhoneNumber, 
+    LicenseNumber, 
+    YearsOfExp, 
+    Gender, 
+    MainSpecialization, 
+    FSubSpecialization, 
+    SSubSpecialization, 
+    LicenseFile, 
+    EducationQualification, 
+    AcademicMajor, 
+    LawyerPhoto, 
+    Status, 
+    Points
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', 0)";
 
-// إدخال البيانات في جدول lawyer
-$sql = "INSERT INTO lawyer (Username, FullName, PhoneNumber, Password, LicenseNumber, YearsOfExp, Gender, 
-                           MainSpecialization, FSubSpecialization, SSubSpecialization, 
-                           EducationQualification, AcademicMajor, LicenseFile, LawyerPhoto, Status) 
-        VALUES ('$username', '$fullName', '$phoneNumber', '$hashed_password', '$licenseNumber', 
-                $yearsOfExp, '$gender_english', '$mainSpecialization', '$fSubSpecialization', 
-                '$sSubSpecialization', '$educationQualification', '$academicMajor', 
-                '$licenseFileName', '$photoFileName', 'Pending')";
+$stmt = $conn->prepare($sql);
+if (!$stmt) {
+    echo json_encode(["success" => false, "message" => "خطأ في إعداد الاستعلام: " . $conn->error]);
+    exit;
+}
 
-error_log("Executing SQL: " . $sql);
+// ⭐ ربط المعاملات مع أنواع البيانات الصحيحة
+$stmt->bind_param("sssssissssssss", 
+    $fullName, 
+    $username, 
+    $hashed_password,  // ⭐ استخدام كلمة المرور المشفرة
+    $phoneNumber, 
+    $licenseNumber, 
+    $yearsOfExp, 
+    $gender_english,  // ⭐ أرسل الجنس بالإنجليزية
+    $mainSpecialization, 
+    $fSubSpecialization, 
+    $sSubSpecialization, 
+    $license_file_name,  // ⭐ اسم ملف الرخصة
+    $educationQualification, 
+    $academicMajor, 
+    $photo_file_name   // ⭐ اسم ملف الصورة
+);
 
-if($conn->query($sql) === TRUE) {
-     $lawyerID = $conn->insert_id; // جلب الـ ID الجديد
-    
-    // إنشاء طلب في جدول request
-    $request_sql = "INSERT INTO request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status, RequestDate) 
-                    VALUES (1, '$lawyerID', '$licenseFileName', '$fullName', '$licenseNumber', 'Pending', NOW())";
-    
-    if($conn->query($request_sql)) {
-        error_log("SUCCESS: Request created for lawyer ID: " . $lawyerID);
-    } else {
-        error_log("ERROR: Failed to create request - " . $conn->error);
-    }
-    error_log("SUCCESS: Lawyer registered successfully");
-
-    // احصلي على الـ ID الجديد
+// ⭐⭐ التصحيح: نفذ الإدخال أولاً ثم أرسل الإشعارات
+if ($stmt->execute()) {
     $lawyerId = $conn->insert_id;
-
-    // اقري صف المحامي (يتضمن Points)
-    $sel = "
-      SELECT 
-        LawyerID,
-        FullName,
-        Username,
-        PhoneNumber,
-        COALESCE(Points, 0) AS Points,
-        LawyerPhoto,
-        'lawyer' AS UserType,
-        NOW() AS RegistrationDate
-      FROM lawyer
-      WHERE LawyerID = $lawyerId
-      LIMIT 1
-    ";
-    $res = $conn->query($sel);
-
-    if ($res && $res->num_rows === 1) {
-        $lawyerRow = $res->fetch_assoc();
-    } else {
-        // احتياط
-        $lawyerRow = [
-          "LawyerID" => $lawyerId,
-          "FullName" => $fullName,
-          "Username" => $username,
-          "PhoneNumber" => $phoneNumber,
-          "Points" => 0,
-          "LawyerPhoto" => $photoFileName,
-          "UserType" => "lawyer",
-          "RegistrationDate" => date('c')
-        ];
+    
+    // ⭐ إضافة طلب للمشرفين
+    $request_sql = "INSERT INTO request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status)
+                    VALUES (1, ?, ?, ?, ?, 'Pending')";
+    $request_stmt = $conn->prepare($request_sql);
+    if ($request_stmt) {
+        $request_stmt->bind_param("isss", $lawyerId, $license_file_name, $fullName, $licenseNumber);
+        $request_stmt->execute();
+        $request_stmt->close();
     }
-    //get id to send notifications
+
+    // ⭐ إرسال إشعارات للمشرفين (بعد نجاح الإدخال)
     $q = $conn->prepare("SELECT player_id FROM admin_devices");
     $q->execute();
     $res = $q->get_result();
     $players = [];
     while ($row = $res->fetch_assoc()) {
         if (!empty($row['player_id'])) {
-            $players[] = $row['player_id'];         }
+            $players[] = $row['player_id'];
+        }
     }
     $q->close();
 
     $pushResult = null;
     if (!empty($players)) {
         $title = 'طلب جديد';
-                $body  = "محامي جديد سجل الدخول";
+        $body  = "محامي جديد سجل الدخول";
         $data  = [];
-
         $pushResult = send_push($players, $title, $body, $data); 
     }
+
+    // ⭐ جلب بيانات المحامي المسجل
+    $user = null;
+    $uRes = $conn->query("
+        SELECT
+            LawyerID          AS UserID,
+            FullName,
+            Username,
+            PhoneNumber,
+            Points,
+            YearsOfExp,
+            MainSpecialization,
+            FSubSpecialization,
+            SSubSpecialization,
+            EducationQualification,
+            AcademicMajor,
+            Status,
+            LawyerPhoto
+        FROM lawyer
+        WHERE LawyerID = $lawyerId
+        LIMIT 1
+    ");
+
+    if ($uRes && $uRes->num_rows === 1) {
+        $user = $uRes->fetch_assoc();
+    }
+
+    if ($user) {
+        $user['LawyerID'] = $lawyerId;
+        $user['UserType'] = 'lawyer';
+    }
+
     echo json_encode([
-        "success" => true, 
-        "message" => "تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك من قبل الإدارة.",
-        "licenseFileName" => $licenseFileName,
-        "photoFileName"   => $photoFileName,
-        "lawyer" => $lawyerRow
-    ]);
-}  else {
-    error_log("ERROR: Database insert failed - " . $conn->error);
-    echo json_encode(["success" => false, "message" => "فشل في التسجيل: " . $conn->error]);
+        "success"        => true,
+        "message"        => "تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك",
+        "userId"         => $lawyerId,
+        "licenseFileName"=> $license_file_name,
+        "photoFileName"  => $photo_file_name,
+        "user"           => $user
+    ], JSON_UNESCAPED_UNICODE);
+
+} else {
+    // التحقق من وجود مستخدم مكرر
+    if ($conn->errno == 1062) {
+        echo json_encode(["success" => false, "message" => "اسم المستخدم أو رقم الجوال أو رقم الرخصة مسجل مسبقاً"]);
+    } else {
+        echo json_encode(["success" => false, "message" => "حدث خطأ أثناء التسجيل: " . $stmt->error]);
+    }
 }
 
-
+$stmt->close();
 $conn->close();
 ?>

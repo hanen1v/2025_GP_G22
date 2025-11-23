@@ -1,10 +1,12 @@
 <?php
-require_once __DIR__ . '/config.php';
-
+require_once __DIR__ . '/config.php'; 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Content-Type: application/json; charset=utf-8');
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -29,14 +31,15 @@ if ($requestID <= 0 || !in_array($newStatus, $allowed, true)) {
 }
 
 try {
-    $pdo->beginTransaction();
+    $conn->begin_transaction();
 
-    $stmt = $pdo->prepare("SELECT LawyerID, Status FROM Request WHERE RequestID = ? FOR UPDATE");
-    $stmt->execute([$requestID]);
-    $req = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt = $conn->prepare("SELECT LawyerID, Status FROM Request WHERE RequestID = ? FOR UPDATE");
+    $stmt->bind_param("i", $requestID);
+    $stmt->execute();
+    $req = $stmt->get_result()->fetch_assoc();
 
     if (!$req) {
-        $pdo->rollBack();
+        $conn->rollback();
         http_response_code(404);
         echo json_encode(['ok' => false, 'message' => 'Request not found']);
         exit;
@@ -44,15 +47,19 @@ try {
 
     $lawyerID = (int)($req['LawyerID'] ?? 0);
 
-    $stmt = $pdo->prepare("UPDATE Request SET Status = ? WHERE RequestID = ?");
-    $stmt->execute([$newStatus, $requestID]);
+    $stmt = $conn->prepare("UPDATE Request SET Status = ? WHERE RequestID = ?");
+    $stmt->bind_param("si", $newStatus, $requestID);
+    $stmt->execute();
 
     if ($lawyerID > 0) {
-        $stmt = $pdo->prepare("UPDATE Lawyer SET Status = ? WHERE LawyerID = ?");
-        $stmt->execute([$newStatus, $lawyerID]);
+        $stmt = $conn->prepare("UPDATE Lawyer SET Status = ? WHERE LawyerID = ?");
+        $stmt->bind_param("si", $newStatus, $lawyerID);
+        $stmt->execute();
     }
 
-    $pdo->commit();
+
+
+    $conn->commit();
 
     echo json_encode([
         'ok'      => true,
@@ -65,13 +72,14 @@ try {
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Throwable $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
+    if ($conn && $conn->errno) {
+        $conn->rollback();
     }
     http_response_code(500);
     echo json_encode([
         'ok'      => false,
         'message' => 'Failed to update status',
-        'detail'  => $e->getMessage(),
-    ], JSON_UNESCAPED_UNICODE);
+        'detail'  => $e->getMessage(),     ], JSON_UNESCAPED_UNICODE);
+} finally {
+    if ($conn) { $conn->close(); }
 }
