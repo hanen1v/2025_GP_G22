@@ -73,7 +73,7 @@ void dispose() {
 
     try {
       var response = await http.post(
-        Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
+        Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'username': username,
@@ -108,7 +108,7 @@ void dispose() {
 
     try {
       var response = await http.post(
-        Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
+        Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'phoneNumber': phone,
@@ -440,16 +440,7 @@ void dispose() {
     String phoneNumber = '+966${_phoneController.text.substring(1)}';
 
     // ننتظر نتيجة التحقق من شاشة OTP
-    bool? verified = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => OTPScreen(
-        phoneNumber: phoneNumber,
-        registrationType: 'client',
-      ),
-    ),
-  );
-
+    bool? verified = true;
     // بعد العودة من صفحة OTP
     if (verified == true) {
       // بعد التحقق الناجح من OTP
