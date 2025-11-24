@@ -25,7 +25,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  
+
   // متغيرات التحقق الفوري
   bool _isCheckingUsername = false;
   bool _isCheckingPhone = false;
@@ -43,20 +43,20 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
   }
 
   @override
-void dispose() {
-  // إزالة المستمعين
-  _usernameController.removeListener(_checkUsernameAvailability);
-  _phoneController.removeListener(_checkPhoneAvailability);
-  
-  // التخلص من جميع الـ controllers
-  _fullNameController.dispose();
-  _usernameController.dispose();
-  _passwordController.dispose();
-  _confirmPasswordController.dispose();
-  _phoneController.dispose();
-  
-  super.dispose();
-}
+  void dispose() {
+    // إزالة المستمعين
+    _usernameController.removeListener(_checkUsernameAvailability);
+    _phoneController.removeListener(_checkPhoneAvailability);
+
+    // التخلص من جميع الـ controllers
+    _fullNameController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _phoneController.dispose();
+
+    super.dispose();
+  }
 
   // التحقق الفوري من اسم المستخدم
   void _checkUsernameAvailability() async {
@@ -73,12 +73,11 @@ void dispose() {
 
     try {
       var response = await http.post(
-        Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
+        //Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
+        Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'username': username,
-          'userType': 'client'
-        }),
+        body: json.encode({'username': username, 'userType': 'client'}),
       );
 
       var result = json.decode(response.body);
@@ -108,12 +107,11 @@ void dispose() {
 
     try {
       var response = await http.post(
-        Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
+        //Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
+        Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'phoneNumber': phone,
-          'userType': 'client'
-        }),
+        body: json.encode({'phoneNumber': phone, 'userType': 'client'}),
       );
 
       var result = json.decode(response.body);
@@ -244,17 +242,18 @@ void dispose() {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : _usernameController.text.length >= 3
-                    ? Icon(
-                        _isUsernameAvailable ? Icons.check_circle : Icons.error,
-                        color: _isUsernameAvailable ? Colors.green : Colors.red,
-                      )
-                    : null,
+                ? Icon(
+                    _isUsernameAvailable ? Icons.check_circle : Icons.error,
+                    color: _isUsernameAvailable ? Colors.green : Colors.red,
+                  )
+                : null,
           ),
           validator: (value) {
             if (value!.isEmpty) return 'اسم المستخدم مطلوب';
             if (value.length < 3) return 'يجب أن يحتوي على 3 أحرف على الأقل';
             if (value.contains(' ')) return 'لا يمكن أن يحتوي على مسافات';
-            if (!_isUsernameAvailable && value.length >= 3) return 'اسم المستخدم محجوز';
+            if (!_isUsernameAvailable && value.length >= 3)
+              return 'اسم المستخدم محجوز';
             return null;
           },
         ),
@@ -295,18 +294,19 @@ void dispose() {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : _phoneController.text.length >= 10
-                    ? Icon(
-                        _isPhoneAvailable ? Icons.check_circle : Icons.error,
-                        color: _isPhoneAvailable ? Colors.green : Colors.red,
-                      )
-                    : null,
+                ? Icon(
+                    _isPhoneAvailable ? Icons.check_circle : Icons.error,
+                    color: _isPhoneAvailable ? Colors.green : Colors.red,
+                  )
+                : null,
           ),
           validator: (value) {
             if (value!.isEmpty) return 'رقم الجوال مطلوب';
             if (!RegExp(r'^05\d{8}$').hasMatch(value)) {
               return 'يجب أن يبدأ بـ 05 ويحتوي 10 أرقام';
             }
-            if (!_isPhoneAvailable && value.length == 10) return 'رقم الجوال مسجل مسبقاً';
+            if (!_isPhoneAvailable && value.length == 10)
+              return 'رقم الجوال مسجل مسبقاً';
             return null;
           },
         ),
@@ -474,6 +474,7 @@ void dispose() {
       print('📤 إرسال بيانات العميل بعد التحقق: $requestData');
 
       String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
+      //String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
 
       var response = await http
           .post(
@@ -488,11 +489,11 @@ void dispose() {
       if (result['success'] == true) {
         final Map<String, dynamic>? userMap = result['user'];
 
-      if (userMap != null) {
-       final user = User.fromJson(userMap);
-       await Session.saveUser(user); // <-- هذا هو الأهم
-       }
-       
+        if (userMap != null) {
+          final user = User.fromJson(userMap);
+          await Session.saveUser(user); // <-- هذا هو الأهم
+        }
+
         _showSuccess('تم إنشاء الحساب بنجاح!');
 
         // الانتقال إلى الصفحة الرئيسية

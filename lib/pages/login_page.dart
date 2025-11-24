@@ -35,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
               ),
               const SizedBox(height: 20),
-              
+
               // العنوان
               const Text(
                 'تسجيل الدخول',
@@ -56,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 40),
-              
+
               // حقل اسم المستخدم
               TextField(
                 controller: _usernameController,
@@ -74,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // حقل كلمة المرور
               TextField(
                 controller: _passwordController,
@@ -85,7 +85,9 @@ class _LoginPageState extends State<LoginPage> {
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                       color: Colors.grey,
                     ),
                     onPressed: () {
@@ -104,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // نسيت كلمة المرور
               Align(
                 alignment: Alignment.centerLeft,
@@ -112,7 +114,9 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const IdentityVerificationPage()),
+                      MaterialPageRoute(
+                        builder: (context) => const IdentityVerificationPage(),
+                      ),
                     );
                   },
                   child: Text(
@@ -125,7 +129,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 30),
-              
+
               // زر تسجيل الدخول
               SizedBox(
                 width: double.infinity,
@@ -160,7 +164,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // رابط التسجيل الجديد
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -212,11 +216,10 @@ class _LoginPageState extends State<LoginPage> {
         _usernameController.text.trim(),
         _passwordController.text,
       );
-      await Session.saveUser(user);     // ← حفظ الجلسة
+      await Session.saveUser(user); // ← حفظ الجلسة
 
       // 3. التحقق من رقم الجوال فقط
       await _navigateToOTP(user);
-      
     } catch (e) {
       // 4. معالجة الأخطاء
       _showError('فشل تسجيل الدخول: $e');
@@ -231,17 +234,17 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _navigateToOTP(User user) async {
     // 1. جلب الرقم الحقيقي من الداتابيس
     String phoneNumber = user.phoneNumber ?? '';
-    
+
     print('🔍 بدء OTP للمستخدم: ${user.fullName}');
     print('🔍 نوع المستخدم: ${user.userType}');
     print('🔍 هو أدمن: ${user.isAdmin}');
     print('🔍 رقم الجوال: $phoneNumber');
-    
+
     // 2. تحويل الرقم للتنسيق الدولي
     String formattedNumber = _convertToInternationalFormat(phoneNumber);
-    
+
     print('🌍 الرقم بعد التحويل: $formattedNumber');
-    
+
     // 3. التحقق من صحة الرقم قبل الإرسال
     if (formattedNumber.isEmpty || !formattedNumber.startsWith('+966')) {
       _showError('رقم الجوال غير صالح لإرسال الرمز: $formattedNumber');
@@ -286,7 +289,9 @@ class _LoginPageState extends State<LoginPage> {
       } catch (e2) {
         print('❌ فشل تسجيل الجهاز بعد المحاولتين: $e2');
         // يمكن تجاهل الخطأ أو عرض رسالة للمستخدم
-        _showError('حدث خطأ في تسجيل الجهاز، لكن يمكنك الاستمرار في استخدام التطبيق');
+        _showError(
+          'حدث خطأ في تسجيل الجهاز، لكن يمكنك الاستمرار في استخدام التطبيق',
+        );
       }
     }
   }
@@ -294,27 +299,24 @@ class _LoginPageState extends State<LoginPage> {
   // دالة مساعدة لتحويل التنسيق
   String _convertToInternationalFormat(String phoneNumber) {
     if (phoneNumber.isEmpty) return '';
-    
+
     // إزالة أي مسافات أو أحرف خاصة
     String cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
-    
+
     print('🔧 تنظيف الرقم: $cleanNumber');
-    
+
     // إذا الرقم يبدأ بـ 05 (سعودي)
     if (cleanNumber.startsWith('05') && cleanNumber.length == 10) {
       return '+966${cleanNumber.substring(1)}';
     }
-    
     // إذا الرقم يبدأ بـ 5 (بدون صفر)
     else if (cleanNumber.startsWith('5') && cleanNumber.length == 9) {
       return '+966$cleanNumber';
     }
-    
     // إذا الرقم يبدأ بـ +966 (محول مسبقاً)
     else if (cleanNumber.startsWith('966') && cleanNumber.length == 12) {
       return '+$cleanNumber';
     }
-    
     // إذا الرقم غير معروف
     else {
       print('❌ تنسيق الرقم غير معروف: $phoneNumber');
@@ -336,7 +338,7 @@ class _LoginPageState extends State<LoginPage> {
       // العميل يروح للصفحة الرئيسية
       Navigator.pushReplacementNamed(context, '/home');
     }
-    
+
     // عرض رسالة ترحيب أنيقة بعد الانتقال
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showDialog(
@@ -350,14 +352,20 @@ class _LoginPageState extends State<LoginPage> {
           title: Row(
             children: [
               Icon(
-                user.isAdmin ? Icons.admin_panel_settings : 
-                user.isLawyer ? Icons.gavel : Icons.person,
+                user.isAdmin
+                    ? Icons.admin_panel_settings
+                    : user.isLawyer
+                    ? Icons.gavel
+                    : Icons.person,
                 color: user.isAdmin ? Color(0xFF8B0000) : Color(0xFF0B5345),
               ),
               SizedBox(width: 8),
               Text(
-                user.isAdmin ? 'مرحباً أيها المشرف' : 
-                user.isLawyer ? 'مرحباً أيها المحامي' : 'مرحباً',
+                user.isAdmin
+                    ? 'مرحباً أيها المشرف'
+                    : user.isLawyer
+                    ? 'مرحباً أيها المحامي'
+                    : 'مرحباً',
                 style: TextStyle(
                   fontFamily: 'Tajawal',
                   color: user.isAdmin ? Color(0xFF8B0000) : Color(0xFF0B5345),
@@ -390,10 +398,14 @@ class _LoginPageState extends State<LoginPage> {
   // دالة مساعدة لتحويل نوع المستخدم للعربية
   String _getUserTypeArabic(String userType) {
     switch (userType) {
-      case 'client': return 'عميل';
-      case 'lawyer': return 'محامي';
-      case 'admin': return 'مشرف';
-      default: return 'مستخدم';
+      case 'client':
+        return 'عميل';
+      case 'lawyer':
+        return 'محامي';
+      case 'admin':
+        return 'مشرف';
+      default:
+        return 'مستخدم';
     }
   }
 

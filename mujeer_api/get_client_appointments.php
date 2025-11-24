@@ -9,8 +9,7 @@ ini_set('display_errors', 1);
 
 require_once 'config.php';
 
-// نقرأ JSON من Flutter
-$raw = file_get_contents("php://input");
+$raw  = file_get_contents("php://input");
 $data = json_decode($raw, true);
 
 if ($data === null || !isset($data['clientId'])) {
@@ -23,7 +22,30 @@ if ($data === null || !isset($data['clientId'])) {
 
 $clientId = (int)$data['clientId'];
 
-// نجيب كل المواعيد + هل هذا العميل أعطى أي فيدباك لهذا المحامي من قبل
+/*
+ * هنا نحدّث الحالات بحسب الوقت:
+ * - لو الموعد في المستقبل → Upcoming
+ * - لو الوقت الحالي بين (DateTime) و (DateTime + 1 hour) → Active
+ * - لو بعد ساعة من الموعد → Past
+ */
+$updateSql = "
+    UPDATE appointment
+    SET Status = CASE
+        WHEN DateTime > NOW() THEN 'Upcoming'
+        WHEN DateTime <= NOW() AND DATE_ADD(DateTime, INTERVAL 1 HOUR) > NOW() THEN 'Active'
+        ELSE 'Past'
+    END
+    WHERE ClientID = ?
+";
+
+$uStmt = $conn->prepare($updateSql);
+if ($uStmt) {
+    $uStmt->bind_param("i", $clientId);
+    $uStmt->execute();
+    $uStmt->close();
+}
+
+// الآن نجيب المواعيد مع معلومات المحامي + هل فيه تقييم + تفاصيل الاستشارة
 $sql = "
     SELECT 
         a.AppointmentID,
@@ -40,9 +62,21 @@ $sql = "
             FROM feedback f 
             WHERE f.LawyerID = a.LawyerID 
               AND f.ClientID = a.ClientID
-        ) AS HasFeedback
+        ) AS HasFeedback,
+
+        CASE
+            WHEN con.AppointmentID IS NOT NULL THEN 'consultation'
+            WHEN cr.AppointmentID  IS NOT NULL THEN 'contract_review'
+            ELSE NULL
+        END AS consultation_type,
+
+        COALESCE(con.Details, cr.Details) AS details,
+        COALESCE(con.File,    cr.File)    AS file
+
     FROM appointment a
     JOIN lawyer l ON l.LawyerID = a.LawyerID
+    LEFT JOIN consultation   con ON con.AppointmentID = a.AppointmentID
+    LEFT JOIN contractreview cr  ON cr.AppointmentID = a.AppointmentID
     WHERE a.ClientID = ?
     ORDER BY a.DateTime DESC
 ";

@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 class ApiClient {
   // مهم:
   // على Android Emulator نستخدم 10.0.2.2 بدل localhost
-  static const String base = 'http://192.168.3.10:8888/mujeer_api';
+  static const String base = 'http://10.0.2.2:8888/mujeer_api';
   // على iOS Simulator أو Flutter Web على نفس الجهاز:
   // static const String base = 'http://localhost:8888/mujeer_api';
 

@@ -41,23 +41,25 @@ class User {
       id: _parseId(json),
       fullName: (json['FullName'] ?? json['fullName'] ?? '').toString(),
       username: (json['Username'] ?? json['username'] ?? '').toString(),
-      phoneNumber:
-          (json['PhoneNumber'] ?? json['phoneNumber'] ?? '').toString(),
+      phoneNumber: (json['PhoneNumber'] ?? json['phoneNumber'] ?? '')
+          .toString(),
       userType: _determineUserType(json),
       points: int.tryParse('${json['Points'] ?? json['points'] ?? 0}') ?? 0,
       profileImage:
           (json['lawyerPhoto'] ??
-           json['LawyerPhoto'] ??
-           json['profileImage'] ??
-           json['ProfileImage'] ??
-           '').toString(),
-      registrationDate:
-          _parseDate(json['RegistrationDate'] ?? json['created_at']),
+                  json['LawyerPhoto'] ??
+                  json['profileImage'] ??
+                  json['ProfileImage'] ??
+                  '')
+              .toString(),
+      registrationDate: _parseDate(
+        json['RegistrationDate'] ?? json['created_at'],
+      ),
       status: (json['Status'] ?? json['status'])?.toString(),
 
       // 🟣 الحقول الإضافية
-      yearsOfExp: int.tryParse(
-              '${json['YearsOfExp'] ?? json['yearsOfExp'] ?? ''}') ??
+      yearsOfExp:
+          int.tryParse('${json['YearsOfExp'] ?? json['yearsOfExp'] ?? ''}') ??
           null,
       mainSpecialization:
           (json['MainSpecialization'] ?? json['mainSpecialization'])
@@ -71,8 +73,8 @@ class User {
       educationQualification:
           (json['EducationQualification'] ?? json['educationQualification'])
               ?.toString(),
-      academicMajor:
-          (json['AcademicMajor'] ?? json['academicMajor'])?.toString(),
+      academicMajor: (json['AcademicMajor'] ?? json['academicMajor'])
+          ?.toString(),
     );
   }
 
@@ -143,7 +145,8 @@ class User {
     if (profileImage == null || profileImage!.isEmpty) {
       return '';
     }
-    const baseUrl = 'http://192.168.3.10:8888/mujeer_api';
+    const baseUrl = 'http://10.0.2.2:8888/mujeer_api';
+    //const baseUrl = 'http://192.168.3.10:8888/mujeer_api';
     return '$baseUrl/uploads/$profileImage';
   }
 
@@ -174,8 +177,7 @@ class User {
 
   bool get isApproved => statusNormalized == 'Approved';
   bool get isRejected => statusNormalized == 'Rejected';
-  bool get isPending  => statusNormalized == 'Pending';
-
+  bool get isPending => statusNormalized == 'Pending';
 
   @override
   String toString() {
@@ -191,8 +193,7 @@ class User {
   @override
   int get hashCode => id.hashCode;
 
-
-    User copyWith({
+  User copyWith({
     String? fullName,
     String? username,
     String? phoneNumber,
@@ -201,7 +202,7 @@ class User {
     String? profileImage,
     DateTime? registrationDate,
     String? status,
-    
+
     int? yearsOfExp,
     String? mainSpecialization,
     String? fSubSpecialization,
@@ -225,30 +226,21 @@ class User {
       fSubSpecialization: fSubSpecialization ?? this.fSubSpecialization,
       sSubSpecialization: sSubSpecialization ?? this.sSubSpecialization,
       educationQualification:
-        educationQualification ?? this.educationQualification,
+          educationQualification ?? this.educationQualification,
       academicMajor: academicMajor ?? this.academicMajor,
     );
   }
-
 }
-
-
 
 // نموذج لبيانات تسجيل الدخول
 class LoginRequest {
   final String username;
   final String password;
 
-  LoginRequest({
-    required this.username,
-    required this.password,
-  });
+  LoginRequest({required this.username, required this.password});
 
   Map<String, dynamic> toJson() {
-    return {
-      'username': username,
-      'password': password,
-    };
+    return {'username': username, 'password': password};
   }
 }
 
@@ -274,6 +266,4 @@ class LoginResponse {
       token: json['token']?.toString(),
     );
   }
-
-  
 }

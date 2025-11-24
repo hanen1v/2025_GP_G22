@@ -40,7 +40,8 @@ class _SelectTimePageState extends State<SelectTimePage> {
 
   Future<void> _fetchTimes() async {
     final url = Uri.parse(
-        "http://192.168.3.10:8888/mujeer_api/get_timeslots.php?lawyer_id=${widget.lawyerId}");
+        //"http://192.168.3.10:8888/mujeer_api/get_timeslots.php?lawyer_id=${widget.lawyerId}");
+        "http://10.0.2.2:8888/mujeer_api/get_timeslots.php?lawyer_id=${widget.lawyerId}");
 
     try {
       final response = await http.get(url);
@@ -60,7 +61,8 @@ class _SelectTimePageState extends State<SelectTimePage> {
 
   Future<void> _fetchPrice() async {
     final url = Uri.parse(
-        "http://192.168.3.10:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}");
+        //"http://192.168.3.10:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}");
+        "http://10.0.2.2:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}");
 
     final res = await http.get(url);
     if (res.statusCode == 200) {
