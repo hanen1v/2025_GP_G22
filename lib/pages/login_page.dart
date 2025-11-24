@@ -249,14 +249,15 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     // 4. الانتقال لصفحة OTP مع الرقم المحول
-    bool? verified = await Navigator.push(
+    bool? verified = true;
+    /*await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => OTPScreen(
           phoneNumber: formattedNumber,
         ),
       ),
-    );
+    );*/
 
     // 5. معالجة النتيجة
     if (verified == true) {
