@@ -19,6 +19,9 @@ class Appointment {
   final String requestNo;  // رقم الطلب (نفس الـ ID)
   final bool hasFeedback;  // من الـ PHP (0/1)
   final String lawyerPhoto; // اسم ملف الصورة من الـ DB (LawyerPhoto)
+  final String consultationType; // consultation / contract_review
+  final String details;          // وصف الحالة
+  final String file;             // اسم الملف المرفق
 
   Appointment({
     required this.id,
@@ -30,7 +33,24 @@ class Appointment {
     required this.requestNo,
     required this.hasFeedback,
     required this.lawyerPhoto,
+    required this.consultationType,
+    required this.details,
+    required this.file,
   });
+
+
+  // label عربي لنوع الاستشارة
+  String get typeLabel {
+    switch (consultationType) {
+      case 'contract':
+      case 'contractreview':
+      case 'contract_review':
+        return 'مراجعة عقد';
+      case 'consultation':
+      default:
+        return 'استشارة قانونية';
+    }
+  }
 
   // رابط الصورة الجاهز للاستخدام
   String get lawyerPhotoUrl {
@@ -61,6 +81,9 @@ class Appointment {
       requestNo: '${json['AppointmentID']}',
       hasFeedback: '${json['HasFeedback']}' == '1',
       lawyerPhoto: (json['LawyerPhoto'] ?? '').toString(), // <-- مهم
+      consultationType: (json['consultation_type'] ?? '').toString(),
+      details: (json['details'] ?? '').toString(),
+      file: (json['file'] ?? '').toString(),
     );
   }
 }
@@ -484,46 +507,37 @@ Directionality(
     );
   }
 
-  /// الأزرار (إلغاء / محادثة / قيّم الآن)
+    /// الأزرار (إلغاء / محادثة / قيّم الآن / عرض التفاصيل)
   Widget _buildActionsForStatus(Appointment ap, String statusFilter) {
-  const primaryGreen = Color(0xFF0B5345);
+    const primaryGreen = Color(0xFF0B5345);
 
-  if (statusFilter == 'Upcoming') {
-    // إلغاء الموعد
-    return _pillButton(
-      label: 'إلغاء الموعد',
-      textColor: Colors.red,
-      bgColor: Colors.red.withOpacity(0.06),
-      onTap: () => _cancelAppointment(ap.id),
-    );
-  } else if (statusFilter == 'Active') {
-    // محادثة
-    return _pillButton(
-      label: 'محادثة المحامي',
-      textColor: primaryGreen,
-      bgColor: primaryGreen.withOpacity(0.08),
-      onTap: () => _openChatWithLawyer(ap),
-    );
-  } else {
-    // Past
-    if (ap.hasFeedback) {
-      return const Text(
-        'تم التقييم',
-        style: TextStyle(
-          fontFamily: 'Tajawal',
-          fontSize: 12,
-          color: Colors.grey,
-        ),
+    if (statusFilter == 'Upcoming') {
+        return _pillButton(
+        label: 'عرض التفاصيل',
+        textColor: primaryGreen,
+        bgColor: primaryGreen.withOpacity(0.08),
+        onTap: () => _showDetails(ap),
       );
+    } else if (statusFilter == 'Active') {
+      // محادثة
+      return _pillButton(
+        label: 'محادثة المحامي',
+        textColor: primaryGreen,
+        bgColor: primaryGreen.withOpacity(0.08),
+        onTap: () => _openChatWithLawyer(ap),
+      );
+    } else {
+      // Past
+return _pillButton(
+  label: 'عرض التفاصيل',
+  textColor: primaryGreen,
+  bgColor: primaryGreen.withOpacity(0.08),
+  onTap: () => _showDetails(ap),
+);
+
     }
-    return _pillButton(
-      label: 'قيّم الموعد',
-      textColor: primaryGreen,
-      bgColor: primaryGreen.withOpacity(0.08),
-      onTap: () => _openRatingPage(ap.lawyerId),
-    );
   }
-}
+
 
 //  (chip)
 Widget _pillButton({
@@ -709,6 +723,27 @@ void _openChatWithLawyer(Appointment ap) async {
   );
 }
 
+
+void _openFinishedChat(Appointment ap) async {
+  final user = await Session.getUser();
+  if (user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('يجب تسجيل الدخول أولاً')),
+    );
+    return;
+  }
+
+  Navigator.pushNamed(
+    context,
+    '/PastChatScreen',         
+    arguments: {
+      'senderID': 'C${user.id}',    
+      'receiverID': 'L${ap.lawyerId}',
+      'appointmentID': ap.id,
+    },
+  );
+}
+
 //navigate to feedback page
 void _openRatingPage(int lawyerId) {
   Navigator.pushNamed(
@@ -719,5 +754,306 @@ void _openRatingPage(int lawyerId) {
     },
   );
 }
+
+
+
+  /// عرض تفاصيل الموعد (تتصرف حسب الحالة: قادمة / منتهية)
+  void _showDetails(Appointment ap) {
+    // لو ما فيه لا تفاصيل ولا ملف، نعرض رسالة ونطلع
+    if (ap.details.trim().isEmpty && ap.file.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('لا توجد تفاصيل لهذا الموعد')),
+      );
+      return;
+    }
+
+    const primaryGreen = Color(0xFF0B5345);
+    final typeTitle = ap.typeLabel; // استشارة قانونية / مراجعة عقد
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final media = MediaQuery.of(ctx).size;
+
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: Container(
+            height: media.height * 0.70,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 8),
+                // الهاندل الصغير
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // الهيدر
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.of(ctx).pop(),
+                      ),
+                      const Spacer(),
+                      Text(
+                        typeTitle,
+                        style: const TextStyle(
+                          fontFamily: 'Tajawal',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const Spacer(),
+                      const SizedBox(width: 48),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+
+                // المحتوى
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // معلومات بسيطة
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'المحامي: ${ap.lawyerName}',
+                                style: const TextStyle(
+                                  fontFamily: 'Tajawal',
+                                  fontSize: 13,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              '#${ap.requestNo}',
+                              style: const TextStyle(
+                                fontFamily: 'Tajawal',
+                                fontSize: 13,
+                                color: primaryGreen,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // وصف الحالة
+                        if (ap.details.trim().isNotEmpty) ...[
+                          const Text(
+                            'وصف الحالة',
+                            style: TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F6FA),
+                              borderRadius: BorderRadius.circular(12),
+                              border: const Border(
+                                top: BorderSide(color: Color(0xFFE0E3EB)),
+                                bottom: BorderSide(color: Color(0xFFE0E3EB)),
+                                left: BorderSide(color: Color(0xFFE0E3EB)),
+                                right: BorderSide(color: Color(0xFFE0E3EB)),
+                              ),
+                            ),
+                            child: Text(
+                              ap.details,
+                              style: const TextStyle(
+                                fontFamily: 'Tajawal',
+                                fontSize: 14,
+                                height: 1.5,
+                              ),
+                            ),
+                          ),
+                        ],
+
+                        // الملف المرفق
+                        if (ap.file.trim().isNotEmpty) ...[
+                          const SizedBox(height: 24),
+                          const Text(
+                            'الملف المرفق',
+                            style: TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F6FA),
+                              borderRadius: BorderRadius.circular(12),
+                              border: const Border(
+                                top: BorderSide(color: Color(0xFFD0D7FF)),
+                                bottom: BorderSide(color: Color(0xFFD0D7FF)),
+                                left: BorderSide(color: Color(0xFFD0D7FF)),
+                                right: BorderSide(color: Color(0xFFD0D7FF)),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.picture_as_pdf,
+                                  color: primaryGreen,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    ap.file,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontFamily: 'Tajawal',
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: 24),
+
+                        // ===== لو الموعد منتهي (Past): زر رؤية المحادثة + التقييم =====
+                        if (ap.status == 'Past') ...[
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                _openFinishedChat(ap);
+                              },
+                              icon: const Icon(Icons.chat_bubble_outline),
+                              label: const Text(
+                                'رؤية المحادثة',
+                                style: TextStyle(
+                                  fontFamily: 'Tajawal',
+                                  fontSize: 14,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primaryGreen,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // التقييم
+                          if (ap.hasFeedback)
+                            const Center(
+                              child: Text(
+                                'تم التقييم',
+                                style: TextStyle(
+                                  fontFamily: 'Tajawal',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          else
+                            Center(
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.of(ctx).pop(); // نقفل التفاصيل
+                                  _openRatingPage(ap.lawyerId); // نروح للتقييم
+                                },
+                                borderRadius: BorderRadius.circular(30),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: primaryGreen.withOpacity(0.08),
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: const Text(
+                                    'قيّم الموعد',
+                                    style: TextStyle(
+                                      fontFamily: 'Tajawal',
+                                      fontSize: 14,
+                                      color: primaryGreen,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+
+                        // ===== لو الموعد قادم (Upcoming): زر إلغاء الموعد =====
+                        if (ap.status == 'Upcoming') ...[
+                        Center(
+                         child: InkWell(
+                          onTap: () async {
+                           Navigator.of(ctx).pop(); // نقفل التفاصيل
+                           await _cancelAppointment(ap.id); // إلغاء الموعد
+                          },
+                          borderRadius: BorderRadius.circular(30),
+                         child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                           color: Colors.red.withOpacity(0.10),
+                           borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: const Text(
+                           'إلغاء الموعد',
+                           style: TextStyle(
+                             fontFamily: 'Tajawal',
+                             fontSize: 14,
+                             color: Colors.red,
+                             fontWeight: FontWeight.w600,
+                             ),
+                          ),
+                          ),
+                         ),
+                        ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
 
 }
