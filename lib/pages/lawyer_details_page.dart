@@ -17,18 +17,15 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
   Map<String, dynamic>? lawyer;
   bool isLoading = true;
 
-  // التقييمات
   Map<String, dynamic>? ratings;
   bool loadingRatings = true;
 
-  // التعليقات
   List<dynamic> comments = [];
   bool loadingComments = true;
 
-  //  بيانات المحامي
   Future<void> _fetchLawyerDetails() async {
     final url = Uri.parse(
-        'http://192.168.3.10:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
+        'http://10.0.2.2:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -44,10 +41,9 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
     }
   }
 
-  // جلب التقييمات
   Future<void> _fetchRatings() async {
     final url = Uri.parse(
-        'http://192.168.3.10:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
+        'http://10.0.2.2:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
     try {
       final response = await http.get(url);
 
@@ -64,10 +60,9 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
     }
   }
 
-  // جلب التعليقات
   Future<void> _fetchComments() async {
     final url = Uri.parse(
-        'http://192.168.3.10:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
+        'http://10.0.2.2:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
     try {
       final res = await http.get(url);
       if (res.statusCode == 200) {
@@ -95,10 +90,18 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
+
+      // ★★ زر + في المنتصف مثل السيرتش ★★
+      floatingActionButton: _buildFab(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+      // ★★ نفس ناف بار السيرتش بالضبط ★★
+      bottomNavigationBar: const AppBottomNav(currentRoute: '/search'),
+
       body: isLoading
           ? const Center(
-              child:
-                  CircularProgressIndicator(color: Color.fromARGB(255, 6, 61, 65)))
+              child: CircularProgressIndicator(
+                  color: Color.fromARGB(255, 6, 61, 65)))
           : Stack(
               children: [
                 SingleChildScrollView(
@@ -119,7 +122,6 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // الصورة والتقييم
                         CircleAvatar(
                           radius: 45,
                           backgroundImage: NetworkImage(lawyer!['image']),
@@ -139,8 +141,6 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                           ],
                         ),
                         const SizedBox(height: 15),
-
-                        // رقم الرخصة
                         Container(
                           padding: const EdgeInsets.symmetric(
                               vertical: 4, horizontal: 14),
@@ -155,7 +155,6 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                           ),
                         ),
                         const SizedBox(height: 12),
-
                         Text(
                           lawyer!['name'],
                           style: const TextStyle(
@@ -164,9 +163,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                             color: Color.fromARGB(255, 6, 61, 65),
                           ),
                         ),
-
                         const SizedBox(height: 30),
-
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -178,9 +175,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                                 'الدرجة العلمية', lawyer!['degree']),
                           ],
                         ),
-
                         const SizedBox(height: 50),
-
                         Align(
                           alignment: Alignment.centerRight,
                           child: Text(
@@ -192,9 +187,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 10),
-
                         Wrap(
                           spacing: 6,
                           runSpacing: 6,
@@ -204,10 +197,9 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                             _smallTag(lawyer!['ssubSpeciality']),
                           ],
                         ),
-
                         const SizedBox(height: 30),
 
-                        // ====== قسم التقييمات ======
+                        // تقييمات
                         loadingRatings
                             ? const CircularProgressIndicator(
                                 color: Color.fromARGB(255, 6, 61, 65))
@@ -217,12 +209,9 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
 
                         const SizedBox(height: 40),
 
-                        // ====== قسم التعليقات ======
                         _buildCommentsSection(),
-
                         const SizedBox(height: 40),
 
-                        // زر حجز موعد
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -241,8 +230,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
                                   const Color.fromARGB(255, 6, 61, 65),
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
@@ -271,11 +259,34 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                 ),
               ],
             ),
-      bottomNavigationBar: const AppBottomNav(currentRoute: '/search'),
     );
   }
 
-  // ---------------------------- Widgets ----------------------------
+  Widget _buildFab(BuildContext context) => Container(
+        width: 65,
+        height: 65,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+              colors: [Color.fromARGB(255, 6, 61, 65), Color.fromARGB(255, 8, 65, 69)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight),
+          boxShadow: const [
+            BoxShadow(
+                color: Color.fromARGB(255, 31, 79, 83),
+                blurRadius: 10,
+                offset: Offset(0, 4))
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () => Navigator.pushReplacementNamed(context, '/plus'),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: const Icon(Icons.add, color: Colors.white, size: 28),
+        ),
+      );
+
+
 
   Widget _roundedBox(IconData icon, String title, String value) {
     return Container(
@@ -325,7 +336,6 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
     );
   }
 
-  // ====== قسم التقييمات القديم كدالة مستقلة ======
   Widget _buildRatingsSection() {
     final avg = ratings!['average'];
     final count = ratings!['count'];
@@ -414,8 +424,11 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                   Row(
                     children: List.generate(
                       star,
-                      (x) => const Icon(Icons.star,
-                          size: 18, color: Colors.amber),
+                      (x) => const Icon(
+                        Icons.star,
+                        size: 18,
+                        color: Colors.amber,
+                      ),
                     ),
                   ),
                 ],
@@ -427,7 +440,6 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
     );
   }
 
-  // ====== قسم التعليقات الجديد ======
   Widget _buildCommentsSection() {
     if (loadingComments) {
       return const Center(
@@ -463,34 +475,29 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-              Row(
-  textDirection: TextDirection.ltr, 
-  children: [
-    
-    Row(
-      children: List.generate(
-        c["rate"],
-        (x) => const Icon(Icons.star, size: 18, color: Colors.amber),
-      ),
-    ),
-
-    const SizedBox(width: 8),
-
-   
-    Expanded(
-      child: Text(
-        c["username"],
-        textDirection: TextDirection.rtl, 
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 15,
-        ),
-      ),
-    ),
-  ],
-),
-
-
+                Row(
+                  textDirection: TextDirection.ltr,
+                  children: [
+                    Row(
+                      children: List.generate(
+                        c["rate"],
+                        (x) =>
+                            const Icon(Icons.star, size: 18, color: Colors.amber),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        c["username"],
+                        textDirection: TextDirection.rtl,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 6),
                 Text(
                   c["review"],
@@ -538,34 +545,29 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  Row(
-  textDirection: TextDirection.ltr, 
-  children: [
-   
-    Row(
-      children: List.generate(
-        c["rate"],
-        (x) => const Icon(Icons.star, size: 18, color: Colors.amber),
-      ),
-    ),
-
-    const SizedBox(width: 8),
-
-    // الاسم يمين
-    Expanded(
-      child: Text(
-        c["username"],
-        textDirection: TextDirection.rtl, 
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 15,
-        ),
-      ),
-    ),
-  ],
-),
-
-
+                      Row(
+                        textDirection: TextDirection.ltr,
+                        children: [
+                          Row(
+                            children: List.generate(
+                              c["rate"],
+                              (x) => const Icon(Icons.star,
+                                  size: 18, color: Colors.amber),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              c["username"],
+                              textDirection: TextDirection.rtl,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 6),
                       Text(
                         c["review"],
