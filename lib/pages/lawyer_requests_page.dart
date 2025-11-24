@@ -506,6 +506,27 @@ void _openChatWithClient(LawyerAppointment ap) async {
   );
 }
 
+
+void _openFinishedChat(LawyerAppointment ap) async {
+  final user = await Session.getUser();
+  if (user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('يجب تسجيل الدخول أولاً')),
+    );
+    return;
+  }
+
+  Navigator.pushNamed(
+    context,
+    '/PastChatScreen',         
+    arguments: {
+      'senderID': 'L${user.id}',    
+      'receiverID': 'C${ap.clientId}',
+      'appointmentID': ap.id,
+    },
+  );
+}
+
     /// عرض تفاصيل الموعد    
   void _showDetails(LawyerAppointment ap) {
     if (ap.details.trim().isEmpty && ap.file.trim().isEmpty) {
@@ -692,6 +713,36 @@ void _openChatWithClient(LawyerAppointment ap) async {
                             ),
                           ),
                         ],
+
+
+                      // ===== زر رؤية المحادثة للطلبات المنتهية =====
+if (ap.status == 'Past') ...[
+  const SizedBox(height: 24),
+  SizedBox(
+    width: double.infinity,
+    child: ElevatedButton.icon(
+      onPressed: () {
+        _openFinishedChat(ap);
+      },
+      icon: const Icon(Icons.chat_bubble_outline),
+      label: const Text(
+        'رؤية المحادثة',
+        style: TextStyle(
+          fontFamily: 'Tajawal',
+          fontSize: 14,
+        ),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primaryGreen,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    ),
+  ),
+],
                       ],
                     ),
                   ),
