@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class ChatScreen extends StatefulWidget {
+class PastChatScreen extends StatefulWidget {
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  _PastChatScreenState createState() => _PastChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _PastChatScreenState extends State<PastChatScreen> {
   String? senderID; 
   String? receiverID; 
   int? appointmentID;
