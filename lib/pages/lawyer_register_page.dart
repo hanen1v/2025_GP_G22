@@ -1,707 +1,820 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
-import 'package:open_file/open_file.dart';
-
-import '../widgets/lawyer_bottom_nav.dart';
-import '../services/api_client.dart';
+import 'dart:convert';
+import 'package:http_parser/http_parser.dart';
+import 'otp_screen.dart';
 import '../services/session.dart';
+import '../models/user.dart';
+import '../services/api_client.dart';
 
-/// فتح ملف PDF داخل التطبيق باستخدام open_file
-Future<void> openPdfInsideApp(String fileName) async {
-  try {
-    final url = "${ApiClient.base}/uploads/$fileName";
-
-    // تحميل الملف من السيرفر
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode != 200) {
-      throw Exception("فشل تحميل الملف");
-    }
-
-    // تخزينه مؤقتاً في مجلد الـ temp
-    final dir = await getTemporaryDirectory();
-    final file = File("${dir.path}/$fileName");
-    await file.writeAsBytes(response.bodyBytes);
-
-    // فتحه عن طريق open_file (عارض داخلي للنظام)
-    await OpenFile.open(file.path);
-  } catch (e) {
-    debugPrint("PDF ERROR: $e");
-  }
-}
-
-// ================== MODEL ==================
-
-class LawyerAppointment {
-  final int id;
-  final int clientId;
-  final String clientName;
-  final String status;
-  final String date;
-  final String time;
-  final String requestNo;
-  final String consultationType;
-  final String details;
-  final String file;
-
-  LawyerAppointment({
-    required this.id,
-    required this.clientId,
-    required this.clientName,
-    required this.status,
-    required this.date,
-    required this.time,
-    required this.requestNo,
-    required this.consultationType,
-    required this.details,
-    required this.file,
-  });
-
-  /// تحويل القيمة من السيرفر إلى نص عربي
-  String get typeLabel {
-    switch (consultationType) {
-      case 'contract':
-      case 'contractreview':
-      case 'contract_review':
-        return 'مراجعة عقد';
-      case 'consultation':
-      default:
-        return 'استشارة قانونية';
-    }
-  }
-
-  factory LawyerAppointment.fromJson(Map<String, dynamic> json) {
-    final raw = (json['DateTime'] ?? '').toString();
-    String date = '';
-    String time = '';
-
-    if (raw.isNotEmpty) {
-      final parts = raw.split(' ');
-      if (parts.isNotEmpty) date = parts[0];
-      if (parts.length > 1 && parts[1].length >= 5) {
-        time = parts[1].substring(0, 5);
-      }
-    }
-
-    return LawyerAppointment(
-      id: int.parse(json['AppointmentID'].toString()),
-      clientId: int.parse(json['ClientID'].toString()),
-      clientName: (json['ClientName'] ?? 'عميل').toString(),
-      status: (json['Status'] ?? 'Upcoming').toString(),
-      date: date,
-      time: time,
-      requestNo: json['AppointmentID'].toString(),
-      consultationType: (json['consultation_type'] ?? '').toString(),
-      details: (json['details'] ?? '').toString(),
-      file: (json['file'] ?? '').toString(),
-    );
-  }
-}
-
-// ================== PAGE ==================
-
-class LawyerRequestsPage extends StatefulWidget {
-  const LawyerRequestsPage({super.key});
+class LawyerRegisterPage extends StatefulWidget {
+  const LawyerRegisterPage({super.key});
 
   @override
-  State<LawyerRequestsPage> createState() => _LawyerRequestsPageState();
+  State<LawyerRegisterPage> createState() => _LawyerRegisterPageState();
 }
 
-class _LawyerRequestsPageState extends State<LawyerRequestsPage> {
-  String _currentTab = 'Upcoming';
-  List<LawyerAppointment> _all = [];
-  bool _loading = true;
+class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
+  final _formKey = GlobalKey<FormState>();
 
-  List<LawyerAppointment> get _filtered =>
-      _all.where((ap) => ap.status == _currentTab).toList();
+  // controllers للحقول النصية
+  final _fullNameController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _licenseController = TextEditingController();
+  final _experienceController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
+  // للملفات
+  String? _licenseFileName;
+  String? _profileImageName;
+  PlatformFile? _licenseFile;
+  PlatformFile? _profileImage;
 
-  Future<void> _load() async {
-    setState(() => _loading = true);
+  // للتخصصات (قوائم محددة)
+  String? _selectedGender;
+  String? _selectedMainSpecialization;
+  String? _selectedSubSpecialization1;
+  String? _selectedSubSpecialization2;
+  String? _selectedEducationLevel;
+  String? _selectedAcademicMajor;
 
-    try {
-      final user = await Session.getUser(); // المحامي
-      if (user == null || !user.isLawyer) {
-        throw Exception('المستخدم الحالي ليس محاميًا');
-      }
+  // لإظهار/إخفاء كلمة المرور
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
-      final res = await http.post(
-        Uri.parse('${ApiClient.base}/get_lawyer_appointments.php'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'lawyerId': user.id}),
-      );
+  // القوائم المحددة
+  final List<String> _genders = ['ذكر', 'أنثى'];
+  final List<String> _mainSpecializations = [
+    'عقاري',
+    'قضايا العمالة',
+    'جنائي',
+    'تجاري',
+    'اسري',
+    'عمل',
+    'أحوال شخصية',
+    'اداري',
+    'ملكية فكرية',
+  ];
+  final List<String> _subSpecializations = [
+    'عقاري',
+    'قضايا العمالة',
+    'جنائي',
+    'تجاري',
+    'اسري',
+    'عمل',
+    'أحوال شخصية',
+    'اداري',
+    'ملكية فكرية',
+  ];
+  final List<String> _educationLevels = [
+    'بكالوريوس',
+    'ماجستير',
+    'دكتوراه',
+    'دبلوم',
+  ];
+  final List<String> _academicMajors = ['شريعة', 'قانون'];
 
-      final body = jsonDecode(res.body);
-      print('API RESPONSE: $body');
-      final list = (body['appointments'] as List? ?? [])
-          .cast<Map<String, dynamic>>()
-          .map((m) => LawyerAppointment.fromJson(m))
-          .toList();
-
-      setState(() => _all = list);
-    } catch (e) {
-      debugPrint('ERROR loading lawyer appointments: $e');
-    }
-
-    if (mounted) {
-      setState(() => _loading = false);
-    }
-  }
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
-    const primaryGreen = Color(0xFF0B5345);
-
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF8F8FC),
-        body: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 16),
-              
-              const SizedBox(height: 16),
-              _buildTabs(),
-              const SizedBox(height: 16),
-              Expanded(child: _buildBody()),
-            ],
-          ),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
+      appBar: AppBar(
+        title: const Text(
+          'تسجيل محامي جديد',
+          style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.bold),
         ),
-        bottomNavigationBar:
-            const LawyerBottomNav(currentRoute: '/lawyer/requests'),
+        backgroundColor: const Color(0xFFF8F9FA),
+        elevation: 0,
       ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    _buildBasicInfoSection(),
+                    const SizedBox(height: 20),
+                    _buildSpecializationSection(),
+                    const SizedBox(height: 20),
+                    _buildFilesSection(),
+                    const SizedBox(height: 32),
+                    _buildRegisterButton(),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
-  // ================== TABS ==================
-
-  Widget _buildTabs() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Container(
-        height: 52,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(40),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
+  // قسم المعلومات الأساسية
+  Widget _buildBasicInfoSection() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _tab('Upcoming', 'قادمة'),
-            _tab('Active', 'نشطة'),
-            _tab('Past', 'منتهية'),
+            _buildSectionTitle('المعلومات الأساسية'),
+            const SizedBox(height: 16),
+            _buildTextFormField(
+              controller: _fullNameController,
+              label: 'الاسم الكامل *',
+              validator: (value) =>
+                  value!.isEmpty ? 'الاسم الكامل مطلوب' : null,
+            ),
+            const SizedBox(height: 12),
+            _buildTextFormField(
+              controller: _usernameController,
+              label: 'اسم المستخدم *',
+              validator: (value) {
+                if (value!.isEmpty) return 'اسم المستخدم مطلوب';
+                if (value.length < 3)
+                  return 'اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل';
+                if (value.contains(' '))
+                  return 'اسم المستخدم لا يمكن أن يحتوي على مسافات';
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            _buildPasswordField(
+              controller: _passwordController,
+              label: 'كلمة المرور *',
+              obscureText: _obscurePassword,
+              onToggleVisibility: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
+              validator: (value) {
+                if (value!.isEmpty) return 'كلمة المرور مطلوبة';
+                if (value.length < 6)
+                  return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            _buildPasswordField(
+              controller: _confirmPasswordController,
+              label: 'تأكيد كلمة المرور *',
+              obscureText: _obscureConfirmPassword,
+              onToggleVisibility: () => setState(
+                () => _obscureConfirmPassword = !_obscureConfirmPassword,
+              ),
+              validator: (value) {
+                if (value!.isEmpty) return 'يرجى تأكيد كلمة المرور';
+                if (value != _passwordController.text)
+                  return 'كلمة المرور غير متطابقة';
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            _buildTextFormField(
+              controller: _phoneController,
+              label: 'رقم الجوال *',
+              keyboardType: TextInputType.phone,
+              validator: (value) {
+                if (value!.isEmpty) return 'رقم الجوال مطلوب';
+                if (!RegExp(r'^05\d{8}$').hasMatch(value)) {
+                  return 'رقم الجوال يجب أن يبدأ بـ 05 ويحتوي 10 أرقام';
+                }
+                return null;
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _tab(String value, String label) {
-    final selected = _currentTab == value;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _currentTab = value),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: selected ? const Color(0xFF0B5345) : Colors.white,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Tajawal',
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: selected ? Colors.white : const Color(0xFF0B5345),
+  // قسم التخصصات
+  Widget _buildSpecializationSection() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle('المعلومات المهنية'),
+            const SizedBox(height: 16),
+            _buildTextFormField(
+              controller: _licenseController,
+              label: 'رقم الرخصة *',
+              validator: (value) => value!.isEmpty ? 'رقم الرخصة مطلوب' : null,
             ),
-          ),
+            const SizedBox(height: 12),
+            _buildTextFormField(
+              controller: _experienceController,
+              label: 'سنوات الخبرة *',
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value!.isEmpty) return 'سنوات الخبرة مطلوبة';
+                if (int.tryParse(value) == null) return 'يجب إدخال رقم صحيح';
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            _buildDropdown(
+              value: _selectedGender,
+              items: _genders,
+              label: 'الجنس *',
+              onChanged: (value) => setState(() => _selectedGender = value),
+              validator: (value) => value == null ? 'الجنس مطلوب' : null,
+            ),
+            const SizedBox(height: 12),
+            _buildDropdown(
+              value: _selectedMainSpecialization,
+              items: _mainSpecializations,
+              label: 'التخصص الرئيسي *',
+              onChanged: (value) =>
+                  setState(() => _selectedMainSpecialization = value),
+              validator: (value) =>
+                  value == null ? 'التخصص الرئيسي مطلوب' : null,
+            ),
+            const SizedBox(height: 12),
+            _buildDropdown(
+              value: _selectedSubSpecialization1,
+              items: _subSpecializations,
+              label: 'التخصص الفرعي الأول',
+              onChanged: (value) =>
+                  setState(() => _selectedSubSpecialization1 = value),
+            ),
+            const SizedBox(height: 12),
+            _buildDropdown(
+              value: _selectedSubSpecialization2,
+              items: _subSpecializations,
+              label: 'التخصص الفرعي الثاني',
+              onChanged: (value) =>
+                  setState(() => _selectedSubSpecialization2 = value),
+            ),
+            const SizedBox(height: 12),
+            _buildDropdown(
+              value: _selectedEducationLevel,
+              items: _educationLevels,
+              label: 'المؤهل العلمي *',
+              onChanged: (value) =>
+                  setState(() => _selectedEducationLevel = value),
+              validator: (value) =>
+                  value == null ? 'المؤهل العلمي مطلوب' : null,
+            ),
+            const SizedBox(height: 12),
+            _buildDropdown(
+              value: _selectedAcademicMajor,
+              items: _academicMajors,
+              label: 'التخصص الأكاديمي *',
+              onChanged: (value) =>
+                  setState(() => _selectedAcademicMajor = value),
+              validator: (value) =>
+                  value == null ? 'التخصص الأكاديمي مطلوب' : null,
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // ================== BODY ==================
+  // قسم رفع الملفات
+  Widget _buildFilesSection() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle('الملفات المطلوبة'),
+            const SizedBox(height: 16),
+            _buildFilePicker(
+              label: 'رخصة المحاماة *',
+              fileName: _licenseFileName,
+              onPressed: _pickLicenseFile,
+              isRequired: true,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'يرجى ادخال ملف بصيغة pdf',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+                fontFamily: 'Tajawal',
+              ),
+            ),
+            _buildFilePicker(
+              label: 'الصورة الشخصية',
+              fileName: _profileImageName,
+              onPressed: _pickProfileImage,
+              isRequired: false,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'الملفات المسموحة: PDF, JPG, PNG, DOC (الحجم الأقصى: 10MB)',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+                fontFamily: 'Tajawal',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-  Widget _buildBody() {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_filtered.isEmpty) {
-      return const Center(
-        child: Text(
-          'لا توجد طلبات',
+  // زر التسجيل
+  Widget _buildRegisterButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: _registerLawyer,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF0B5345),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: const Text(
+          'تسجيل المحامي',
           style: TextStyle(
             fontFamily: 'Tajawal',
             fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ========== الدوال المساعدة ==========
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontFamily: 'Tajawal',
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF0B5345),
+      ),
+    );
+  }
+
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String label,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+    required String? Function(String?) validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontFamily: 'Tajawal'),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF0B5345)),
+        ),
+      ),
+      validator: validator,
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required bool obscureText,
+    required VoidCallback onToggleVisibility,
+    required String? Function(String?) validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontFamily: 'Tajawal'),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF0B5345)),
+        ),
+        suffixIcon: IconButton(
+          icon: Icon(
+            obscureText ? Icons.visibility_off : Icons.visibility,
             color: Colors.grey,
           ),
+          onPressed: onToggleVisibility,
         ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        itemCount: _filtered.length,
-        itemBuilder: (_, i) => _buildCard(_filtered[i]),
       ),
+      validator: validator,
     );
   }
 
-  // ================== CARD ==================
-
-  Widget _buildCard(LawyerAppointment ap) {
-    const primaryGreen = Color(0xFF0B5345);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE4E7EC)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+  Widget _buildDropdown({
+    required String? value,
+    required List<String> items,
+    required String label,
+    required void Function(String?) onChanged,
+    String? Function(String?)? validator,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      items: items.map((String item) {
+        return DropdownMenuItem<String>(
+          value: item,
+          child: Text(item, style: const TextStyle(fontFamily: 'Tajawal')),
+        );
+      }).toList(),
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontFamily: 'Tajawal'),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFF0B5345)),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // السطر العلوي: اسم العميل يمين + رقم الطلب يسار
-          Row(
+      validator: validator,
+    );
+  }
+
+  Widget _buildFilePicker({
+    required String label,
+    required String? fileName,
+    required VoidCallback onPressed,
+    required bool isRequired,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$label ${isRequired ? '*' : ''}',
+          style: const TextStyle(
+            fontFamily: 'Tajawal',
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton(
+          onPressed: onPressed,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF0B5345),
+            side: const BorderSide(color: Color(0xFF0B5345)),
+            minimumSize: const Size(double.infinity, 50),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'اسم العميل: ',
-                        style: TextStyle(
-                          fontFamily: 'Tajawal',
-                          fontSize: 13,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      Text(
-                        ap.clientName,
-                        style: const TextStyle(
-                          fontFamily: 'Tajawal',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: primaryGreen,
-                        ),
-                      ),
-                    ],
-                  ),
+              Text(
+                fileName ?? 'اختر ملف',
+                style: TextStyle(
+                  fontFamily: 'Tajawal',
+                  color: fileName != null ? Colors.black : Colors.grey,
                 ),
               ),
-              const SizedBox(width: 8),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: primaryGreen.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Text(
-                  '#${ap.requestNo}',
-                  style: const TextStyle(
-                    fontFamily: 'Tajawal',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: primaryGreen,
-                  ),
-                ),
-              ),
+              const Icon(Icons.attach_file),
             ],
           ),
-
-          const SizedBox(height: 12),
-          Container(height: 1, color: const Color(0xFFE9EDF2)),
-          const SizedBox(height: 12),
-
-          // السطر السفلي
+        ),
+        if (isRequired && fileName == null) ...[
           const SizedBox(height: 4),
-          Directionality(
-            textDirection: TextDirection.ltr,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // زر اليسار
-                _buildMainActionButton(ap),
-
-                const Spacer(),
-
-                // نوع الاستشارة في المنتصف
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '"${ap.typeLabel}"',
-                    style: const TextStyle(
-                      fontFamily: 'Tajawal',
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: primaryGreen,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-
-                // التاريخ والوقت يمين
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          ap.date,
-                          style: const TextStyle(
-                            fontFamily: 'Tajawal',
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: primaryGreen,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        const Icon(
-                          Icons.calendar_today_outlined,
-                          size: 18,
-                          color: primaryGreen,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          ap.time,
-                          style: const TextStyle(
-                            fontFamily: 'Tajawal',
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: primaryGreen,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        const Icon(
-                          Icons.access_time,
-                          size: 18,
-                          color: primaryGreen,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+          Text(
+            'هذا الحقل مطلوب',
+            style: TextStyle(
+              color: Colors.red[700],
+              fontSize: 12,
+              fontFamily: 'Tajawal',
             ),
           ),
-          
         ],
-      ),
+      ],
     );
   }
 
-  /// Active -> محادثة العميل
-  /// Upcoming/Past -> عرض التفاصيل
-  Widget _buildMainActionButton(LawyerAppointment ap) {
-    const primaryGreen = Color(0xFF0B5345);
+  // اختيار ملف الرخصة
+  void _pickLicenseFile() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
+      );
 
-    if (ap.status == 'Active') {
-      return InkWell(
-        onTap: () => _openChatWithClient(ap),
-        borderRadius: BorderRadius.circular(30),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-          decoration: BoxDecoration(
-            color: primaryGreen.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: const Text(
-            'محادثة العميل',
-            style: TextStyle(
-              fontFamily: 'Tajawal',
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: primaryGreen,
-            ),
-          ),
-        ),
-      );
-    } else {
-      return InkWell(
-        onTap: () => _showDetails(ap),
-        borderRadius: BorderRadius.circular(30),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-          decoration: BoxDecoration(
-            color: primaryGreen.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: const Text(
-            'عرض التفاصيل',
-            style: TextStyle(
-              fontFamily: 'Tajawal',
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: primaryGreen,
-            ),
-          ),
-        ),
-      );
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _licenseFile = result.files.single;
+          _licenseFileName = _licenseFile!.name;
+        });
+      }
+    } catch (e) {
+      _showError('حدث خطأ في اختيار الملف: $e');
     }
   }
 
-  // ================== LOGIC ==================
-
-  //navigate to chat screen
-void _openChatWithClient(LawyerAppointment ap) async {
-  final user = await Session.getUser();
-  if (user == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('يجب تسجيل الدخول أولاً')),
-    );
-    return;
-  }
-  
-  Navigator.pushNamed(
-    context,
-    '/ChatScreen',
-    arguments: {
-      'senderID': 'L${user.id}',         
-      'receiverID': 'C${ap.clientId}',   
-      'appointmentID': ap.id,
-    },
-  );
-}
-
-    /// عرض تفاصيل الموعد    
-  void _showDetails(LawyerAppointment ap) {
-    if (ap.details.trim().isEmpty && ap.file.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('لا توجد تفاصيل لهذا الموعد')),
+  // اختيار الصورة الشخصية
+  void _pickProfileImage() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png'],
       );
+
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _profileImage = result.files.single;
+          _profileImageName = _profileImage!.name;
+        });
+      }
+    } catch (e) {
+      _showError('حدث خطأ في اختيار الصورة: $e');
+    }
+  }
+
+  //تسجيل المحامي
+  Future<void> _registerLawyer() async {
+    // التحقق من البيانات الأساسية
+    if (!_formKey.currentState!.validate()) {
+      _showError('يرجى تعبئة جميع الحقول الإجبارية بشكل صحيح');
       return;
     }
 
-    const primaryGreen = Color(0xFF0B5345);
-    final typeTitle = ap.typeLabel; // استشارة قانونية / مراجعة عقد
+    if (_licenseFile == null) {
+      _showError('يرجى رفع رخصة المحاماة');
+      return;
+    }
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        final media = MediaQuery.of(ctx).size;
+    // استدعاء OTP أولاً والانتظار للنتيجة
+    bool? otpVerified = await _navigateToOTP();
 
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: Container(
-            height: media.height * 0.70,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 8),
-                // الهاندل الصغير فوق
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 12),
+    // إذا التحقق نجح، أرسل البيانات للسيرفر
+    if (otpVerified == true) {
+      await _sendLawyerToServer();
+    } else {
+      _showError('فشل التحقق من رقم الجوال');
+    }
+  }
 
-                // الهيدر: عنوان + إكس
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.of(ctx).pop(),
-                      ),
-                      const Spacer(),
-                      Text(
-                        typeTitle,
-                        style: const TextStyle(
-                          fontFamily: 'Tajawal',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const Spacer(),
-                      const SizedBox(width: 48),
-                    ],
-                  ),
-                ),
-                const Divider(height: 1),
+  // التوجيه إلى صفحة OTP
+  Future<bool?> _navigateToOTP() async {
+    String phoneNumber = '+966${_phoneController.text.substring(1)}';
 
-                // المحتوى
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // سطر معلومات بسيط فوق
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'العميل: ${ap.clientName}',
-                                style: const TextStyle(
-                                  fontFamily: 'Tajawal',
-                                  fontSize: 13,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '#${ap.requestNo}',
-                              style: const TextStyle(
-                                fontFamily: 'Tajawal',
-                                fontSize: 13,
-                                color: primaryGreen,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
+    // انتظار نتيجة التحقق من OTP
+    bool? verified = true;
 
-                        // كارد التفاصيل
-                        if (ap.details.trim().isNotEmpty) ...[
-                          const Text(
-                            'وصف الحالة',
-                            style: TextStyle(
-                              fontFamily: 'Tajawal',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F6FA),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: const Color(0xFFE0E3EB),
-                              ),
-                            ),
-                            child: Text(
-                              ap.details,
-                              style: const TextStyle(
-                                fontFamily: 'Tajawal',
-                                fontSize: 14,
-                                height: 1.5,
-                              ),
-                            ),
-                          ),
-                        ],
+    /*await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OTPScreen(phoneNumber: phoneNumber),
+      ),
+    );*/
 
-                        // كارد الملف
-                        if (ap.file.trim().isNotEmpty) ...[
-                          const SizedBox(height: 24),
-                          const Text(
-                            'الملف المرفق',
-                            style: TextStyle(
-                              fontFamily: 'Tajawal',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () => openPdfInsideApp(ap.file),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF5F6FA),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFFD0D7FF),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.picture_as_pdf,
-                                    color: primaryGreen,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      ap.file,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontFamily: 'Tajawal',
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Icon(
-                                    Icons.open_in_new,
-                                    size: 18,
-                                    color: primaryGreen,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    return verified; // ترجع true أو false أو null
+  }
+
+  // دالة محسنة لإرسال بيانات المحامي
+  Future<void> _sendLawyerToServer() async {
+  setState(() => _isLoading = true);
+
+  try {
+    Map<String, dynamic> requestData = {
+      'username': _usernameController.text.trim(),
+      'fullName': _fullNameController.text.trim(),
+      'password': _passwordController.text,
+      'phoneNumber': _phoneController.text.trim(),
+      'licenseNumber': _licenseController.text.trim(),
+      'yearsOfExp': int.parse(_experienceController.text),
+      'gender': _selectedGender,
+      'mainSpecialization': _selectedMainSpecialization,
+      'fSubSpecialization': _selectedSubSpecialization1 ?? '',
+      'sSubSpecialization': _selectedSubSpecialization2 ?? '',
+      'educationQualification': _selectedEducationLevel,
+      'academicMajor': _selectedAcademicMajor,
+    };
+
+    print('📤 إرسال بيانات المحامي بعد التحقق الناجح: $requestData');
+
+    const String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
+
+    final response = await http
+        .post(
+          Uri.parse('$baseUrl/register_lawyer.php'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode(requestData),
+        )
+        .timeout(const Duration(seconds: 10));
+
+    print('📥 استجابة السيرفر: ${response.body}');
+
+    final result = json.decode(response.body);
+
+    if (result['success'] == true) {
+  final int lawyerId = result['userId'] ?? 0;
+
+  // نقرأ user من الـ PHP
+  final Map<String, dynamic>? userMap =
+      (result['user'] as Map?)?.cast<String, dynamic>();
+
+  User? user;
+  if (userMap != null) {
+    // نضيف UserType = 'lawyer' احتياط حتى لو backend نسي
+    user = User.fromJson({
+      ...userMap,
+      'UserType': 'lawyer',
+    });
+  }
+
+  // أولاً: نرفع ملف الرخصة فقط (لو موجود)
+  if (_licenseFile != null && _licenseFile!.path != null) {
+    final licenseName =
+        (result['licenseFileName'] ?? 'license_${_usernameController.text}.pdf')
+            .toString();
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/upload_files.php'),
+    );
+
+    request.fields['fileName']  = licenseName;      // 👈 مهم جداً
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'license_file',
+        _licenseFile!.path!,
+        filename: licenseName,
+      ),
+    );
+
+    final uploadRes = await request.send();
+    final uploadBody = await uploadRes.stream.bytesToString();
+    print('📤 رفع الرخصة: $uploadBody');
+  }
+
+  // ثانياً: لو فيه صورة شخصية، نرفعها بالـ API الشغال
+  if (_profileImage != null && _profileImage!.path != null) {
+    try {
+      final newFileName = await ApiClient.uploadLawyerPhoto(
+        userId: lawyerId,
+        imagePath: _profileImage!.path!,
+      );
+
+      if (user != null && newFileName.isNotEmpty) {
+        user = user.copyWith(profileImage: newFileName);
+      }
+    } catch (e) {
+      print('⚠️ فشل رفع الصورة عند التسجيل: $e');
+    }
+  }
+
+  // أخيراً: نخزن اليوزر في السيشن ونروح لصفحة المزيد
+  if (user != null) {
+    print('👤 USER AFTER REGISTER = $user');
+    print('🖼️ profileImage = ${user.profileImage}');
+    print('🖼️ profileImageUrl = ${user.profileImageUrl}');
+    await Session.saveUser(user);
+  }
+
+  _showSuccessAndNavigate();
+}
+ else {
+        _showError(result['message'] ?? 'حدث خطأ غير معروف');
+      }
+    } catch (e) {
+      _showError('فشل في التسجيل: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  // دالة محسنة لرفع الملفات
+  Future<void> _uploadFiles(
+    int lawyerId,
+    Map<String, dynamic> result,
+    String baseUrl,
+  ) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/upload_files.php'),
+      );
+
+      // إضافة معرف المحامي
+      request.fields['lawyer_id'] = lawyerId.toString();
+
+      // رفع ملف الرخصة إذا موجود
+      if (_licenseFile != null && _licenseFile!.path != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'license_file',
+            _licenseFile!.path!,
+            filename:
+                result['licenseFileName'] ??
+                'license_${_usernameController.text}.pdf',
           ),
         );
-      },
+      }
+
+      // رفع الصورة الشخصية إذا موجودة
+      if (_profileImage != null && _profileImage!.path != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'profile_image',
+            _profileImage!.path!,
+            filename:
+                result['photoFileName'] ??
+                'photo_${_usernameController.text}.jpg',
+          ),
+        );
+      }
+
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+
+      print('📤 رفع الملفات: $responseData');
+    } catch (e) {
+      print('⚠️ حدث خطأ في رفع الملفات: $e');
+    }
+  }
+
+  // دالة مساعدة لرفع الملفات
+  Future<void> _uploadFile(
+    PlatformFile file,
+    String fileName,
+    String baseUrl,
+  ) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/upload_files.php'),
+      );
+
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'file',
+          file.path!,
+          filename: fileName,
+        ),
+      );
+
+      request.fields['fileName'] = fileName;
+
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+
+      print('📤 رفع الملف: $fileName');
+      print('📥 استجابة رفع الملف: $responseData');
+    } catch (e) {
+      print('❌ خطأ في رفع الملف: $e');
+    }
+  }
+
+  // عرض النجاح والتوجيه
+  void _showSuccessAndNavigate() {
+    // عرض رسالة النجاح
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك من قبل الإدارة.',
+          style: const TextStyle(fontFamily: 'Tajawal'),
+        ),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+
+    // التوجيه بعد فترة بسيطة
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/lawyer/more');
+      }
+    });
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(fontFamily: 'Tajawal')),
+        backgroundColor: Colors.red,
+      ),
     );
   }
 
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _phoneController.dispose();
+    _licenseController.dispose();
+    _experienceController.dispose();
+    super.dispose();
+  }
 }
