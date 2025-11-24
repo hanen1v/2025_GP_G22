@@ -25,6 +25,8 @@ import 'pages/thank_you_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'pages/chat_screen.dart';
+import 'pages/past_chat_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -88,6 +90,8 @@ class MyApp extends StatelessWidget {
         '/reset_password': (context) => const ResetPasswordPage(username: ''),
         '/FeedbackPage': (context) => const FeedbackPage(),
         '/thankYouPage': (context) => const ThankYouPage(),
+        '/ChatScreen': (context) =>  ChatScreen(),
+        '/PastChatScreen': (context) =>  PastChatScreen(),
 
 
       },
