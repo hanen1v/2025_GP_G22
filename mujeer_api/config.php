@@ -1,3 +1,4 @@
+
 <?php
 $DB_HOST = 'localhost';
 $DB_PORT = '8889';
@@ -6,7 +7,7 @@ $DB_USER = 'root';
 $DB_PASS = 'root';
 
 define('ONESIGNAL_APP_ID', '52e7af05-5276-4ccd-9715-1cb9820f4361'); 
-define('ONESIGNAL_REST_API_KEY', 'os_v2_app_klt26bksozgm3fyvds4yed2dmgbh2cpgt3re5df3ffsqpl7yvzb43ykf6srhgzvqwiafvpqwlnb7isces7y5tcxkmu4ffkvskvabq5y'); 
+define('ONESIGNAL_REST_API_KEY', 'os_v2_app_klt26bksozgm3fyvds4yed2dmgooalxuthyeqh4aq2c44v7ewicdg4wczxpk3aynkony6s2rz6kjo3qwyalu2t7pespf3ivghtxhbqi'); 
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
