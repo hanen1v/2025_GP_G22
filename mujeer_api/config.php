@@ -6,11 +6,10 @@ $DB_USER = 'root';
 $DB_PASS = 'root';
 
 define('ONESIGNAL_APP_ID', '52e7af05-5276-4ccd-9715-1cb9820f4361'); 
-define('ONESIGNAL_REST_API_KEY', 'os_v2_app_klt26bksozgm3fyvds4yed2dmhuzz3i5bv6ezzmuayihpfhxtceboihpwwfdus5rmbk7nw2w3hfdz7zfbdpv24klni2tnjcc2vjmiry'); 
+define('ONESIGNAL_REST_API_KEY', 'os_v2_app_klt26bksozgm3fyvds4yed2dmgbh2cpgt3re5df3ffsqpl7yvzb43ykf6srhgzvqwiafvpqwlnb7isces7y5tcxkmu4ffkvskvabq5y'); 
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-// استخدمي mysqli بدل PDO
 $conn = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME, $DB_PORT);
 
 if ($conn->connect_error) {
@@ -22,7 +21,7 @@ if ($conn->connect_error) {
 $conn->set_charset("utf8mb4");
 
 
-// دالة إرسال الإشعار
+// function to send notifications to admins
 function send_push(array $playerIds, string $title, string $body, array $data = []) {
   if (empty($playerIds)) return ['ok' => false, 'reason' => 'No players'];
     $payload = [
@@ -80,3 +79,4 @@ function send_push(array $playerIds, string $title, string $body, array $data = 
 
     return ['ok' => true, 'response' => $result, 'http_code' => $httpCode];
 }
+
