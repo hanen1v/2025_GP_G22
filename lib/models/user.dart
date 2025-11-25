@@ -16,6 +16,7 @@ class User {
   final String? sSubSpecialization;
   final String? educationQualification;
   final String? academicMajor;
+  final String? licenseNumber;
 
   User({
     required this.id,
@@ -33,6 +34,7 @@ class User {
     this.sSubSpecialization,
     this.educationQualification,
     this.academicMajor,
+    this.licenseNumber,
   });
 
   // من JSON لـ User (للاستقبال من السيرفر)
@@ -75,6 +77,9 @@ class User {
               ?.toString(),
       academicMajor: (json['AcademicMajor'] ?? json['academicMajor'])
           ?.toString(),
+      licenseNumber:
+        (json['LicenseNumber'] ?? json['licenseNumber'])
+        ?.toString(),
     );
   }
 
@@ -97,6 +102,7 @@ class User {
       'SSubSpecialization': sSubSpecialization,
       'EducationQualification': educationQualification,
       'AcademicMajor': academicMajor,
+      'LicenseNumber': licenseNumber,
     };
   }
 
@@ -209,6 +215,7 @@ class User {
     String? sSubSpecialization,
     String? educationQualification,
     String? academicMajor,
+    String? licenseNumber,
   }) {
     return User(
       id: id,
@@ -228,6 +235,7 @@ class User {
       educationQualification:
           educationQualification ?? this.educationQualification,
       academicMajor: academicMajor ?? this.academicMajor,
+      licenseNumber: licenseNumber ?? this.licenseNumber,
     );
   }
 }

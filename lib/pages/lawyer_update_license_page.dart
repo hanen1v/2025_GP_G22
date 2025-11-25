@@ -13,16 +13,9 @@ class LawyerUpdateLicensePage extends StatefulWidget {
 }
 
 class _LawyerUpdateLicensePageState extends State<LawyerUpdateLicensePage> {
-  final TextEditingController _licenseCtrl = TextEditingController();
   PlatformFile? _licenseFile;
   String? _licenseFileName;
   bool _isLoading = false;
-
-  @override
-  void dispose() {
-    _licenseCtrl.dispose();
-    super.dispose();
-  }
 
   Future<void> _pickLicenseFile() async {
     try {
@@ -44,6 +37,7 @@ class _LawyerUpdateLicensePageState extends State<LawyerUpdateLicensePage> {
 
   Future<void> _submit() async {
     final user = await Session.getUser();
+
     if (user == null || !user.isLawyer) {
       _showError('يجب تسجيل الدخول كمحامي لاستخدام هذه الميزة');
       return;
@@ -54,19 +48,21 @@ class _LawyerUpdateLicensePageState extends State<LawyerUpdateLicensePage> {
       return;
     }
 
-    if (_licenseCtrl.text.trim().isEmpty) {
-      _showError('يرجى إدخال رقم الرخصة الجديد');
+    // ⬅️ هنا نجيب رقم الرخصة من السيشن (User)
+    final licenseNumber = user.licenseNumber;
+    if (licenseNumber == null || licenseNumber.trim().isEmpty) {
+      _showError('رقم الرخصة غير متوفر في حسابك، يرجى مراجعة الملف الشخصي');
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      // 1) إرسال طلب التحديث (بدون الملف)
+      // 1) إرسال طلب التحديث (بدون ملف – فقط ID + الاسم + رقم الرخصة من السيشن)
       final result = await ApiClient.requestLicenseUpdate(
         lawyerId: user.id,
         fullName: user.fullName,
-        newLicenseNumber: _licenseCtrl.text.trim(),
+        newLicenseNumber: licenseNumber, // ⬅️ من السيشن
       );
 
       final licenseFileName = result['licenseFileName'] as String?;
@@ -75,7 +71,7 @@ class _LawyerUpdateLicensePageState extends State<LawyerUpdateLicensePage> {
         throw Exception('لم يتم إرجاع اسم ملف الرخصة من السيرفر');
       }
 
-      // 2) رفع الملف باسم محدد من السيرفر
+      // 2) رفع ملف الرخصة باستخدام الاسم الذي رجع من الـ PHP
       await ApiClient.uploadLicenseUpdateFile(
         lawyerId: user.id,
         filePath: _licenseFile!.path!,
@@ -138,7 +134,7 @@ class _LawyerUpdateLicensePageState extends State<LawyerUpdateLicensePage> {
             children: [
               const SizedBox(height: 12),
               const Text(
-                'قم برفع نسخة من رخصتك الجديدة وأدخل رقم الرخصة بعد التجديد.',
+                'قم برفع نسخة من رخصتك الجديدة، وسيتم استخدام رقم الرخصة المسجل في حسابك تلقائياً.',
                 style: TextStyle(
                   fontFamily: 'Tajawal',
                   fontSize: 14,
@@ -190,24 +186,6 @@ class _LawyerUpdateLicensePageState extends State<LawyerUpdateLicensePage> {
                   fontSize: 12,
                   color: Colors.grey[600],
                   fontFamily: 'Tajawal',
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // رقم الرخصة الجديد
-              TextField(
-                controller: _licenseCtrl,
-                textAlign: TextAlign.right,
-                decoration: InputDecoration(
-                  labelText: 'رقم الرخصة الجديد *',
-                  labelStyle: const TextStyle(fontFamily: 'Tajawal'),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF0B5345)),
-                  ),
                 ),
               ),
 

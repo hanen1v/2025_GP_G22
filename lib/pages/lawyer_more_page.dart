@@ -234,19 +234,19 @@ Future<void> _loadStatus() async {
                   subtitle: Text(fullName, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 14, color: Colors.black54)),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () async {
-  if (_user == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('سجّل دخول أولاً')),
-    );
-    return;
-  }
-  await Navigator.push(
-    context,
-    MaterialPageRoute(builder: (_) => const LawyerProfilePage()),
-  );
-  if (!mounted) return;
-  _loadUser(); // لو بعدين عدلنا ورجع من الصفحة نحدّث البيانات
-},
+                    if (_user == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('سجّل دخول أولاً')),
+                     );
+                    return;
+                  }
+                  await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LawyerProfilePage()),
+                  );
+                  if (!mounted) return;
+                  _loadUser(); // لو بعدين عدلنا ورجع من الصفحة نحدّث البيانات
+                },
                 ),
               ),
 

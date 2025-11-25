@@ -440,7 +440,8 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
     String phoneNumber = '+966${_phoneController.text.substring(1)}';
 
     // ننتظر نتيجة التحقق من شاشة OTP
-    bool? verified = await Navigator.push(
+    bool? verified = true;
+    /*await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => OTPScreen(
@@ -448,7 +449,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
         registrationType: 'client',
       ),
     ),
-  );
+  );*/
 
     // بعد العودة من صفحة OTP
     if (verified == true) {

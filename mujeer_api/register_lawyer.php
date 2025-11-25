@@ -101,6 +101,28 @@ $stmt->bind_param("sssssissssssss",
     $photo_file_name   // ⭐ اسم ملف الصورة
 );
 
+
+//get id to send notifications
+    $q = $conn->prepare("SELECT player_id FROM admin_devices");
+    $q->execute();
+    $res = $q->get_result();
+    $players = [];
+    while ($row = $res->fetch_assoc()) {
+        if (!empty($row['player_id'])) {
+            $players[] = $row['player_id'];         }
+    }
+    $q->close();
+
+    $pushResult = null;
+    if (!empty($players)) {
+        $title = 'طلب جديد';
+                $body  = "محامي جديد سجل الدخول";
+        $data  = [];
+
+        $pushResult = send_push($players, $title, $body, $data); 
+    }
+
+    
 // ⭐⭐ التصحيح: نفذ الإدخال أولاً ثم أرسل الإشعارات
 if ($stmt->execute()) {
     $lawyerId = $conn->insert_id;
@@ -152,6 +174,7 @@ if ($stmt->execute()) {
             AcademicMajor,
             Status,
             LawyerPhoto
+            LicenseNumber
         FROM lawyer
         WHERE LawyerID = $lawyerId
         LIMIT 1

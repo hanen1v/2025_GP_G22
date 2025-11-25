@@ -168,7 +168,14 @@ class _LawyerChip extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Iconsax.star1, size: 16, color: Color(0xFFFFC107)),
+                        Icon(
+                         Iconsax.star1,
+                         size: 16,
+                         color: lawyer.rating > 0 
+                           ? const Color(0xFFFFC107)   // أصفر لو فيه تقييم
+                          : Colors.grey,              // رمادي لو مافيه تقييم
+                        ),
+
                         const SizedBox(width: 2),
                         Text(
                           lawyer.rating.toStringAsFixed(1),
