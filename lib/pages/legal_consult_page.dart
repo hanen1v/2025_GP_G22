@@ -33,7 +33,6 @@ class LegalConsultPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // العنوان
                     const Text(
                       "اختر محامي",
                       style: TextStyle(
@@ -46,7 +45,6 @@ class LegalConsultPage extends StatelessWidget {
 
                     const SizedBox(height: 25),
 
-                    // زر: استكشف المحامين
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -83,13 +81,10 @@ class LegalConsultPage extends StatelessWidget {
 
                     const SizedBox(height: 25),
 
-                    // زر: جرب الذكاء الاصطناعي
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: AI feature
-                        },
+                        onPressed: () {},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: mainColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -115,7 +110,6 @@ class LegalConsultPage extends StatelessWidget {
             ),
           ),
 
-          // زر الرجوع
           Positioned(
             top: 35,
             right: 16,
@@ -127,9 +121,38 @@ class LegalConsultPage extends StatelessWidget {
         ],
       ),
 
-      // الناف بار
-      bottomNavigationBar:
-          const AppBottomNav(currentRoute: "/legal_consult"),
+      bottomNavigationBar: const AppBottomNav(currentRoute: "/legal_consult"),
+
+      floatingActionButton: Container(
+        width: 65,
+        height: 65,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            colors: [
+              Color.fromARGB(255, 6, 61, 65),
+              Color.fromARGB(255, 8, 65, 69)
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Color.fromARGB(255, 31, 79, 83),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () => Navigator.pushReplacementNamed(context, '/plus'),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: const Icon(Icons.add, color: Colors.white, size: 28),
+        ),
+      ),
+
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }

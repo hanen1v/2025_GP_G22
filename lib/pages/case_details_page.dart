@@ -5,9 +5,14 @@ import 'package:file_picker/file_picker.dart';
 import 'select_time_page.dart';
 
 class CaseDetailsPage extends StatefulWidget {
-  final int lawyerId; // ← تعديل مهم
+  final int lawyerId;
   final double price;
-  const CaseDetailsPage({super.key, required this.lawyerId, required this.price,});
+
+  const CaseDetailsPage({
+    super.key,
+    required this.lawyerId,
+    required this.price,
+  });
 
   @override
   State<CaseDetailsPage> createState() => _CaseDetailsPageState();
@@ -22,6 +27,13 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
+
+      floatingActionButton: _buildFab(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+      bottomNavigationBar:
+          const AppBottomNav(currentRoute: '/case_details'),
+
       body: SafeArea(
         child: Column(
           children: [
@@ -43,7 +55,11 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: const [
-                      BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 3)),
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 8,
+                        offset: Offset(0, 3),
+                      ),
                     ],
                   ),
                   child: Column(
@@ -70,18 +86,22 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
                           ),
-                          errorText: _detailsError ? 'يجب إدخال تفاصيل الطلب' : null,
+                          errorText:
+                              _detailsError ? 'يجب إدخال تفاصيل الطلب' : null,
                         ),
                       ),
+
                       const SizedBox(height: 24),
 
                       Row(
                         children: [
-                          Icon(Iconsax.attach_circle, color: Colors.grey[700]),
+                          Icon(Iconsax.attach_circle,
+                              color: Colors.grey[700]),
                           const SizedBox(width: 8),
                           const Text(
                             'إرفاق ملف (اختياري)',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w500),
                           ),
                           const Spacer(),
                           ElevatedButton(
@@ -92,14 +112,23 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
                               ),
                             ),
                             onPressed: () async {
-                              final result = await FilePicker.platform.pickFiles(
+                              final result =
+                                  await FilePicker.platform.pickFiles(
                                 type: FileType.custom,
-                                allowedExtensions: ['pdf', 'jpg', 'png', 'doc', 'docx'],
+                                allowedExtensions: [
+                                  'pdf',
+                                  'jpg',
+                                  'png',
+                                  'doc',
+                                  'docx'
+                                ],
                               );
 
-                              if (result != null && result.files.isNotEmpty) {
+                              if (result != null &&
+                                  result.files.isNotEmpty) {
                                 setState(() {
-                                  _attachedFile = result.files.single.name;
+                                  _attachedFile =
+                                      result.files.single.name;
                                 });
                               }
                             },
@@ -115,7 +144,8 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
                         const SizedBox(height: 8),
                         Text(
                           _attachedFile!,
-                          style: const TextStyle(color: Colors.grey, fontSize: 14),
+                          style: const TextStyle(
+                              color: Colors.grey, fontSize: 14),
                         ),
                       ],
 
@@ -126,13 +156,16 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
                         height: 55,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(255, 6, 61, 65),
+                            backgroundColor:
+                                const Color.fromARGB(255, 6, 61, 65),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
                           ),
                           onPressed: () {
-                            if (_detailsController.text.trim().isEmpty) {
+                            if (_detailsController.text
+                                .trim()
+                                .isEmpty) {
                               setState(() => _detailsError = true);
                             } else {
                               setState(() => _detailsError = false);
@@ -141,10 +174,11 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => SelectTimePage(
-                                    lawyerId: widget.lawyerId, // ← هنا أهم تعديل
-                                       price: widget.price,    
-                                     caseDetails: _detailsController.text,
-      attachedFileName: _attachedFile,
+                                    lawyerId: widget.lawyerId,
+                                    price: widget.price,
+                                    caseDetails:
+                                        _detailsController.text,
+                                    attachedFileName: _attachedFile,
                                   ),
                                 ),
                               );
@@ -152,7 +186,10 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
                           },
                           child: const Text(
                             'تحديد وقت الموعد',
-                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -164,8 +201,35 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
           ],
         ),
       ),
-
-      bottomNavigationBar: const AppBottomNav(currentRoute: '/case_details'),
     );
   }
+
+  Widget _buildFab(BuildContext context) => Container(
+        width: 65,
+        height: 65,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            colors: [
+              Color.fromARGB(255, 6, 61, 65),
+              Color.fromARGB(255, 8, 65, 69),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Color.fromARGB(255, 31, 79, 83),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () => Navigator.pushReplacementNamed(context, '/plus'),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: const Icon(Icons.add, color: Colors.white, size: 28),
+        ),
+      );
 }
