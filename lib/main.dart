@@ -20,26 +20,18 @@ import 'pages/identity_verification_page.dart';
 import 'pages/reset_password_page.dart';
 import 'pages/feedback_page.dart';
 import 'pages/thank_you_page.dart';
-//import 'pages/lawyer_profile_page.dart';
-//import 'pages/lawyer_update_license_page.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'pages/chat_screen.dart';
-import 'pages/past_chat_screen.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    print('✅ Firebase initialized successfully');
+    await Firebase.initializeApp();
+    print('Firebase initialized successfully');
   } catch (e) {
-    // إذا كان مسبقاً موجود، استخدمه
     Firebase.app();
-    print('✅ Using existing Firebase app');
+    print('Using existing Firebase app');
   }
 OneSignal.Debug.setLogLevel(OSLogLevel.verbose); 
 OneSignal.initialize('52e7af05-5276-4ccd-9715-1cb9820f4361');
@@ -91,7 +83,7 @@ class MyApp extends StatelessWidget {
         '/FeedbackPage': (context) => const FeedbackPage(),
         '/thankYouPage': (context) => const ThankYouPage(),
         '/ChatScreen': (context) =>  ChatScreen(),
-        '/PastChatScreen': (context) =>  PastChatScreen(),
+
 
 
       },
