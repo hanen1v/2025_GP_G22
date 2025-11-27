@@ -20,9 +20,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
-
+/// Main password reset function - validates input and calls API
+  /// Handles password confirmation and error scenarios
   void _resetPassword() async {
-    // التحقق من صحة البيانات
+    
     if (_passwordController.text.isEmpty || _confirmPasswordController.text.isEmpty) {
       _showError('يرجى تعبئة جميع الحقول');
       return;
@@ -41,7 +42,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     setState(() => _isLoading = true);
 
     try {
-      // استدعاء API لتحديث كلمة المرور
       final success = await ApiClient.resetPassword(
         widget.username,
         _otpController.text,
@@ -51,7 +51,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       if (success) {
         _showSuccess('تم إعادة تعيين كلمة المرور بنجاح');
         
-        // الانتقال لصفحة تسجيل الدخول بعد نجاح العملية
         Future.delayed(const Duration(seconds: 2), () {
           Navigator.pushReplacementNamed(context, '/login');
 
@@ -65,7 +64,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       setState(() => _isLoading = false);
     }
   }
-
+/// Displays error messages in a snackbar
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -75,7 +74,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       ),
     );
   }
-
+  /// Displays success messages and handles navigation
   void _showSuccess(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -107,7 +106,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // بطاقة تعيين كلمة المرور
+            // Password reset form card
             Card(
               elevation: 2,
               child: Padding(
@@ -134,8 +133,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
-                    // حقل كلمة المرور الجديدة
+                    // New password field
                     TextField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
@@ -164,8 +162,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
-                    // حقل تأكيد كلمة المرور
+                    // Confirm password field
                     TextField(
                       controller: _confirmPasswordController,
                       obscureText: _obscureConfirmPassword,
@@ -193,8 +190,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    
-                    // تلميح بكلمة المرور
+                    // Password requirements hint
                     Text(
                       'يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل',
                       style: TextStyle(
@@ -208,8 +204,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               ),
             ),
             const SizedBox(height: 32),
-            
-            // زر تعيين كلمة المرور
+            // Reset password button
             SizedBox(
               width: double.infinity,
               height: 56,

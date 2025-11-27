@@ -17,8 +17,7 @@ class LawyerRegisterPage extends StatefulWidget {
 
 class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   final _formKey = GlobalKey<FormState>();
-  
-  // controllers للحقول النصية
+  // Controllers for all form fields
   final _fullNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -26,26 +25,22 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   final _phoneController = TextEditingController();
   final _licenseController = TextEditingController();
   final _experienceController = TextEditingController();
-  
-  // للملفات
+   // File handling variables
   String? _licenseFileName;
   String? _profileImageName;
   PlatformFile? _licenseFile;
   PlatformFile? _profileImage;
-  
-  // للتخصصات (قوائم محددة)
+  // Dropdown selection variables
   String? _selectedGender;
   String? _selectedMainSpecialization;
   String? _selectedSubSpecialization1;
   String? _selectedSubSpecialization2;
   String? _selectedEducationLevel;
   String? _selectedAcademicMajor;
-  
-  // لإظهار/إخفاء كلمة المرور
+  // UI state variables
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  
-  // القوائم المحددة
+  // Static data for dropdowns
   final List<String> _genders = ['ذكر', 'أنثى'];
   final List<String> _mainSpecializations = [
     'عقاري', 'قضايا العمالة', 'جنائي', 'تجاري', 'اسري',
@@ -61,7 +56,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   final List<String> _academicMajors = [
     'شريعة', 'قانون'
   ];
-
+ // Availability checking variables
   bool _isLoading = false;
   bool _isCheckingUsername = false;
   bool _isCheckingPhone = false;
@@ -75,7 +70,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   @override
 void initState() {
   super.initState();
-  // إضافة مستمعين للتحقق الفوري
+  // Add real-time validation listeners
   _usernameController.addListener(_checkUsernameAvailability);
   _phoneController.addListener(_checkPhoneAvailability);
   _licenseController.addListener(_checkLicenseAvailability);
@@ -83,6 +78,7 @@ void initState() {
 
 @override
 void dispose() {
+  // Clean up controllers and listeners to prevent memory leaks
   _usernameController.removeListener(_checkUsernameAvailability);
   _phoneController.removeListener(_checkPhoneAvailability);
   _licenseController.removeListener(_checkLicenseAvailability);
@@ -95,8 +91,8 @@ void dispose() {
   _experienceController.dispose();
   super.dispose();
 }
-
-// التحقق الفوري من اسم المستخدم
+ /// Real-time username availability check via API
+  /// Shows loading indicator and validation feedback
 void _checkUsernameAvailability() async {
   String username = _usernameController.text.trim();
   if (username.length < 3) {
@@ -111,8 +107,8 @@ void _checkUsernameAvailability() async {
 
   try {
     var response = await http.post(
-      //Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
-      Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+      Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
+      // Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
 
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
@@ -132,8 +128,8 @@ void _checkUsernameAvailability() async {
     setState(() => _isCheckingUsername = false);
   }
 }
-
-// التحقق الفوري من رقم الجوال
+/// Validates phone number format and checks if already registered
+  /// Uses Saudi mobile number pattern (05XXXXXXXX)
 void _checkPhoneAvailability() async {
   String phone = _phoneController.text.trim();
   if (phone.length < 10 || !RegExp(r'^05\d{8}$').hasMatch(phone)) {
@@ -148,8 +144,8 @@ void _checkPhoneAvailability() async {
 
   try {
     var response = await http.post(
-      //Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
-      Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+      Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
+      // Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'phoneNumber': phone,
@@ -168,8 +164,7 @@ void _checkPhoneAvailability() async {
     setState(() => _isCheckingPhone = false);
   }
 }
-
-// التحقق الفوري من رقم الرخصة
+  /// Checks if license number is already registered in the system
 void _checkLicenseAvailability() async {
   String license = _licenseController.text.trim();
   if (license.isEmpty) {
@@ -184,8 +179,8 @@ void _checkLicenseAvailability() async {
 
   try {
     var response = await http.post(
-      //Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
-      Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+      Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
+      // Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'licenseNumber': license,
@@ -239,8 +234,7 @@ void _checkLicenseAvailability() async {
             ),
     );
   }
-
-  // قسم المعلومات الأساسية
+/// Builds the basic information section with personal details
   Widget _buildBasicInfoSection() {
     return Card(
       elevation: 2,
@@ -289,8 +283,7 @@ void _checkLicenseAvailability() async {
       ),
     );
   }
-
-  // قسم التخصصات
+/// Builds the professional information section with specialization details
   Widget _buildSpecializationSection() {
     return Card(
       elevation: 2,
@@ -364,8 +357,7 @@ void _checkLicenseAvailability() async {
       ),
     );
   }
-
-  // قسم رفع الملفات
+  /// Builds the file upload section for license and profile image
   Widget _buildFilesSection() {
     return Card(
       elevation: 2,
@@ -411,8 +403,7 @@ void _checkLicenseAvailability() async {
       ),
     );
   }
-
-  // زر التسجيل
+  /// Main registration button that triggers the validation and registration process
   Widget _buildRegisterButton() {
     return SizedBox(
       width: double.infinity,
@@ -438,8 +429,8 @@ void _checkLicenseAvailability() async {
     );
   }
 
-  // ========== الدوال المساعدة ==========
-
+  // ========== HELPER FUNCTIONS ==========
+  /// Creates a styled section title with consistent formatting
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
@@ -451,7 +442,7 @@ void _checkLicenseAvailability() async {
       ),
     );
   }
-
+  /// Reusable text form field builder with validation
   Widget _buildTextFormField({
     required TextEditingController controller,
     required String label,
@@ -477,7 +468,7 @@ void _checkLicenseAvailability() async {
       validator: validator,
     );
   }
-
+  /// Specialized password field with visibility toggle
   Widget _buildPasswordField({
     required TextEditingController controller,
     required String label,
@@ -509,7 +500,7 @@ void _checkLicenseAvailability() async {
       validator: validator,
     );
   }
-
+  /// Reusable dropdown form field builder
   Widget _buildDropdown({
     required String? value,
     required List<String> items,
@@ -537,7 +528,7 @@ void _checkLicenseAvailability() async {
       validator: validator,
     );
   }
-
+  /// File picker button with file name display
   Widget _buildFilePicker({
     required String label,
     required String? fileName,
@@ -583,8 +574,7 @@ void _checkLicenseAvailability() async {
       ],
     );
   }
-
-  // اختيار ملف الرخصة
+  /// Opens file picker for license document
   void _pickLicenseFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -602,8 +592,7 @@ void _checkLicenseAvailability() async {
       _showError('حدث خطأ في اختيار الملف: $e');
     }
   }
-
-  // اختيار الصورة الشخصية
+  /// Opens file picker for profile image
   void _pickProfileImage() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -621,15 +610,12 @@ void _checkLicenseAvailability() async {
       _showError('حدث خطأ في اختيار الصورة: $e');
     }
   }
-
-  //تسجيل المحامي
+  /// Main registration function - validates form and initiates OTP verification
   Future<void> _registerLawyer() async {
-      //التحقق من اليونيكية أولاً
      if (!_isUsernameAvailable || !_isPhoneAvailable || !_isLicenseAvailable) {
     _showError('يرجى التأكد من أن اسم المستخدم ورقم الجوال ورقم الرخصة متاحين');
     return;
   }
-    // التحقق من البيانات الأساسية
     if (!_formKey.currentState!.validate()) {
       _showError('يرجى تعبئة جميع الحقول الإجبارية بشكل صحيح');
       return;
@@ -640,24 +626,20 @@ void _checkLicenseAvailability() async {
       return;
     }
 
-    // استدعاء OTP أولاً والانتظار للنتيجة
     bool? otpVerified = await _navigateToOTP();
     
-    // إذا التحقق نجح، أرسل البيانات للسيرفر
     if (otpVerified == true) {
       await _sendLawyerToServer();
     } else {
       _showError('فشل التحقق من رقم الجوال');
     }
   }
-
-  // التوجيه إلى صفحة OTP
+  /// Navigates to OTP verification screen for phone number confirmation
   Future<bool?> _navigateToOTP() async {
     String phoneNumber = '+966${_phoneController.text.substring(1)}';
 
-    // انتظار نتيجة التحقق من OTP
     bool? verified = true;
-    /*await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => OTPScreen(
@@ -665,14 +647,14 @@ void _checkLicenseAvailability() async {
           registrationType: 'lawyer',
           ),
       ),
-    );*/
+    );
 
-    print('✅ نتيجة OTP: $verified');
+    print(' نتيجة OTP: $verified');
 
-    return verified; // ترجع true أو false أو null
+    return verified;
   }
-
-  // دالة محسنة لإرسال بيانات المحامي
+/// Sends lawyer registration data to server after successful OTP verification
+  /// Handles file uploads and user session creation
 Future<void> _sendLawyerToServer() async {
   setState(() => _isLoading = true);
 
@@ -692,10 +674,10 @@ Future<void> _sendLawyerToServer() async {
       'academicMajor': _selectedAcademicMajor,
     };
 
-    print('📤 إرسال بيانات المحامي بعد التحقق الناجح: $requestData');
+    print(' إرسال بيانات المحامي بعد التحقق الناجح: $requestData');
 
-    //const String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
-    const String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
+    const String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
+    // const String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
 
     final response = await http
         .post(
@@ -705,27 +687,25 @@ Future<void> _sendLawyerToServer() async {
         )
         .timeout(const Duration(seconds: 10));
 
-    print('📥 استجابة السيرفر: ${response.body}');
+    print(' استجابة السيرفر: ${response.body}');
     
     final  result = json.decode(response.body);
     
     if (result['success'] == true) {
         final int lawyerId = result['userId'] ?? 0;
 
-  // نقرأ user من الـ PHP
+// Read user data from PHP response
   final Map<String, dynamic>? userMap =
       (result['user'] as Map?)?.cast<String, dynamic>();
 
   User? user;
   if (userMap != null) {
-    // نضيف UserType = 'lawyer' احتياط حتى لو backend نسي
     user = User.fromJson({
       ...userMap,
       'UserType': 'lawyer',
     });
   }
-
-  // أولاً: نرفع ملف الرخصة فقط (لو موجود)
+  // Upload license file if selected
   if (_licenseFile != null && _licenseFile!.path != null) {
     final licenseName =
         (result['licenseFileName'] ?? 'license_${_usernameController.text}.pdf')
@@ -747,10 +727,9 @@ Future<void> _sendLawyerToServer() async {
 
     final uploadRes = await request.send();
     final uploadBody = await uploadRes.stream.bytesToString();
-    print('📤 رفع الرخصة: $uploadBody');
+    print(' رفع الرخصة: $uploadBody');
   }
-
-  // ثانياً: لو فيه صورة شخصية، نرفعها بالـ API الشغال
+  // Upload profile image if selected
   if (_profileImage != null && _profileImage!.path != null) {
     try {
       final newFileName = await ApiClient.uploadLawyerPhoto(
@@ -762,15 +741,14 @@ Future<void> _sendLawyerToServer() async {
         user = user.copyWith(profileImage: newFileName);
       }
     } catch (e) {
-      print('⚠️ فشل رفع الصورة عند التسجيل: $e');
+      print(' فشل رفع الصورة عند التسجيل: $e');
     }
   }
-
-  // أخيراً: نخزن اليوزر في السيشن ونروح لصفحة المزيد
+  // Save user session and navigate to success page
   if (user != null) {
-    print('👤 USER AFTER REGISTER = $user');
-    print('🖼️ profileImage = ${user.profileImage}');
-    print('🖼️ profileImageUrl = ${user.profileImageUrl}');
+    print(' USER AFTER REGISTER = $user');
+    print(' profileImage = ${user.profileImage}');
+    print(' profileImageUrl = ${user.profileImageUrl}');
     await Session.saveUser(user);
   }
 
@@ -787,7 +765,6 @@ Future<void> _sendLawyerToServer() async {
   }
 }
 
-  // دالة محسنة لرفع الملفات
   Future<void> _uploadFiles(
     int lawyerId,
     Map<String, dynamic> result,
@@ -799,10 +776,8 @@ Future<void> _sendLawyerToServer() async {
         Uri.parse('$baseUrl/upload_files.php'),
       );
 
-      // إضافة معرف المحامي
       request.fields['lawyer_id'] = lawyerId.toString();
 
-      // رفع ملف الرخصة إذا موجود
       if (_licenseFile != null && _licenseFile!.path != null) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -815,7 +790,6 @@ Future<void> _sendLawyerToServer() async {
         );
       }
     
-    // رفع الصورة الشخصية إذا موجودة
     if (_profileImage != null && _profileImage!.path != null) {
       request.files.add(await http.MultipartFile.fromPath(
         'profile_image',
@@ -827,14 +801,13 @@ Future<void> _sendLawyerToServer() async {
     var response = await request.send();
     var responseData = await response.stream.bytesToString();
     
-    print('📤 رفع الملفات: $responseData');
+    print(' رفع الملفات: $responseData');
     
   } catch (e) {
-    print('⚠️ حدث خطأ في رفع الملفات: $e');
+    print(' حدث خطأ في رفع الملفات: $e');
   }
 }
 
-  // دالة مساعدة لرفع الملفات
   Future<void> _uploadFile(PlatformFile file, String fileName, String baseUrl) async {
     try {
       var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload_files.php'));
@@ -850,17 +823,15 @@ Future<void> _sendLawyerToServer() async {
       var response = await request.send();
       var responseData = await response.stream.bytesToString();
       
-      print('📤 رفع الملف: $fileName');
-      print('📥 استجابة رفع الملف: $responseData');
+      print(' رفع الملف: $fileName');
+      print(' استجابة رفع الملف: $responseData');
       
     } catch (e) {
-      print('❌ خطأ في رفع الملف: $e');
+      print(' خطأ في رفع الملف: $e');
     }
   }
-
-  // عرض النجاح والتوجيه
+  /// Shows success message and navigates to lawyer more page
   void _showSuccessAndNavigate() {
-    // عرض رسالة النجاح
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -872,14 +843,13 @@ Future<void> _sendLawyerToServer() async {
       ),
     );
     
-    // التوجيه بعد فترة بسيطة
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/lawyer/more');
       }
     });
   }
-
+  /// Utility function to show error messages
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -893,6 +863,7 @@ Future<void> _sendLawyerToServer() async {
   
 
   @override
+    /// Builds username field with real-time availability checking
   Widget _buildUsernameField() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -941,7 +912,7 @@ Future<void> _sendLawyerToServer() async {
     ],
   );
 }
-
+/// Builds phone field with Saudi number format validation
 Widget _buildPhoneField() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -992,7 +963,7 @@ Widget _buildPhoneField() {
     ],
   );
 }
-
+/// Builds license field with availability checking
 Widget _buildLicenseField() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,

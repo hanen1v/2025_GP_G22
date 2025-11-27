@@ -29,14 +29,13 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // زر العودة
+              // Back button
               IconButton(
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
               ),
               const SizedBox(height: 20),
-
-              // العنوان
+              // Title section
               const Text(
                 'تسجيل الدخول',
                 style: TextStyle(
@@ -56,8 +55,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 40),
-
-              // حقل اسم المستخدم
+              // Username field
               TextField(
                 controller: _usernameController,
                 decoration: InputDecoration(
@@ -74,8 +72,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // حقل كلمة المرور
+              // Password field with visibility toggle
               TextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
@@ -106,8 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // نسيت كلمة المرور
+              // Forgot password link
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton(
@@ -129,8 +125,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 30),
-
-              // زر تسجيل الدخول
+              // Login button
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -164,8 +159,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // رابط التسجيل الجديد
+              // Register link
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -197,10 +191,9 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
-  // دالة تسجيل الدخول
+/// Main login function - handles user authentication
+  /// Validates input, calls API, and manages login flow
   void _login() async {
-    // 1. التحقق من صحة البيانات
     if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
       _showError('الرجاء تعبئة جميع الحقول');
       return;
@@ -211,17 +204,16 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      // 2. الاتصال الحقيقي بالسيرفر
+      // Authenticate user via API
       final user = await ApiClient.login(
         _usernameController.text.trim(),
         _passwordController.text,
       );
-      await Session.saveUser(user); // ← حفظ الجلسة
-
-      // 3. التحقق من رقم الجوال فقط
+      // Save user session for persistence
+      await Session.saveUser(user); 
+       // Proceed to OTP verification
       await _navigateToOTP(user);
     } catch (e) {
-      // 4. معالجة الأخطاء
       _showError('فشل تسجيل الدخول: $e');
     } finally {
       setState(() {
@@ -229,67 +221,61 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
   }
-
-  // دالة التوجيه لصفحة OTP
+/// Handles OTP verification process after successful login
+  /// Converts phone number format and navigates to OTP screen
   Future<void> _navigateToOTP(User user) async {
-    // 1. جلب الرقم الحقيقي من الداتابيس
     String phoneNumber = user.phoneNumber ?? '';
 
-    print('🔍 بدء OTP للمستخدم: ${user.fullName}');
-    print('🔍 نوع المستخدم: ${user.userType}');
-    print('🔍 هو أدمن: ${user.isAdmin}');
-    print('🔍 رقم الجوال: $phoneNumber');
-
-    // 2. تحويل الرقم للتنسيق الدولي
+    print(' بدء OTP للمستخدم: ${user.fullName}');
+    print(' نوع المستخدم: ${user.userType}');
+    print(' هو أدمن: ${user.isAdmin}');
+    print(' رقم الجوال: $phoneNumber');
+    // Convert to international format for OTP service
     String formattedNumber = _convertToInternationalFormat(phoneNumber);
 
-    print('🌍 الرقم بعد التحويل: $formattedNumber');
+    print(' الرقم بعد التحويل: $formattedNumber');
 
-    // 3. التحقق من صحة الرقم قبل الإرسال
     if (formattedNumber.isEmpty || !formattedNumber.startsWith('+966')) {
       _showError('رقم الجوال غير صالح لإرسال الرمز: $formattedNumber');
       return;
     }
 
-    // 4. الانتقال لصفحة OTP مع الرقم المحول
     bool? verified = true;
-    /* await Navigator.push(
+     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => OTPScreen(
           phoneNumber: formattedNumber,
         ),
       ),
-    );*/
+    );
 
-    // 5. معالجة النتيجة
     if (verified == true) {
-      // ✅ تسجيل الجهاز بعد التحقق الناجح فقط إذا كان أدمن
+      // Register admin device for push notifications
       if (user.isAdmin) {
         await _registerDeviceWithRetry();
       }
+       // Redirect user based on their type
       _redirectBasedOnUserType(user);
     } else {
       _showError('فشل التحقق من رقم الجوال');
     }
   }
-
-  // دالة مساعدة لتسجيل الجهاز مع إعادة المحاولة
+  /// Registers admin device for push notifications with retry logic
+  /// Attempts registration twice in case of initial failure
   Future<void> _registerDeviceWithRetry() async {
     try {
-      print('🔄 محاولة تسجيل جهاز الأدمن...');
+      print(' محاولة تسجيل جهاز الأدمن...');
       await ApiClient.registerAdminDevice();
-      print('✅ تم تسجيل الجهاز بنجاح');
+      print(' تم تسجيل الجهاز بنجاح');
     } catch (e) {
-      print('⚠️ فشل تسجيل الجهاز: $e - إعادة المحاولة...');
-      // إعادة المحاولة بعد ثانية
+      print(' فشل تسجيل الجهاز: $e - إعادة المحاولة...');
       await Future.delayed(Duration(seconds: 1));
       try {
         await ApiClient.registerAdminDevice();
-        print('✅ تم تسجيل الجهاز في المحاولة الثانية');
+        print(' تم تسجيل الجهاز في المحاولة الثانية');
       } catch (e2) {
-        print('❌ فشل تسجيل الجهاز بعد المحاولتين: $e2');
-        // يمكن تجاهل الخطأ أو عرض رسالة للمستخدم
+        print(' فشل تسجيل الجهاز بعد المحاولتين: $e2');
         _showError(
           'حدث خطأ في تسجيل الجهاز، لكن يمكنك الاستمرار في استخدام التطبيق',
         );
@@ -297,50 +283,40 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // دالة مساعدة لتحويل التنسيق
+   /// Converts Saudi phone numbers to international format
   String _convertToInternationalFormat(String phoneNumber) {
     if (phoneNumber.isEmpty) return '';
-
-    // إزالة أي مسافات أو أحرف خاصة
+    // Remove any non-digit characters
     String cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
 
-    print('🔧 تنظيف الرقم: $cleanNumber');
+    print(' تنظيف الرقم: $cleanNumber');
 
-    // إذا الرقم يبدأ بـ 05 (سعودي)
     if (cleanNumber.startsWith('05') && cleanNumber.length == 10) {
       return '+966${cleanNumber.substring(1)}';
     }
-    // إذا الرقم يبدأ بـ 5 (بدون صفر)
     else if (cleanNumber.startsWith('5') && cleanNumber.length == 9) {
       return '+966$cleanNumber';
     }
-    // إذا الرقم يبدأ بـ +966 (محول مسبقاً)
     else if (cleanNumber.startsWith('966') && cleanNumber.length == 12) {
       return '+$cleanNumber';
     }
-    // إذا الرقم غير معروف
     else {
-      print('❌ تنسيق الرقم غير معروف: $phoneNumber');
+      print(' تنسيق الرقم غير معروف: $phoneNumber');
       return '';
     }
   }
-
-  // دالة توجيه المستخدم للصفحة المناسبة حسب نوعه
+/// Redirects user to appropriate screen based on their user type
+  /// Shows welcome dialog and navigates to respective home screen
   void _redirectBasedOnUserType(User user) {
-    // التوجيه للصفحة المناسبة حسب نوع المستخدم
     if (user.isAdmin) {
-      // تم تسجيل الجهاز بالفعل في _navigateToOTP
       ApiClient.registerAdminDevice();
       Navigator.pushReplacementNamed(context, '/requestsManagement');
     } else if (user.isLawyer) {
-      // المحامي يروح لصفحة المزيد
       Navigator.pushReplacementNamed(context, '/lawyer/more');
     } else {
-      // العميل يروح للصفحة الرئيسية
       Navigator.pushReplacementNamed(context, '/home');
     }
-
-    // عرض رسالة ترحيب أنيقة بعد الانتقال
+    // Show welcome dialog after navigation
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showDialog(
         context: context,
@@ -395,8 +371,7 @@ class _LoginPageState extends State<LoginPage> {
       );
     });
   }
-
-  // دالة مساعدة لتحويل نوع المستخدم للعربية
+  /// Converts user type to Arabic for display purposes
   String _getUserTypeArabic(String userType) {
     switch (userType) {
       case 'client':
@@ -409,8 +384,7 @@ class _LoginPageState extends State<LoginPage> {
         return 'مستخدم';
     }
   }
-
-  // عرض رسالة خطأ
+  /// Displays error messages in a snackbar
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -422,22 +396,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // رسالة "قريباً" للميزات غير الجاهزة
-  void _showComingSoon(BuildContext context, String feature) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('قريباً'),
-        content: Text('$feature سيكون متاحاً قريباً'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('حسناً'),
-          ),
-        ],
-      ),
-    );
-  }
+  
 
   @override
   void dispose() {

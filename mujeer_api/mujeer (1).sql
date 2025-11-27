@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: 15 نوفمبر 2025 الساعة 23:29
+-- Generation Time: 27 نوفمبر 2025 الساعة 18:23
 -- إصدار الخادم: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -39,7 +39,7 @@ CREATE TABLE `admin` (
 --
 
 INSERT INTO `admin` (`AdminID`, `Username`, `Password`, `PhoneNumber`) VALUES
-(1, 'adminformujeer', '$2y$10$hBulRI6OzxHyJ7LhlQgEleGq5o3HeXsIKIJbArCGvuMPAth.r7o2y', '0554441199');
+(1, 'adminformujeer', '$2y$10$hBulRI6OzxHyJ7LhlQgEleGq5o3HeXsIKIJbArCGvuMPAth.r7o2y', '0500795351');
 
 -- --------------------------------------------------------
 
@@ -58,7 +58,8 @@ CREATE TABLE `admin_devices` (
 --
 
 INSERT INTO `admin_devices` (`id`, `admin_id`, `player_id`) VALUES
-(1, 1, '9662263a-73db-4ffb-9d65-e3c9be9353be');
+(1, 1, '9662263a-73db-4ffb-9d65-e3c9be9353be'),
+(2, 1, '89932c4d-5b90-4e7d-b6c3-5f87e66e21dc');
 
 -- --------------------------------------------------------
 
@@ -84,8 +85,7 @@ INSERT INTO `appointment` (`AppointmentID`, `LawyerID`, `ClientID`, `DateTime`, 
 (1, 7, 5, '2025-11-03 09:41:14', 'Active', NULL, 1),
 (2, 1, 1, '2025-11-16 01:33:54', 'Upcoming', '200.00', 2),
 (3, 2, 1, '2025-11-16 01:37:51', 'Upcoming', '350.00', 6),
-(4, 4, 1, '2025-11-16 01:38:31', 'Upcoming', '200.00', 12),
-(7, 3, 1, '2025-11-16 01:55:31', 'Upcoming', '1000.00', 10);
+(4, 4, 1, '2025-11-16 01:38:31', 'Upcoming', '200.00', 12);
 
 -- --------------------------------------------------------
 
@@ -134,8 +134,7 @@ CREATE TABLE `consultation` (
 INSERT INTO `consultation` (`AppointmentID`, `Details`, `File`) VALUES
 (2, 'القضية', ''),
 (3, 'case', ''),
-(4, 'case2', ''),
-(7, 'case1', '');
+(4, 'case2', '');
 
 -- --------------------------------------------------------
 
@@ -210,7 +209,8 @@ INSERT INTO `lawyer` (`LawyerID`, `Username`, `FullName`, `PhoneNumber`, `Passwo
 (2, 'munirahLaw', 'منيره السليم', '0552223344', 'Munirah@123', 'L-2025-002', 4, 'Female', 'القانون المدني', 'الأحوال الشخصية', 'القضايا العقارية', 'license_munirah.pdf', 'بكالوريوس ', 'القانون ', 'lawyer1.jpg', 'Approved', 355, '350.00'),
 (3, 'lamaLaw', 'لمى الخثلان', '0553334455', 'Lama@123', 'L-2025-003', 5, 'Female', 'القانون الجنائي', 'الجرائم الإلكترونية', 'القضايا العمالية', 'license_lama.pdf', 'ماجستير', 'القانون ', 'lawyer1.jpg', 'Approved', 1005, '1000.00'),
 (4, 'layanLaw', 'ليان الماضي', '0554445566', 'Layan@123', 'L-2025-004', 3, 'Female', 'القانون الإداري', 'الأنظمة الحكومية', 'العقود الإدارية', 'license_layan.pdf', 'بكالوريوس ', 'القانون ', 'lawyer1.jpg', 'Approved', 205, '200.00'),
-(7, 'fahadyah', 'فهد المطلق', '0564614253', '$2y$10$8TdCZyVBaVZwat3C.m4o1enWG01j1haylmDhL5RDiu1Y.9nC.Sdg.', '1166554', 4, 'Male', 'ملكية فكرية', 'القضايا الجنائية', 'القضايا التجارية', 'license_fahadyah_1761246600.pdf', 'دكتوراه', 'الشريعة', 'lawyer1.jpg', 'Approved', 0, '120.00');
+(7, 'fahadyah', 'فهد المطلق', '0564614253', '$2y$10$8TdCZyVBaVZwat3C.m4o1enWG01j1haylmDhL5RDiu1Y.9nC.Sdg.', '1166554', 4, 'Male', 'ملكية فكرية', 'القضايا الجنائية', 'القضايا التجارية', 'license_fahadyah_1761246600.pdf', 'دكتوراه', 'الشريعة', 'lawyer1.jpg', 'Approved', 0, '120.00'),
+(10, 'rakan', 'ركان', '0500795351', '$2y$10$4fGW4uU/E50zfUtQeanYk.eNMr5DvI1b8w2Rn8MSC0gcPJI1agez2', '1433', 8, 'Male', 'قضايا العمالة', 'تجاري', 'أحوال شخصية', 'license_rakan_1764185272.pdf', 'ماجستير', 'قانون', 'lawyer_10_1764185273.jpg', 'Pending', 0, '0.00');
 
 -- --------------------------------------------------------
 
@@ -236,7 +236,7 @@ CREATE TABLE `request` (
 INSERT INTO `request` (`RequestID`, `AdminID`, `LawyerID`, `LawyerLicense`, `LawyerName`, `LicenseNumber`, `Status`, `RequestDate`) VALUES
 (1, 1, 1, 'license1.pdf\n', 'حنين الفصيلي', '123456', 'Approved', '2025-10-17 18:27:14'),
 (2, 1, 2, 'license2.pdf', 'منيره السليم', '678900', 'Approved', '2025-10-17 18:27:14'),
-(5, 1, 7, 'license_fahadyah_1761246600.pdf', 'fahad yahya', '1166554', 'Approved', '2025-10-23 22:10:01');
+(8, 1, 10, 'license_rakan_1764185272.pdf', 'ركان', '1433', 'Pending', '2025-11-26 22:27:52');
 
 -- --------------------------------------------------------
 
@@ -247,8 +247,7 @@ INSERT INTO `request` (`RequestID`, `AdminID`, `LawyerID`, `LawyerLicense`, `Law
 CREATE TABLE `timeslot` (
   `id` int(11) NOT NULL,
   `lawyer_id` int(11) NOT NULL,
-  `day` varchar(20) NOT NULL,
-  `time` time NOT NULL,
+  `time` datetime NOT NULL,
   `is_booked` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -256,23 +255,23 @@ CREATE TABLE `timeslot` (
 -- إرجاع أو استيراد بيانات الجدول `timeslot`
 --
 
-INSERT INTO `timeslot` (`id`, `lawyer_id`, `day`, `time`, `is_booked`) VALUES
-(1, 7, 'monday', '07:00:00', 1),
-(2, 1, 'monday', '09:00:00', 1),
-(3, 1, 'wednesday', '14:00:00', 0),
-(4, 1, 'thursday', '18:00:00', 0),
-(5, 2, 'monday', '10:00:00', 0),
-(6, 2, 'tuesday', '12:00:00', 1),
-(7, 2, 'thursday', '17:00:00', 0),
-(8, 3, 'sunday', '08:30:00', 0),
-(9, 3, 'tuesday', '15:00:00', 0),
-(10, 3, 'friday', '19:00:00', 1),
-(11, 4, 'wednesday', '11:00:00', 0),
-(12, 4, 'thursday', '13:30:00', 1),
-(13, 4, 'saturday', '16:00:00', 0),
-(14, 7, 'monday', '07:00:00', 0),
-(15, 7, 'tuesday', '09:30:00', 0),
-(16, 7, 'friday', '20:00:00', 0);
+INSERT INTO `timeslot` (`id`, `lawyer_id`, `time`, `is_booked`) VALUES
+(1, 7, '2025-11-26 07:00:00', 0),
+(2, 1, '2025-11-26 09:00:00', 1),
+(3, 1, '2025-11-26 14:00:00', 0),
+(4, 1, '2025-11-26 18:00:00', 0),
+(5, 2, '2025-11-26 10:00:00', 0),
+(6, 2, '2025-11-26 12:00:00', 1),
+(7, 2, '2025-11-26 17:00:00', 0),
+(8, 3, '2025-11-26 08:30:00', 0),
+(9, 3, '2025-11-26 15:00:00', 0),
+(10, 3, '2025-11-26 19:00:00', 1),
+(11, 4, '2025-11-26 11:00:00', 0),
+(12, 4, '2025-11-26 13:30:00', 1),
+(13, 4, '2025-11-26 16:00:00', 0),
+(14, 7, '2025-11-26 07:00:00', 0),
+(15, 7, '2025-11-26 09:30:00', 0),
+(16, 7, '2025-11-26 20:00:00', 0);
 
 --
 -- Indexes for dumped tables
@@ -369,7 +368,7 @@ ALTER TABLE `admin`
 -- AUTO_INCREMENT for table `admin_devices`
 --
 ALTER TABLE `admin_devices`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `appointment`
@@ -393,13 +392,13 @@ ALTER TABLE `feedback`
 -- AUTO_INCREMENT for table `lawyer`
 --
 ALTER TABLE `lawyer`
-  MODIFY `LawyerID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `LawyerID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `request`
 --
 ALTER TABLE `request`
-  MODIFY `RequestID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `RequestID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `timeslot`

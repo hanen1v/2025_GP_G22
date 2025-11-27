@@ -11,8 +11,8 @@ import 'package:flutter/material.dart';
 class ApiClient {
   // مهم:
   // على Android Emulator نستخدم 10.0.2.2 بدل localhost
-  //static const String base = 'http://192.168.3.10:8888/mujeer_api';
-  static const String base = 'http://10.0.2.2:8888/mujeer_api';
+  static const String base = 'http://192.168.3.10:8888/mujeer_api';
+  // static const String base = 'http://10.0.2.2:8888/mujeer_api';
   // على iOS Simulator أو Flutter Web على نفس الجهاز:
   // static const String base = 'http://localhost:8888/mujeer_api';
 
@@ -586,6 +586,29 @@ static Future<void> uploadLicenseUpdateFile({
     throw Exception(body['message'] ?? 'فشل إلغاء الموعد');
   }
 }
-
+static Future<Map<String, dynamic>> getUnbookedAvailability(int lawyerId) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$base/lawyer_availability.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'lawyer_id': lawyerId,
+        'action': 'get_unbooked_availability'
+      }),
+    );
+    
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return {
+        'success': true,
+        'data': data['data'] ?? [],
+      };
+    }
+    return {'success': false, 'data': []};
+  } catch (e) {
+    print('Error getting unbooked availability: $e');
+    return {'success': false, 'data': []};
+  }
+}
 
 }

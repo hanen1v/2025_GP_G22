@@ -30,20 +30,21 @@ class _OTPScreenState extends State<OTPScreen> {
   @override
 void initState() {
   super.initState();
-  _sendOTP();
+  _sendOTP();// Automatically send OTP when screen loads
 }
 
-
+  /// Initiates OTP sending process (wrapper for _sendOTPRequest)
   Future<void> _sendOTP() async => _sendOTPRequest();
-
+  /// Handles OTP resend functionality
   Future<void> _resendOTP() async => _sendOTPRequest(isResend: true);
-
+/// Core function to send OTP via Firebase Authentication
+  /// Handles both initial send and resend scenarios
   Future<void> _sendOTPRequest({bool isResend = false}) async {
 
     setState(() => _isLoading = true);
 
     try {
-      print('🔄 ${isResend ? 'إعادة إرسال' : 'إرسال'} الرمز إلى: ${widget.phoneNumber}');
+      print(' ${isResend ? 'إعادة إرسال' : 'إرسال'} الرمز إلى: ${widget.phoneNumber}');
 
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: widget.phoneNumber,
@@ -73,13 +74,14 @@ void initState() {
       _showError('خطأ في الإرسال: $e');
     }
   }
-
+/// Verifies OTP using Firebase credential
+  /// Signs in with credential then immediately signs out for security
   Future<void> _verifyWithCredential(PhoneAuthCredential credential) async {
     setState(() => _isLoading = true);
     try {
       final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
       if (userCredential.user != null) {
-        await FirebaseAuth.instance.signOut();
+        await FirebaseAuth.instance.signOut(); // Security measure - sign out immediately
         setState(() => _isLoading = false);
         _showSuccess('تم التحقق بنجاح!');
          _handleVerificationSuccess();
@@ -89,9 +91,11 @@ void initState() {
       _showError('فشل التحقق: $e');
     }
   }
+  /// Routes user to appropriate screen based on verification context
+  /// Handles password reset, registration, and general verification flows
   void _handleVerificationSuccess() {
   if (widget.isPasswordReset) {
-    // نسيان كلمة المرور
+    // Navigate to password reset page
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -99,15 +103,12 @@ void initState() {
       ),
     );
   } else if (widget.registrationType != null) {
-    // ✅ تسجيل جديد - التوجيه حسب النوع
     _handleRegistrationSuccess();
   } else {
-    // ✅ تسجيل دخول عادي - العودة للخلف
     Navigator.pop(context, true);
   }
 }
-
-// ✅ دالة جديدة للتوجيه حسب نوع التسجيل
+/// Handles post-registration navigation based on user type
 void _handleRegistrationSuccess() {
   Navigator.pop(context, true);
     Future.delayed(Duration.zero, () {
@@ -121,7 +122,8 @@ void _handleRegistrationSuccess() {
     }
   });
 }
-
+/// Validates and verifies manually entered OTP code
+  /// Creates credential from user input and verifies with Firebase
   Future<void> _verifyOTP() async {
     if (_otpController.text.isEmpty || _otpController.text.length != 6) {
       _showError('يرجى إدخال رمز التحقق المكون من 6 أرقام');
@@ -141,7 +143,7 @@ void _handleRegistrationSuccess() {
       _showError('رمز التحقق غير صحيح أو منتهي الصلاحية');
     }
   }
-
+  /// Displays error messages to the user
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -150,7 +152,7 @@ void _handleRegistrationSuccess() {
       ),
     );
   }
-
+  /// Displays success messages to the user
   void _showSuccess(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -192,7 +194,7 @@ void _handleRegistrationSuccess() {
             ),
     );
   }
-
+  /// Builds the main verification card with instructions and OTP input
   Widget _buildVerificationCard() {
     return Card(
       elevation: 2,
@@ -243,7 +245,7 @@ void _handleRegistrationSuccess() {
       ),
     );
   }
-
+  /// Builds the primary verification button
   Widget _buildVerifyButton() {
     return SizedBox(
       width: double.infinity,
@@ -270,7 +272,7 @@ void _handleRegistrationSuccess() {
       ),
     );
   }
-
+  /// Builds the resend OTP button
   Widget _buildResendButton() {
     return SizedBox(
       width: double.infinity,

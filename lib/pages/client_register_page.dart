@@ -15,7 +15,6 @@ class ClientRegisterPage extends StatefulWidget {
 class _ClientRegisterPageState extends State<ClientRegisterPage> {
   final _formKey = GlobalKey<FormState>();
 
-  // controllers للحقول النصية
   final _fullNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -26,7 +25,6 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  // متغيرات التحقق الفوري
   bool _isCheckingUsername = false;
   bool _isCheckingPhone = false;
   bool _isUsernameAvailable = false;
@@ -37,18 +35,17 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
   @override
   void initState() {
     super.initState();
-    // إضافة مستمعين للتحقق الفوري
+     // Add listeners for real-time validation
     _usernameController.addListener(_checkUsernameAvailability);
     _phoneController.addListener(_checkPhoneAvailability);
   }
 
   @override
   void dispose() {
-    // إزالة المستمعين
+    // Clean up controllers and listeners
     _usernameController.removeListener(_checkUsernameAvailability);
     _phoneController.removeListener(_checkPhoneAvailability);
 
-    // التخلص من جميع الـ controllers
     _fullNameController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
@@ -57,8 +54,8 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
 
     super.dispose();
   }
-
-  // التحقق الفوري من اسم المستخدم
+ /// Checks username availability in real-time by making API call
+  /// Shows loading indicator and validation messages
   void _checkUsernameAvailability() async {
     String username = _usernameController.text.trim();
     if (username.length < 3) {
@@ -73,8 +70,8 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
 
     try {
       var response = await http.post(
-        //Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
-        Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+        Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
+        // Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
 
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'username': username, 'userType': 'client'}),
@@ -91,8 +88,8 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       setState(() => _isCheckingUsername = false);
     }
   }
-
-  // التحقق الفوري من رقم الجوال
+/// Validates phone number format and checks if it's already registered
+  /// Uses regex to ensure Saudi mobile number format (05XXXXXXXX)
   void _checkPhoneAvailability() async {
     String phone = _phoneController.text.trim();
     if (phone.length < 10 || !RegExp(r'^05\d{8}$').hasMatch(phone)) {
@@ -160,8 +157,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
             ),
     );
   }
-
-  // نموذج التسجيل
+/// Builds the main registration form card with all input fields
   Widget _buildRegisterForm() {
     return Card(
       elevation: 2,
@@ -220,8 +216,8 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       ),
     );
   }
-
-  // حقل اسم المستخدم مع التحقق الفوري
+ /// Builds username field with real-time availability checking
+  /// Shows loading indicator and validation icons
   Widget _buildUsernameField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,8 +267,8 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       ],
     );
   }
-
-  // حقل رقم الجوال مع التحقق الفوري
+/// Builds phone number field with Saudi format validation
+  /// Shows real-time availability status
   Widget _buildPhoneField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -324,8 +320,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       ],
     );
   }
-
-  // زر التسجيل
+/// Builds the main registration button
   Widget _buildRegisterButton() {
     return SizedBox(
       width: double.infinity,
@@ -351,8 +346,8 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
     );
   }
 
-  // ========== الدوال المساعدة ==========
-
+  // ========== HELPER FUNCTIONS  ==========
+  /// Creates a styled section title with consistent formatting
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
@@ -364,7 +359,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       ),
     );
   }
-
+  /// Reusable text form field builder with consistent styling
   Widget _buildTextFormField({
     required TextEditingController controller,
     required String label,
@@ -388,7 +383,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       validator: validator,
     );
   }
-
+  /// Specialized password field with visibility toggle
   Widget _buildPasswordField({
     required TextEditingController controller,
     required String label,
@@ -418,8 +413,8 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       validator: validator,
     );
   }
-
-  // تسجيل العميل
+/// Main registration validation and processing function
+  /// Validates form and checks availability before proceeding to OTP
   void _registerClient() async {
     if (!_formKey.currentState!.validate()) {
       _showError('يرجى تعبئة جميع الحقول الإجبارية بشكل صحيح');
@@ -431,17 +426,15 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       return;
     }
 
-    // فقط التوجيه لصفحة OTP أول
     _navigateToOTP();
-  }
+  }/// Navigates to OTP verification screen
+  /// Converts phone number to international format for OTP service
 
-  // التوجيه إلى صفحة OTP
   void _navigateToOTP() async {
     String phoneNumber = '+966${_phoneController.text.substring(1)}';
 
-    // ننتظر نتيجة التحقق من شاشة OTP
     bool? verified = true;
-    /*await Navigator.push(
+    await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => OTPScreen(
@@ -449,18 +442,16 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
         registrationType: 'client',
       ),
     ),
-  );*/
+  );
 
-    // بعد العودة من صفحة OTP
     if (verified == true) {
-      // بعد التحقق الناجح من OTP
       await _registerInDatabase();
     } else {
       _showError('فشل التحقق من رقم الجوال');
     }
   }
-
-  // التسجيل في الداتابيز بعد التحقق
+/// Final registration step - sends data to server after OTP verification
+  /// Creates user session on successful registration
   Future<void> _registerInDatabase() async {
     setState(() => _isLoading = true);
 
@@ -472,7 +463,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
         'phoneNumber': _phoneController.text.trim(),
       };
 
-      print('📤 إرسال بيانات العميل بعد التحقق: $requestData');
+      print(' إرسال بيانات العميل بعد التحقق: $requestData');
 
       String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
       //String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
@@ -492,12 +483,11 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
 
         if (userMap != null) {
           final user = User.fromJson(userMap);
-          await Session.saveUser(user); // <-- هذا هو الأهم
+          await Session.saveUser(user); 
         }
 
         _showSuccess('تم إنشاء الحساب بنجاح!');
 
-        // الانتقال إلى الصفحة الرئيسية
         Navigator.pushReplacementNamed(
           context,
           '/home',
@@ -516,7 +506,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       setState(() => _isLoading = false);
     }
   }
-
+/// Utility function to show error messages
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -526,7 +516,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
       ),
     );
   }
-
+/// Utility function to show success messages
   void _showSuccess(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

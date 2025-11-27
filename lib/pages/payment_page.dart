@@ -80,7 +80,7 @@ class _PaymentPageState extends State<PaymentPage> {
     }
 
     final url =
-        Uri.parse('http://10.0.2.2:8888/mujeer_api/confirm_payment.php');
+        Uri.parse('http://192.168.3.10:8888/mujeer_api/confirm_payment.php');
 
     try {
       final response = await http.post(url, body: {

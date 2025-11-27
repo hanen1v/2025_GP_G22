@@ -33,6 +33,7 @@ $action = $input['action'] ?? ($_GET['action'] ?? '');
 
 file_put_contents('debug_availability.log', "Action: $action\n", FILE_APPEND);
 
+// تحديث سعر المحامي
 if ($action === 'update_price') {
     $lawyer_id = $input['lawyer_id'] ?? null;
     $price = $input['price'] ?? null;
@@ -96,15 +97,18 @@ elseif ($action === 'save_availability') {
         $delete_stmt->close();
 
         // 2. إضافة الأوقات الجديدة
-        $insert_stmt = $conn->prepare("INSERT INTO timeslot (lawyer_id, day, time) VALUES (?, ?, ?)");
+        $insert_stmt = $conn->prepare("INSERT INTO timeslot (lawyer_id, time, is_booked) VALUES (?, ?, 0)");
         $inserted_count = 0;
         
         foreach ($availability as $slot) {
             $day = $slot['day'] ?? '';
             $time = $slot['time'] ?? '';
             
+            // دمج اليوم والوقت في تنسيق datetime
+            $datetime = $day . ' ' . $time;
+            
             if (!empty($day) && !empty($time)) {
-                $insert_stmt->bind_param("iss", $lawyer_id, $day, $time);
+                $insert_stmt->bind_param("is", $lawyer_id, $datetime);
                 if ($insert_stmt->execute()) {
                     $inserted_count++;
                 } else {
@@ -136,7 +140,7 @@ elseif ($action === 'save_availability') {
     exit;
 }
 
-// جلب الأوقات الحالية
+// جلب الأوقات الحالية (جميع الأوقات)
 elseif ($action === 'get_availability') {
     $lawyer_id = $input['lawyer_id'] ?? ($_GET['lawyer_id'] ?? null);
 
@@ -150,16 +154,59 @@ elseif ($action === 'get_availability') {
         exit;
     }
 
-    $stmt = $conn->prepare("SELECT day, time FROM timeslot WHERE lawyer_id = ?");
+    $stmt = $conn->prepare("SELECT time FROM timeslot WHERE lawyer_id = ?");
     $stmt->bind_param("i", $lawyer_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
     $availability = [];
     while ($row = $result->fetch_assoc()) {
+        $datetime = $row['time'];
+        // فصل التاريخ والوقت
+        $date_time_parts = explode(' ', $datetime);
         $availability[] = [
-            'day' => $row['day'],
-            'time' => $row['time']
+            'day' => $date_time_parts[0] ?? '',
+            'time' => $date_time_parts[1] ?? ''
+        ];
+    }
+
+    $stmt->close();
+
+    echo json_encode([
+        "success" => true,
+        "data" => $availability
+    ]);
+    exit;
+}
+
+// جلب الأوقات غير المحجوزة فقط
+elseif ($action === 'get_unbooked_availability') {
+    $lawyer_id = $input['lawyer_id'] ?? ($_GET['lawyer_id'] ?? null);
+
+    file_put_contents('debug_availability.log', "Get Unbooked Availability - Lawyer: $lawyer_id\n", FILE_APPEND);
+
+    if (!$lawyer_id) {
+        echo json_encode([
+            "success" => false,
+            "message" => "Missing lawyer_id"
+        ]);
+        exit;
+    }
+
+    // جلب الأوقات غير المحجوزة (is_booked = 0)
+    $stmt = $conn->prepare("SELECT time FROM timeslot WHERE lawyer_id = ? AND is_booked = 0");
+    $stmt->bind_param("i", $lawyer_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $availability = [];
+    while ($row = $result->fetch_assoc()) {
+        $datetime = $row['time'];
+        // فصل التاريخ والوقت
+        $date_time_parts = explode(' ', $datetime);
+        $availability[] = [
+            'day' => $date_time_parts[0] ?? '',
+            'time' => $date_time_parts[1] ?? ''
         ];
     }
 
@@ -201,10 +248,174 @@ elseif ($action === 'get_price') {
     exit;
 }
 
+// حذف جميع الأوقات غير المحجوزة
+elseif ($action === 'delete_all') {
+    $lawyer_id = $input['lawyer_id'] ?? null;
+
+    file_put_contents('debug_availability.log', "Delete All - Lawyer: $lawyer_id\n", FILE_APPEND);
+
+    if (!$lawyer_id) {
+        echo json_encode([
+            "success" => false,
+            "message" => "Missing lawyer_id"
+        ]);
+        exit;
+    }
+
+    $stmt = $conn->prepare("DELETE FROM timeslot WHERE lawyer_id = ? AND is_booked = 0");
+    $stmt->bind_param("i", $lawyer_id);
+
+    if ($stmt->execute()) {
+        echo json_encode([
+            "success" => true,
+            "message" => "All unbooked availability deleted successfully"
+        ]);
+    } else {
+        echo json_encode([
+            "success" => false,
+            "message" => "Database error: " . $stmt->error
+        ]);
+    }
+
+    $stmt->close();
+    exit;
+}
+
+// حذف أوقات محددة
+elseif ($action === 'delete_selected') {
+    $lawyer_id = $input['lawyer_id'] ?? null;
+    $slots_to_delete = $input['slots_to_delete'] ?? [];
+
+    file_put_contents('debug_availability.log', "Delete Selected - Lawyer: $lawyer_id\n", FILE_APPEND);
+    file_put_contents('debug_availability.log', "Slots to delete: " . print_r($slots_to_delete, true) . "\n", FILE_APPEND);
+
+    if (!$lawyer_id || empty($slots_to_delete)) {
+        echo json_encode([
+            "success" => false,
+            "message" => "Missing lawyer_id or slots to delete"
+        ]);
+        exit;
+    }
+
+    // بدء transaction
+    $conn->begin_transaction();
+
+    try {
+        $delete_count = 0;
+        
+        foreach ($slots_to_delete as $slot) {
+            $day = $slot['day'] ?? '';
+            $time = $slot['time'] ?? '';
+            
+            if (!empty($day) && !empty($time)) {
+                $datetime = $day . ' ' . $time;
+                $stmt = $conn->prepare("DELETE FROM timeslot WHERE lawyer_id = ? AND time = ? AND is_booked = 0");
+                $stmt->bind_param("is", $lawyer_id, $datetime);
+                
+                if ($stmt->execute()) {
+                    $delete_count += $stmt->affected_rows;
+                }
+                $stmt->close();
+            }
+        }
+        
+        // تأكيد العملية
+        $conn->commit();
+        
+        echo json_encode([
+            "success" => true,
+            "message" => "Selected slots deleted successfully",
+            "deleted_count" => $delete_count
+        ]);
+        
+    } catch (Exception $e) {
+        // تراجع في حالة الخطأ
+        $conn->rollback();
+        
+        echo json_encode([
+            "success" => false,
+            "message" => "Error deleting selected slots: " . $e->getMessage()
+        ]);
+    }
+    exit;
+}
+
+// تحديث الأوقات المتبقية بعد الحذف
+elseif ($action === 'update_remaining_slots') {
+    $lawyer_id = $input['lawyer_id'] ?? null;
+    $remaining_slots = $input['remaining_slots'] ?? [];
+
+    file_put_contents('debug_availability.log', "Update Remaining Slots - Lawyer: $lawyer_id\n", FILE_APPEND);
+    file_put_contents('debug_availability.log', "Remaining slots: " . print_r($remaining_slots, true) . "\n", FILE_APPEND);
+
+    if (!$lawyer_id) {
+        echo json_encode([
+            "success" => false,
+            "message" => "Missing lawyer_id"
+        ]);
+        exit;
+    }
+
+    // بدء transaction
+    $conn->begin_transaction();
+
+    try {
+        // 1. حذف جميع الأوقات الحالية
+        $delete_stmt = $conn->prepare("DELETE FROM timeslot WHERE lawyer_id = ?");
+        $delete_stmt->bind_param("i", $lawyer_id);
+        
+        if (!$delete_stmt->execute()) {
+            throw new Exception("Failed to delete old availability: " . $delete_stmt->error);
+        }
+        $delete_stmt->close();
+
+        // 2. إضافة الأوقات المتبقية فقط
+        if (!empty($remaining_slots)) {
+            $insert_stmt = $conn->prepare("INSERT INTO timeslot (lawyer_id, time, is_booked) VALUES (?, ?, 0)");
+            $inserted_count = 0;
+            
+            foreach ($remaining_slots as $slot) {
+                $day = $slot['day'] ?? '';
+                $time = $slot['time'] ?? '';
+                
+                if (!empty($day) && !empty($time)) {
+                    $datetime = $day . ' ' . $time;
+                    $insert_stmt->bind_param("is", $lawyer_id, $datetime);
+                    if ($insert_stmt->execute()) {
+                        $inserted_count++;
+                    }
+                }
+            }
+            
+            $insert_stmt->close();
+        }
+        
+        // تأكيد العملية
+        $conn->commit();
+        
+        echo json_encode([
+            "success" => true,
+            "message" => "Remaining slots updated successfully",
+            "remaining_count" => count($remaining_slots)
+        ]);
+        
+    } catch (Exception $e) {
+        // تراجع في حالة الخطأ
+        $conn->rollback();
+        
+        echo json_encode([
+            "success" => false,
+            "message" => "Error updating remaining slots: " . $e->getMessage()
+        ]);
+    }
+    exit;
+}
+
 // في حال لم يتم إرسال action
-file_put_contents('debug_availability.log', "No valid action found. Available actions: update_price, save_availability, get_availability, get_price\n", FILE_APPEND);
+file_put_contents('debug_availability.log', "No valid action found. Available actions: update_price, save_availability, get_availability, get_unbooked_availability, get_price, delete_all, delete_selected, update_remaining_slots\n", FILE_APPEND);
 echo json_encode([
     "success" => false,
-    "message" => "No valid action found. Available actions: update_price, save_availability, get_availability, get_price"
+    "message" => "No valid action found. Available actions: update_price, save_availability, get_availability, get_unbooked_availability, get_price, delete_all, delete_selected, update_remaining_slots"
 ]);
 exit;
+?>

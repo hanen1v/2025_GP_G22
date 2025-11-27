@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'otp_screen.dart'; // تأكدي من هذا الاستيراد
+import 'otp_screen.dart'; 
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -14,8 +14,7 @@ class WelcomePage extends StatelessWidget {
           child: Column(
             children: [
               const Spacer(),
-              
-              // الشعار
+// App Logo            
 Container(
   width: 120,
   height: 120,
@@ -25,8 +24,7 @@ Container(
   ),
 ),
               const SizedBox(height: 32),
-              
-              // العنوان
+              // Welcome Text
               const Text(
                 'مرحباً بك في مُجير',
                 style: TextStyle(
@@ -40,8 +38,7 @@ Container(
               
               
               const SizedBox(height: 16),
-              
-              // باقي الأزرار...
+              // Login Button - Navigates to login screen
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -68,8 +65,7 @@ Container(
                 ),
               ),
               const SizedBox(height: 16),
-              
-              // زر إنشاء حساب
+              // Register Button - Shows registration options dialog
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -95,8 +91,7 @@ Container(
                 ),
               ),
               const SizedBox(height: 32),
-              
-              // نص "تابع كضيف"
+              // Continue as Guest - Navigates directly to home screen
               InkWell(
                 onTap: () {
                   Navigator.pushReplacementNamed(context, '/home');
@@ -119,7 +114,7 @@ Container(
       ),
     );
   }
-
+/// Displays a dialog with registration options (Client or Lawyer)
   void _showRegistrationOptions(BuildContext context) {
     showDialog(
       context: context,
@@ -143,7 +138,7 @@ Container(
                 ),
               ),
               const SizedBox(height: 16),
-              
+              // Client Registration Button
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -170,7 +165,7 @@ Container(
                 ),
               ),
               const SizedBox(height: 12),
-              
+              // Lawyer Registration Button
               SizedBox(
                 width: double.infinity,
                 height: 56,

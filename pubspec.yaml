@@ -13,6 +13,7 @@ dependencies:
   firebase_auth: ^6.1.1 
   file_picker: ^8.0.7
   http: ^1.2.2
+  table_calendar: ^3.0.9
   cupertino_icons: ^1.0.8
   iconsax: ^0.0.8
   path_provider: ^2.0.1

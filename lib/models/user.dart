@@ -9,7 +9,7 @@ class User {
   final DateTime? registrationDate;
   final String? status; // 'Approved' | 'Pending' | 'Rejected' | null
 
-  // 🟣 حقول المحامي الإضافية
+ 
   final int? yearsOfExp;
   final String? mainSpecialization;
   final String? fSubSpecialization;
@@ -151,8 +151,8 @@ class User {
     if (profileImage == null || profileImage!.isEmpty) {
       return '';
     }
-    const baseUrl = 'http://10.0.2.2:8888/mujeer_api';
-    //const baseUrl = 'http://192.168.3.10:8888/mujeer_api';
+    // const baseUrl = 'http://10.0.2.2:8888/mujeer_api';
+    const baseUrl = 'http://192.168.3.10:8888/mujeer_api';
     return '$baseUrl/uploads/$profileImage';
   }
 
