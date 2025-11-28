@@ -7,7 +7,6 @@ require_once __DIR__ . '/config.php';
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
-// قراءة البيانات من POST
 $lawyerId   = isset($_POST['lawyer_id'])   ? intval($_POST['lawyer_id'])   : 0;
 $clientId   = isset($_POST['client_id'])   ? intval($_POST['client_id'])   : 0;
 $timeslotId = isset($_POST['timeslot_id']) ? intval($_POST['timeslot_id']) : 0;
@@ -26,7 +25,6 @@ if ($lawyerId == 0 || $clientId == 0 || $timeslotId == 0 || $price <= 0 || $deta
 try {
     $conn->begin_transaction();
 
-    // 1) إنشاء الموعد
     $stmt = $conn->prepare("
         INSERT INTO appointment (LawyerID, ClientID, DateTime, Status, Price, timeslot_id)
         VALUES (?, ?, NOW(), 'Upcoming', ?, ?)
@@ -41,7 +39,6 @@ try {
     $appointmentId = $stmt->insert_id;
     $stmt->close();
 
-    // 2) تفاصيل الاستشارة
     $stmt2 = $conn->prepare("
         INSERT INTO consultation (AppointmentID, Details, File)
         VALUES (?, ?, ?)
@@ -50,7 +47,6 @@ try {
     $stmt2->execute();
     $stmt2->close();
 
-    // 3) تحديث نقاط المحامي (تزيد بعدد السعر)
     $pointsToAdd = (int)round($price);
     $stmt3 = $conn->prepare("
         UPDATE lawyer
@@ -61,7 +57,6 @@ try {
     $stmt3->execute();
     $stmt3->close();
 
-    // 4) تحديث التايم سلوت إلى محجوز بدل الحذف
     $stmt4 = $conn->prepare("
         UPDATE timeslot
         SET is_booked = 1
@@ -71,7 +66,6 @@ try {
     $stmt4->execute();
     $stmt4->close();
 
-    // إنهاء العملية
     $conn->commit();
 
     echo json_encode([
