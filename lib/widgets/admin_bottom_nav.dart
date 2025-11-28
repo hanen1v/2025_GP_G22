@@ -54,7 +54,6 @@ class AdminBottomNav extends StatelessWidget {
         ],
       ),
       child: BottomAppBar(
-        // ما عندنا FAB هنا، لذلك ما نحتاج notch
         color: Colors.white,
         elevation: 0,
         child: SafeArea(
