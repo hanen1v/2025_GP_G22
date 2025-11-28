@@ -91,11 +91,9 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
 
-      // ★★ زر + في المنتصف مثل السيرتش ★★
       floatingActionButton: _buildFab(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-      // ★★ نفس ناف بار السيرتش بالضبط ★★
       bottomNavigationBar: const AppBottomNav(currentRoute: '/search'),
 
       body: isLoading
