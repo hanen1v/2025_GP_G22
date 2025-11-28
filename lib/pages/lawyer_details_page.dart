@@ -128,8 +128,14 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.star,
-                                color: Colors.amber, size: 22),
+                           Icon(
+      Icons.star,
+      size: 22,
+      color: (lawyer!['rating'] == null ||
+              lawyer!['rating'] == 0)
+          ? Colors.grey  
+          : Colors.amber,
+    ),
                             const SizedBox(width: 4),
                             Text(
                               lawyer!['rating'].toString(),
