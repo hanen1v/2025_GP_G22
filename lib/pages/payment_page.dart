@@ -305,7 +305,6 @@ class _PaymentPageState extends State<PaymentPage> {
 
                       const SizedBox(height: 40),
 
-                      // ⬇⬇⬇ هنا التعديل الوحيد — الزر داخل الكونتينر ⬇⬇⬇
                       SizedBox(
                         width: double.infinity,
                         height: 55,
