@@ -48,7 +48,7 @@ class _RequestManagementPageState extends State<RequestManagementPage> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('تم ${newStatus == "Approved" ? "قبول" : "رفض"} الطلب'),
       ));
-      _load(); // إعادة التحديث
+      _load(); // reload page
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('خطأ: $e')));
@@ -140,6 +140,7 @@ class RequestCard extends StatelessWidget {
     }
   }
   @override
+  request card
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -149,7 +150,7 @@ class RequestCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // التفاصيل
+            // card details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,7 +178,6 @@ class RequestCard extends StatelessWidget {
               ),
             ),
 
-            // الإجراءات
             Column(
               children: [
                 SizedBox(
@@ -217,3 +217,4 @@ class RequestCard extends StatelessWidget {
     );
   }
 }
+
