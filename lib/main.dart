@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 import 'pages/search_page.dart';
 import 'pages/plus_page.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'pages/status_page.dart';
 import 'pages/more_page.dart';
 import 'pages/consultation_page.dart';
@@ -25,7 +26,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'pages/chat_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+  await initializeDateFormatting('ar', null);
   try {
     await Firebase.initializeApp();
     print('Firebase initialized successfully');
