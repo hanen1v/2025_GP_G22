@@ -313,7 +313,13 @@ onTap: () {
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     Row(
                       children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 18),
+                        Icon(
+  Icons.star,
+  color: (lawyer['rating'] == null || lawyer['rating'] == 0)
+      ? Colors.grey
+      : Colors.amber,
+  size: 18,
+),
                         const SizedBox(width: 4),
                         Text(lawyer['rating'].toString(),
                             style: const TextStyle(fontWeight: FontWeight.w600)),
