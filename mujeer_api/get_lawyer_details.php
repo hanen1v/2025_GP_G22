@@ -35,7 +35,6 @@ $result = $conn->query($sql);
 if ($result && $result->num_rows > 0) {
     $row = $result->fetch_assoc();
 
-    // حساب التقييم من جدول feedback
     $rateQuery = $conn->query("SELECT AVG(Rate) AS avgRate FROM feedback WHERE LawyerID = $id");
     $avgRate = 0;
     if ($rateQuery && $rateQuery->num_rows > 0) {
