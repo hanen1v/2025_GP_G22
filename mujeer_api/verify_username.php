@@ -15,7 +15,6 @@ if($data === null || !isset($data->username)) {
 
 $username = $data->username;
 
-// البحث في جدول client أولاً
 $sql = "SELECT ClientID as id, FullName, Username, PhoneNumber, 'client' as userType FROM client WHERE Username = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $username);
@@ -39,7 +38,6 @@ if ($result && $result->num_rows > 0) {
     exit;
 }
 
-// البحث في جدول lawyer
 $sql = "SELECT LawyerID as id, FullName, Username, PhoneNumber, 'lawyer' as userType FROM lawyer WHERE Username = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $username);
@@ -63,7 +61,6 @@ if ($result && $result->num_rows > 0) {
     exit;
 }
 
-// البحث في جدول admin
 $sql = "SELECT AdminID as id, Username, 'admin' as userType, PhoneNumber, Username as FullName FROM admin WHERE Username = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $username);
