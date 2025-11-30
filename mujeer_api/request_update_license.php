@@ -4,10 +4,10 @@ header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// مهم: لا نطبع أخطاء HTML للعميل (Flutter)
+
 error_reporting(E_ALL);
-ini_set('display_errors', 0);      // ⛔ لا تطبعي الأخطاء على الشاشة
-ini_set('log_errors', 1);          // ✅ سجّليها في اللوق
+ini_set('display_errors', 0);      
+ini_set('log_errors', 1);          
 ini_set('error_log', __DIR__ . '/php_errors.log');
 
 require_once __DIR__ . '/config.php';
@@ -24,7 +24,7 @@ $lawyerId       = (int)($data['lawyerId']      ?? 0);
 $fullName       = trim($data['fullName']       ?? '');
 $licenseNumber  = trim($data['licenseNumber']  ?? '');
 
-// تأكد من الحقول
+
 if ($lawyerId <= 0 || $fullName === '' || $licenseNumber === '') {
     echo json_encode([
         "success" => false,
@@ -33,20 +33,10 @@ if ($lawyerId <= 0 || $fullName === '' || $licenseNumber === '') {
     exit;
 }
 
-// اسم ملف مبدئي للرخصة الجديدة (رح نرفعها في API ثاني)
+
 $licenseFileName = 'license_update_' . $lawyerId . '_' . time() . '.pdf';
 
-/*
-    نفترض أن جدول request فيه الأعمدة:
-    RequestID (PK)
-    AdminID
-    LawyerID
-    LawyerLicense
-    LawyerName
-    LicenseNumber
-    Status
-    RequestType   ← نستخدمه لتمييز "UpdateLicense" عن "NewLawyer" لو حبيتي
-*/
+
 
 $sql = "INSERT INTO request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status)
                     VALUES (1, ?, ?, ?, ?, 'Pending')";
