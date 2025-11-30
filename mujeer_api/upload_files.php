@@ -9,7 +9,7 @@ ini_set('display_errors', 1);
 
 $uploadDir = 'C:/mamp/htdocs/mujeer_api/uploads/';
 
-// تأكد من وجود المجلد
+
 if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0777, true);
 }
