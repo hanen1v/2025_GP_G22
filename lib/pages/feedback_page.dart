@@ -21,12 +21,13 @@ class _FeedbackPageState extends State<FeedbackPage> {
   bool _submitting = false;
 
   int? _lawyerId;
+  int? _appointmentId;
   bool _gotArgs = false;
 
   int _rating = 0;
 
-  static const String _phpPage = 'http://192.168.3.10:8888/mujeer_api/add_feedback.php';
-  // static const String _phpPage = 'http://10.0.2.2:8888/mujeer_api/add_feedback.php';
+  //static const String _phpPage = 'http://192.168.3.10:8888/mujeer_api/add_feedback.php';
+  static const String _phpPage = 'http://10.0.2.2:8888/mujeer_api/add_feedback.php';
 
   @override
   void initState() {
@@ -46,6 +47,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
       _lawyerId = args;
     } else if (args is Map) {
       _lawyerId = args['lawyerId'] ?? args['id'];
+      _appointmentId = args['appointmentId'];
     }
   }
 
@@ -81,6 +83,14 @@ class _FeedbackPageState extends State<FeedbackPage> {
       return;
     }
 
+     if (_appointmentId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('خطأ: لا يوجد معرف الموعد')),
+      );
+      return;
+    }
+
+
     if (_rating == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('الرجاء تقييم المحامي')),
@@ -98,6 +108,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
       final payload = {
         'client_id': _user!.id,
         'lawyer_id': _lawyerId,
+        'appointment_id': _appointmentId,
         'rating': _rating,
         'comment': _commentCtrl.text.trim(),
         'created_at': DateTime.now().toIso8601String(),
