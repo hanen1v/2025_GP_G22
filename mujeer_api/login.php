@@ -4,13 +4,11 @@ header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// تفعيل السجلات
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 include 'config.php';
 
-// سجل البيانات المستلمة
 $raw_input = file_get_contents("php://input");
 error_log("=== LOGIN ATTEMPT ===");
 error_log("Raw input: " . $raw_input);
@@ -29,7 +27,6 @@ $password = $data->password;
 error_log("Username: " . $username);
 error_log("Password: " . $password);
 
-// تحقق من الاتصال بالداتابيز
 if ($conn->connect_error) {
     error_log("DB Connection failed: " . $conn->connect_error);
     echo json_encode(["success" => false, "message" => "فشل الاتصال بقاعدة البيانات"]);
@@ -38,7 +35,6 @@ if ($conn->connect_error) {
 
 error_log("DB Connection: OK");
 
-// البحث في جدول client أولاً
 $sql = "SELECT ClientID as UserID, FullName, Username, PhoneNumber, Points, 'client' as UserType, Password 
         FROM client WHERE Username = ?";
 $stmt = $conn->prepare($sql);
@@ -50,16 +46,15 @@ error_log("=== CHECKING CLIENT TABLE ===");
 if ($result && $result->num_rows > 0) {
     $user = $result->fetch_assoc();
     
-    error_log("✅ المستخدم موجود في client: " . $user['Username']);
-    error_log("🔐 كلمة المرور المخزنة: " . $user['Password']);
-    error_log("⌨️ كلمة المرور المدخلة: " . $password);
+    error_log(" المستخدم موجود في client: " . $user['Username']);
+    error_log(" كلمة المرور المخزنة: " . $user['Password']);
+    error_log(" كلمة المرور المدخلة: " . $password);
     
-    // تحقق مما إذا كانت كلمة المرور مشفرة
     $is_hashed = password_verify($password, $user['Password']);
-    error_log("نتيجة التحقق: " . ($is_hashed ? "✅ ناجح" : "❌ فاشل"));
+    error_log("نتيجة التحقق: " . ($is_hashed ? " ناجح" : " فاشل"));
     
     if ($is_hashed) {
-        error_log("🎉 تسجيل الدخول ناجح للعميل");
+        error_log(" تسجيل الدخول ناجح للعميل");
         
         echo json_encode([
             "success" => true, 
@@ -77,13 +72,12 @@ if ($result && $result->num_rows > 0) {
         ]);
         exit;
     } else {
-        error_log("❌ فشل التحقق للعميل - كلمة المرور لا تطابق");
+        error_log(" فشل التحقق للعميل - كلمة المرور لا تطابق");
     }
 } else {
-    error_log("❌ المستخدم غير موجود في جدول client");
+    error_log(" المستخدم غير موجود في جدول client");
 }
 
-// البحث في جدول lawyer
 error_log("=== CHECKING LAWYER TABLE ===");
 
 $sql = "SELECT 
@@ -114,15 +108,15 @@ $result = $stmt->get_result();
 if ($result && $result->num_rows > 0) {
     $user = $result->fetch_assoc();
     
-    error_log("✅ المستخدم موجود في lawyer: " . $user['Username']);
-    error_log("🔐 كلمة المرور المخزنة: " . $user['Password']);
-    error_log("⌨️ كلمة المرور المدخلة: " . $password);
+    error_log(" المستخدم موجود في lawyer: " . $user['Username']);
+    error_log(" كلمة المرور المخزنة: " . $user['Password']);
+    error_log(" كلمة المرور المدخلة: " . $password);
     
     $is_hashed = password_verify($password, $user['Password']);
-    error_log("نتيجة التحقق: " . ($is_hashed ? "✅ ناجح" : "❌ فاشل"));
+    error_log("نتيجة التحقق: " . ($is_hashed ? " ناجح" : " فاشل"));
     
     if ($is_hashed) {
-        error_log("🎉 تسجيل الدخول ناجح للمحامي");
+        error_log(" تسجيل الدخول ناجح للمحامي");
         
         echo json_encode([
             "success" => true, 
@@ -150,13 +144,12 @@ if ($result && $result->num_rows > 0) {
          ], JSON_UNESCAPED_UNICODE);
         exit;
     } else {
-        error_log("❌ فشل التحقق للمحامي - كلمة المرور لا تطابق");
+        error_log(" فشل التحقق للمحامي - كلمة المرور لا تطابق");
     }
 } else {
-    error_log("❌ المستخدم غير موجود في جدول lawyer أو الحساب غير مفعل");
+    error_log(" المستخدم غير موجود في جدول lawyer أو الحساب غير مفعل");
 }
 
-// البحث في جدول admin
 error_log("=== CHECKING ADMIN TABLE ===");
 $sql = "SELECT AdminID as UserID, Username, 'admin' as UserType, Password, 
                Username as FullName,
@@ -170,15 +163,15 @@ $result = $stmt->get_result();
 if ($result && $result->num_rows > 0) {
     $user = $result->fetch_assoc();
     
-    error_log("✅ المستخدم موجود في admin: " . $user['Username']);
-    error_log("🔐 كلمة المرور المخزنة: " . $user['Password']);
-    error_log("⌨️ كلمة المرور المدخلة: " . $password);
+    error_log(" المستخدم موجود في admin: " . $user['Username']);
+    error_log(" كلمة المرور المخزنة: " . $user['Password']);
+    error_log(" كلمة المرور المدخلة: " . $password);
     
     $is_hashed = password_verify($password, $user['Password']);
-    error_log("نتيجة التحقق: " . ($is_hashed ? "✅ ناجح" : "❌ فاشل"));
+    error_log("نتيجة التحقق: " . ($is_hashed ? " ناجح" : " فاشل"));
     
     if ($is_hashed) {
-        error_log("🎉 تسجيل الدخول ناجح للمشرف");
+        error_log(" تسجيل الدخول ناجح للمشرف");
         
         echo json_encode([
             "success" => true, 
@@ -195,10 +188,10 @@ if ($result && $result->num_rows > 0) {
         ]);
         exit;
     } else {
-        error_log("❌ فشل التحقق للمشرف - كلمة المرور لا تطابق");
+        error_log(" فشل التحقق للمشرف - كلمة المرور لا تطابق");
     }
 } else {
-    error_log("❌ المستخدم غير موجود في جدول admin");
+    error_log(" المستخدم غير موجود في جدول admin");
 }
 
 error_log("=== LOGIN FAILED ===");
