@@ -4,7 +4,7 @@ header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// لو حابة تخففي التحذيرات اللي تكسر الـ JSON حطي display_errors = 0 في الإنتاج
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -18,14 +18,7 @@ if (!$data) {
     exit;
 }
 
-/*
-  Required:
-    userId   : int
-    userType : "client" | "lawyer"
-    password : string
-  Optional:
-    force    : bool  (للسماح بالحذف/الإيقاف حتى لو فيه Points)
-*/
+
 
 $required = ['userId','userType','password'];
 foreach ($required as $f) {
@@ -38,16 +31,16 @@ foreach ($required as $f) {
 $userId   = (int)$data['userId'];
 $userType = strtolower(trim($data['userType']));
 $password = $data['password'];
-$force    = !empty($data['force']);   // افتراضي false
+$force    = !empty($data['force']);   //  false
 
 if (!in_array($userType, ['client','lawyer'], true)) {
     echo json_encode(["success"=>false, "message"=>"Invalid userType"], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-/* ==================== جلب بيانات المستخدم ==================== */
 
-// للعميل: Username + PhoneNumber + Password + Points (من جدول client)
+
+//  Username + PhoneNumber + Password + Points (  client)
 if ($userType === 'client') {
     $stmtSel = $conn->prepare("
         SELECT ClientID AS id, Username, PhoneNumber, Password, Points
@@ -85,18 +78,18 @@ if (!$resSel || $resSel->num_rows === 0) {
 $row = $resSel->fetch_assoc();
 $stmtSel->close();
 
-/* ========== التحقق من كلمة المرور ========== */
+
 
 if (!password_verify($password, $row['Password'])) {
     echo json_encode(["success"=>false, "message"=>"كلمة المرور غير صحيحة"], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-/* ================= منطق حذف العميل (حذف حقيقي) ================= */
+
 
 if ($userType === 'client') {
 
-    // 1) مواعيد Active
+    // 1)  Active
     $qActive = $conn->query("
         SELECT 1 FROM appointment 
         WHERE ClientID = $userId AND Status = 'Active'
@@ -111,7 +104,7 @@ if ($userType === 'client') {
         exit;
     }
 
-    // 2) مواعيد Upcoming
+    // 2)  Upcoming
     $qUpcoming = $conn->query("
         SELECT 1 FROM appointment 
         WHERE ClientID = $userId AND Status = 'Upcoming'
@@ -126,7 +119,7 @@ if ($userType === 'client') {
         exit;
     }
 
-    // 3) التحقق من الـ Points
+    // 3) Points
     $points = (int)($row['Points'] ?? 0);
     if ($points > 0 && !$force) {
         echo json_encode([
@@ -138,7 +131,7 @@ if ($userType === 'client') {
         exit;
     }
 
-    // 4) حذف المواعيد المرتبطة
+    // 4) 
     $appsRes = $conn->query("SELECT AppointmentID FROM appointment WHERE ClientID = $userId");
     if ($appsRes) {
         while ($a = $appsRes->fetch_assoc()) {
@@ -149,7 +142,7 @@ if ($userType === 'client') {
         $conn->query("DELETE FROM appointment WHERE ClientID = $userId");
     }
 
-    // 5) حذف الحساب نفسه
+    // 5)
     $stmtDel = $conn->prepare("DELETE FROM client WHERE ClientID = ? LIMIT 1");
     if (!$stmtDel) {
         echo json_encode([
@@ -182,12 +175,12 @@ if ($userType === 'client') {
     exit;
 }
 
-/* ================= منطق المحامي (إيقاف شكلي) ================= */
 
-/* ================= منطق (المحامي) — حذف شكلي فقط ================= */
+
+
 if ($userType === 'lawyer') {
 
-    // 1) هل عنده موعد Active ؟
+    // 1)  Active ؟
     $qActive = $conn->query("
         SELECT 1 
         FROM appointment 
@@ -203,7 +196,7 @@ if ($userType === 'lawyer') {
         exit;
     }
 
-    // 2) هل عنده موعد Upcoming ؟
+    // 2)   Upcoming ؟
     $qUpcoming = $conn->query("
         SELECT 1 
         FROM appointment 
@@ -219,7 +212,7 @@ if ($userType === 'lawyer') {
         exit;
     }
 
-    // 3) لا يوجد Active/Upcoming → تحقق من البوينتس
+    // 3) 
     $points = (int)($row['Points'] ?? 0);
     if ($points > 0 && !$force) {
         echo json_encode([
@@ -231,8 +224,8 @@ if ($userType === 'lawyer') {
         exit;
     }
 
-    // 4) "حذف" شكلي: نعدّل الاسم + نفرّغ الصورة
-    $emptyPhoto = ''; // أو مثلاً 'default_lawyer.png' لو عندك صورة افتراضية
+    // 4) 
+    $emptyPhoto = ''; 
 
     $stmtSoft = $conn->prepare("
     UPDATE lawyer
