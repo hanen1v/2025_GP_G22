@@ -374,20 +374,21 @@ static Future<User> updateProfile({
 }
 
 
-static Future<void> deleteAccount({
+static Future<Map<String, dynamic>> deleteAccount({
   required int userId,
   required String userType, // 'client' | 'lawyer'
-  String? password,         // اختياري للتأكيد
-  
+  required String password,
+  bool force = false,       
 }) async {
   final url = Uri.parse('$base/delete_account.php');
-  final payload = {
+
+  final payload = <String, dynamic>{
     'userId': userId,
     'userType': userType,
-    if ((password ?? '').isNotEmpty) 'password': password,
+    'password': password,
+    if (force) 'force': true,
   };
 
-  // (تطلع في الـ Run / Terminal)
   debugPrint('🔴 DELETE REQ → $url');
   debugPrint('🔴 DELETE BODY → ${jsonEncode(payload)}');
 
@@ -405,9 +406,11 @@ static Future<void> deleteAccount({
   }
 
   final body = jsonDecode(res.body);
-  if (body is! Map || body['success'] != true) {
-    throw Exception(body['message'] ?? 'Failed to delete account');
+  if (body is! Map<String, dynamic>) {
+    throw Exception('Unexpected response format');
   }
+
+  return body;
 }
 
 
@@ -611,4 +614,27 @@ static Future<Map<String, dynamic>> getUnbookedAvailability(int lawyerId) async 
   }
 }
 
+
+
+static Future<User> refreshUserData(int userId, String userType) async {
+  final url = Uri.parse('$base/refresh_user.php');
+  final res = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'userId': userId, 'userType': userType}),
+  );
+
+  if (res.statusCode < 200 || res.statusCode >= 300) {
+    throw Exception('HTTP ${res.statusCode}: ${res.body}');
+  }
+
+  final body = jsonDecode(res.body);
+  if (body['success'] != true) {
+    throw Exception(body['message'] ?? 'Failed');
+  }
+
+  return User.fromJson(body['user']);
+}
+  
+  
 }
