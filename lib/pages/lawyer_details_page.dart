@@ -203,7 +203,6 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                         ),
                         const SizedBox(height: 30),
 
-                        // تقييمات
                         loadingRatings
                             ? const CircularProgressIndicator(
                                 color: Color.fromARGB(255, 6, 61, 65))
