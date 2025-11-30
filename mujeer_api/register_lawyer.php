@@ -186,7 +186,7 @@ if ($stmt->execute()) {
     ], JSON_UNESCAPED_UNICODE);
 
 } else {
-    // التحقق من وجود مستخدم مكرر
+    
     if ($conn->errno == 1062) {
         echo json_encode(["success" => false, "message" => "اسم المستخدم أو رقم الجوال أو رقم الرخصة مسجل مسبقاً"]);
     } else {
