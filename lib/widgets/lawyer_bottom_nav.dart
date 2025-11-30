@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
 class LawyerBottomNav extends StatelessWidget {
-  final String currentRoute; // '/lawyer/requests', '/lawyer/availability', '/lawyer/more'
+  final String currentRoute; 
   const LawyerBottomNav({super.key, required this.currentRoute});
 
   void _go(BuildContext context, String route) {
@@ -54,7 +54,7 @@ class LawyerBottomNav extends StatelessWidget {
         ],
       ),
       child: BottomAppBar(
-        // ما عندنا FAB هنا، لذلك ما نحتاج notch
+       
         color: Colors.white,
         elevation: 0,
         child: SafeArea(
