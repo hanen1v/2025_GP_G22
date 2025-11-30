@@ -7,7 +7,7 @@ header('Content-Type: application/json; charset=utf-8');
 $sql = "SELECT * FROM `Request` WHERE `Status` = 'Pending'";
 
 try {
-    // تنفيذ الاستعلام بـ MySQLi (باستخدام $conn القادم من config.php)
+    
     $result = $conn->query($sql);
     if (!$result) {
         throw new Exception($conn->error);
@@ -28,3 +28,4 @@ try {
         'detail'=> $e->getMessage(),
     ], JSON_UNESCAPED_UNICODE);
 }
+
