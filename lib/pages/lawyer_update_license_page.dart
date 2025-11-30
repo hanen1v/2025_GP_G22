@@ -48,7 +48,7 @@ class _LawyerUpdateLicensePageState extends State<LawyerUpdateLicensePage> {
       return;
     }
 
-    // ⬅️ هنا نجيب رقم الرخصة من السيشن (User)
+   
     final licenseNumber = user.licenseNumber;
     if (licenseNumber == null || licenseNumber.trim().isEmpty) {
       _showError('رقم الرخصة غير متوفر في حسابك، يرجى مراجعة الملف الشخصي');
@@ -58,11 +58,11 @@ class _LawyerUpdateLicensePageState extends State<LawyerUpdateLicensePage> {
     setState(() => _isLoading = true);
 
     try {
-      // 1) إرسال طلب التحديث (بدون ملف – فقط ID + الاسم + رقم الرخصة من السيشن)
+      // 1) 
       final result = await ApiClient.requestLicenseUpdate(
         lawyerId: user.id,
         fullName: user.fullName,
-        newLicenseNumber: licenseNumber, // ⬅️ من السيشن
+        newLicenseNumber: licenseNumber, 
       );
 
       final licenseFileName = result['licenseFileName'] as String?;
@@ -71,7 +71,7 @@ class _LawyerUpdateLicensePageState extends State<LawyerUpdateLicensePage> {
         throw Exception('لم يتم إرجاع اسم ملف الرخصة من السيرفر');
       }
 
-      // 2) رفع ملف الرخصة باستخدام الاسم الذي رجع من الـ PHP
+      // 2) 
       await ApiClient.uploadLicenseUpdateFile(
         lawyerId: user.id,
         filePath: _licenseFile!.path!,
@@ -143,7 +143,7 @@ class _LawyerUpdateLicensePageState extends State<LawyerUpdateLicensePage> {
               ),
               const SizedBox(height: 24),
 
-              // رفع ملف الرخصة
+             
               const Text(
                 'ملف الرخصة الجديدة *',
                 style: TextStyle(
