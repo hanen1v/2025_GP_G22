@@ -113,106 +113,261 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _confirmDelete() async {
-    final u = _user;
-    if (u == null) {
-      _toast('لم يتم تحميل بيانات المستخدم');
+  final u = _user;
+  if (u == null) {
+    _toast('لم يتم تحميل بيانات المستخدم');
+    return;
+  }
+
+  _confirmPassCtrl.clear();
+
+  // 1) نطلب من المستخدم كلمة المرور أولاً
+  final passwordOk = await showDialog<bool>(
+    context: context,
+    builder: (_) {
+      return Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text(
+            'حذف الحساب',
+            style: TextStyle(fontFamily: 'Tajawal'),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'هل أنت متأكد من حذف الحساب؟ هذا الإجراء لا يمكن التراجع عنه.',
+                style: TextStyle(fontFamily: 'Tajawal'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _confirmPassCtrl,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'كلمة المرور',
+                  labelStyle: TextStyle(fontFamily: 'Tajawal'),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text(
+                'إلغاء',
+                style: TextStyle(
+                  fontFamily: 'Tajawal',
+                  color: Color(0xFF0B5345),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_confirmPassCtrl.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'يجب إدخال كلمة المرور',
+                        style: TextStyle(fontFamily: 'Tajawal'),
+                      ),
+                    ),
+                  );
+                  return;
+                }
+                Navigator.pop(context, true);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0B5345),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text(
+                'متابعة',
+                style: TextStyle(
+                  fontFamily: 'Tajawal',
+                  fontWeight: FontWeight.bold,
+                  
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+
+  if (passwordOk != true) return;
+
+  try {
+    // 2) محاولة حذف الحساب
+    final result = await ApiClient.deleteAccount(
+      userId: u.id,
+      userType: u.userType,
+      password: _confirmPassCtrl.text,
+    );
+
+    if (result['success'] == true) {
+      // ✅ تم الحذف فعلاً
+      await Session.clear();
+      if (!mounted) return;
+      _toast('تم حذف الحساب بنجاح', success: true);
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/welcome', (_) => false);
       return;
     }
 
-    _confirmPassCtrl.clear();
+    final code = (result['code'] ?? '').toString();
+    final message =
+        (result['message'] ?? 'فشل حذف الحساب').toString();
 
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (_) {
-        return Directionality(
+    // 3) عنده موعد نشط
+    if (code == 'HAS_ACTIVE') {
+      await showDialog<void>(
+        context: context,
+        builder: (_) => Directionality(
           textDirection: TextDirection.rtl,
           child: AlertDialog(
-            title: const Text('حذف الحساب'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'هل أنت متأكد من حذف الحساب؟ هذا الإجراء لا يمكن التراجع عنه.',
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _confirmPassCtrl,
-                  obscureText: true,
-                  decoration: const InputDecoration(labelText: 'كلمة المرور '),
-                ),
-              ],
+            title: const Text(
+              'لا يمكن حذف الحساب (موعد نشط)',
+              style: TextStyle(
+                fontFamily: 'Tajawal',
+                fontWeight: FontWeight.bold,),
+            ),
+            content: Text(
+              message,
+              style: const TextStyle(fontFamily: 'Tajawal'),
             ),
             actions: [
-  // زر إلغاء
-  TextButton(
-    onPressed: () => Navigator.pop(context, false),
-    child: const Text(
-      'إلغاء',
-      style: TextStyle(
-        fontFamily: 'Tajawal',
-        color: Color(0xFF0B5345), // أخضر
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  ),
-
-  // زر حذف
-  ElevatedButton(
-    onPressed: () {
-      if (_confirmPassCtrl.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('يجب إدخال كلمة المرور لحذف الحساب'),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'حسناً',
+                  style: TextStyle(
+                    fontFamily: 'Tajawal',
+                    color: Color(0xFF0B5345),
+                    fontWeight: FontWeight.bold,),
+                ),
+              ),
+            ],
           ),
-        );
-        return;
-      }
-      Navigator.pop(context, true);
-    },
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Color(0xFF0B5345), // أخضر
-      foregroundColor: Colors.white,       // نص أبيض
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      elevation: 0,
-    ),
-    child: const Text(
-      'حذف',
-      style: TextStyle(
-        fontFamily: 'Tajawal',
-        fontSize: 15,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-    ),
-  ),
-],
+        ),
+      );
+      return;
+    }
 
+    // 4) عنده مواعيد قادمة
+    if (code == 'HAS_UPCOMING') {
+      await showDialog<void>(
+        context: context,
+        builder: (_) => Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            title: const Text(
+              'لا يمكن حذف الحساب (موعد قادم)',
+              style: TextStyle(
+                fontFamily: 'Tajawal',
+                fontWeight: FontWeight.bold,),
+            ),
+            content: Text(
+              message,
+              style: const TextStyle(fontFamily: 'Tajawal'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'حسناً',
+                  style: TextStyle(
+                    fontFamily: 'Tajawal',
+                    color: Color(0xFF0B5345),
+                    fontWeight: FontWeight.bold,),
+                ),
+              ),
+            ],
           ),
-        );
-      },
-    );
+        ),
+      );
+      return;
+    }
 
-    if (ok != true) return;
-
-    try {
-      await ApiClient.deleteAccount(
-        userId: u.id,
-        userType: u.userType, // 'client' أو 'lawyer'
-        password: _confirmPassCtrl.text, // كلمة المرور مطلوبة
+    // 5) عنده مبلغ في المحفظة (بوينتس)
+    if (code == 'HAS_POINTS') {
+      final confirmForce = await showDialog<bool>(
+        context: context,
+        builder: (_) => Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            title: const Text(
+              'رصيد غير مسترد',
+              style: TextStyle(
+                fontFamily: 'Tajawal',
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Text(
+              message,
+              style: const TextStyle(fontFamily: 'Tajawal'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text(
+                  'إلغاء',
+                  style: TextStyle(
+                    fontFamily: 'Tajawal',
+                    color: Color.fromARGB(255, 148, 148, 148),
+                    fontWeight: FontWeight.bold,),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'نعم، حذف الحساب',
+                  style: TextStyle(
+                    fontFamily: 'Tajawal',
+                    color: Color(0xFF0B5345),
+                    fontWeight: FontWeight.bold,),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
 
-      await Session.clear();
+      if (confirmForce == true) {
+        final forceResult = await ApiClient.deleteAccount(
+          userId: u.id,
+          userType: u.userType,
+          password: _confirmPassCtrl.text,
+          force: true,
+        );
 
-      if (!mounted) return;
-      _toast('تم حذف الحساب بنجاح', success: true);
-      Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (_) => false);
-    } catch (e) {
-      _toast('فشل حذف الحساب: $e');
+        if (forceResult['success'] == true) {
+          await Session.clear();
+          if (!mounted) return;
+          _toast('تم حذف الحساب بنجاح', success: true);
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil('/welcome', (_) => false);
+        } else {
+          final m =
+              (forceResult['message'] ?? 'فشل حذف الحساب').toString();
+          _toast(m);
+        }
+      }
+
+      return;
     }
+
+    // 6) أي خطأ آخر غير متوقع
+    _toast(message);
+  } catch (e) {
+    _toast('فشل حذف الحساب: $e');
   }
+}
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
