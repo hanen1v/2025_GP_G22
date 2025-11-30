@@ -19,7 +19,6 @@ if ($data === null) {
 $userType = $data['userType'] ?? '';
 $table = ($userType == 'lawyer') ? 'lawyer' : 'client';
 
-// التحقق من اسم المستخدم
 if (isset($data['username'])) {
     $username = $conn->real_escape_string($data['username']);
     $sql = "SELECT COUNT(*) as count FROM $table WHERE Username = '$username'";
@@ -40,7 +39,6 @@ if (isset($data['username'])) {
     }
 }
 
-// التحقق من رقم الجوال
 elseif (isset($data['phoneNumber'])) {
     $phoneNumber = $conn->real_escape_string($data['phoneNumber']);
     $sql = "SELECT COUNT(*) as count FROM $table WHERE PhoneNumber = '$phoneNumber'";
@@ -61,7 +59,6 @@ elseif (isset($data['phoneNumber'])) {
     }
 }
 
-// التحقق من رقم الرخصة (للمحامي فقط)
 elseif (isset($data['licenseNumber']) && $userType == 'lawyer') {
     $licenseNumber = $conn->real_escape_string($data['licenseNumber']);
     $sql = "SELECT COUNT(*) as count FROM lawyer WHERE LicenseNumber = '$licenseNumber'";
