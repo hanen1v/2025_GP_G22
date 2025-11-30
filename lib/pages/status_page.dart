@@ -9,21 +9,20 @@ import '../services/session.dart';
 import '../services/api_client.dart';
 import '../models/user.dart';
 
-// ================== MODEL ==================
 
 class Appointment {
-  final int id;            // AppointmentID
-  final int lawyerId;      // LawyerID
-  final String lawyerName; // اسم المحامي
-  final String status;     // Upcoming / Active / Past
-  final String date;       // تاريخ جاهز للعرض
-  final String time;       // وقت جاهز للعرض
-  final String requestNo;  // رقم الطلب (نفس الـ ID)
-  final bool hasFeedback;  // من الـ PHP (0/1)
-  final String lawyerPhoto; // اسم ملف الصورة من الـ DB (LawyerPhoto)
-  final String consultationType; // consultation / contract_review
-  final String details;          // وصف الحالة
-  final String file;             // اسم الملف المرفق
+  final int id;            
+  final int lawyerId;     
+  final String lawyerName; 
+  final String status;     
+  final String date;       
+  final String time;      
+  final String requestNo; 
+  final bool hasFeedback;  
+  final String lawyerPhoto; 
+  final String consultationType; 
+  final String details;         
+  final String file;            
 
   Appointment({
     required this.id,
@@ -41,7 +40,6 @@ class Appointment {
   });
 
 
-  // label عربي لنوع الاستشارة
   String get typeLabel {
     switch (consultationType) {
       case 'contract':
@@ -54,7 +52,6 @@ class Appointment {
     }
   }
 
-  // رابط الصورة الجاهز للاستخدام
   String get lawyerPhotoUrl {
     if (lawyerPhoto.isEmpty) return '';
     return '${ApiClient.base}/uploads/$lawyerPhoto';
@@ -69,7 +66,7 @@ class Appointment {
       final parts = rawDateTime.split(' ');
       if (parts.isNotEmpty) date = parts[0];
       if (parts.length > 1 && parts[1].length >= 5) {
-        time = parts[1].substring(0, 5); // HH:MM
+        time = parts[1].substring(0, 5); 
       }
     }
 
@@ -82,7 +79,7 @@ class Appointment {
       time: time,
       requestNo: '${json['AppointmentID']}',
       hasFeedback: '${json['HasFeedback']}' == '1',
-      lawyerPhoto: (json['LawyerPhoto'] ?? '').toString(), // <-- مهم
+      lawyerPhoto: (json['LawyerPhoto'] ?? '').toString(), 
       consultationType: (json['consultation_type'] ?? '').toString(),
       details: (json['details'] ?? '').toString(),
       file: (json['file'] ?? '').toString(),
@@ -90,7 +87,6 @@ class Appointment {
   }
 }
 
-// ================== PAGE ==================
 
 class StatusPage extends StatefulWidget {
   const StatusPage({super.key});
@@ -135,7 +131,6 @@ class _StatusPageState extends State<StatusPage> {
       return;
     }
 
-    // مسجّل لكن مو عميل
     if (!user.isClient) {
       setState(() {
         _notClientOrGuest = true;
@@ -209,7 +204,6 @@ class _StatusPageState extends State<StatusPage> {
     );
   }
 
-  // ================== BODY ==================
 
   Widget _buildBodyContent() {
     if (_loading) {
@@ -268,7 +262,6 @@ if (_notClientOrGuest) {
     );
   }
 
-  // ================== TABS ==================
 
   Widget _buildTabs() {
     return Padding(
@@ -330,7 +323,6 @@ if (_notClientOrGuest) {
     );
   }
 
-  // ================== CARD ==================
 
   Widget _buildAppointmentCard(Appointment ap) {
   const primaryGreen = Color(0xFF0B5345);
@@ -353,10 +345,8 @@ if (_notClientOrGuest) {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ===== السطر العلوي: صورة + اسم المحامي + رقم الطلب =====
         Row(
           children: [
-            // صورة المحامي
             ClipRRect(
               borderRadius: BorderRadius.circular(40),
               child: SizedBox(
@@ -380,7 +370,6 @@ if (_notClientOrGuest) {
 
             const SizedBox(width: 10),
 
-            // اسم المحامي
             Expanded(
               child: Text(
                 ap.lawyerName,
@@ -396,7 +385,6 @@ if (_notClientOrGuest) {
 
             const SizedBox(width: 8),
 
-            // بادج رقم الطلب
             Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -421,23 +409,19 @@ if (_notClientOrGuest) {
         Container(height: 1, color: const Color(0xFFE9EDF2)),
         const SizedBox(height: 12),
 
-// ===== السطر السفلي: يمين (تاريخ + وقت) / يسار (زر) =====
 const SizedBox(height: 8),
 Directionality(
   textDirection: TextDirection.ltr,
   child: Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      // زر الإجراء (إلغاء / محادثة / تقييم)
       _buildActionsForStatus(ap, _currentTab),
 
       const Spacer(),
 
-      // التاريخ و الوقت 
       Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // التاريخ
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -459,7 +443,6 @@ Directionality(
             ],
           ),
           const SizedBox(height: 8),
-          // الوقت
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -521,7 +504,6 @@ Directionality(
         height: 64,
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) {
-          // لو فيه مشكلة بالصورة نرجع للأيقونة
           return Container(
             width: 64,
             height: 64,
@@ -537,7 +519,6 @@ Directionality(
     );
   }
 
-    /// الأزرار (إلغاء / محادثة / قيّم الآن / عرض التفاصيل)
   Widget _buildActionsForStatus(Appointment ap, String statusFilter) {
     const primaryGreen = Color(0xFF0B5345);
 
@@ -549,7 +530,6 @@ Directionality(
         onTap: () => _showDetails(ap),
       );
     } else if (statusFilter == 'Active') {
-      // محادثة
       return _pillButton(
         label: 'محادثة المحامي',
         textColor: primaryGreen,
@@ -557,7 +537,6 @@ Directionality(
         onTap: () => _openChatWithLawyer(ap),
       );
     } else {
-      // Past
 return _pillButton(
   label: 'عرض التفاصيل',
   textColor: primaryGreen,
@@ -569,7 +548,6 @@ return _pillButton(
   }
 
 
-//  (chip)
 Widget _pillButton({
   required String label,
   required Color textColor,
@@ -599,7 +577,6 @@ Widget _pillButton({
 }
 
 
-  // ================== FAB ==================
 
   Widget _buildFab(BuildContext context) {
     return Container(
@@ -632,11 +609,8 @@ Widget _pillButton({
     );
   }
 
-  // ================== LOGIC ==================
 
-/// إلغاء الموعد من السيرفر + تحديث الليست
 Future<void> _cancelAppointment(int appointmentId) async {
-  // نعرض رسالة تأكيد قبل تنفيذ الإلغاء
   final confirm = await showDialog<bool>(
     context: context,
     builder: (context) {
@@ -689,10 +663,8 @@ Future<void> _cancelAppointment(int appointmentId) async {
     },
   );
 
-  // إذا المستخدم اختار "لا" نوقف
   if (confirm != true) return;
 
-  // نبدأ الإلغاء الآن
   try {
     final res = await http.post(
       Uri.parse('${ApiClient.base}/cancel_appointment.php'),
@@ -706,14 +678,13 @@ Future<void> _cancelAppointment(int appointmentId) async {
         res.statusCode < 300 &&
         body is Map &&
         body['success'] == true) {
-      // نجاح الإلغاء
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('تم إلغاء الموعد بنجاح'),
         ),
       );
 
-      _loadAppointments(); // تحديث الطلبات
+      _loadAppointments(); 
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -732,7 +703,6 @@ Future<void> _cancelAppointment(int appointmentId) async {
 
 
 Future<void> _openAttachment(Appointment ap) async {
-  // لو ما فيه اسم ملف نطلع
   if (ap.file.trim().isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('لا يوجد ملف مرفق')),
@@ -740,11 +710,9 @@ Future<void> _openAttachment(Appointment ap) async {
     return;
   }
 
-  // 1) رابط الملف من السيرفر
-  // عدّلي المسار حسب المكان الفعلي للملفات عندك في الـ PHP
+ 
   final url = '${ApiClient.base}/uploads/${ap.file}';
 
-  // نعرض شاشة تحميل صغيرة
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -754,22 +722,18 @@ Future<void> _openAttachment(Appointment ap) async {
   );
 
   try {
-    // 2) تحميل الملف من السيرفر
     final response = await http.get(Uri.parse(url));
     if (response.statusCode != 200) {
       throw Exception('HTTP ${response.statusCode}');
     }
 
-    // 3) حفظ الملف في مسار مؤقت داخل الجهاز
     final dir = await getTemporaryDirectory();
     final filePath = '${dir.path}/${ap.file}';
     final file = File(filePath);
     await file.writeAsBytes(response.bodyBytes);
 
-    // قفل شاشة التحميل
     Navigator.of(context, rootNavigator: true).pop();
 
-    // 4) فتح الملف بتطبيق النظام (داخل الجهاز)
     final result = await OpenFile.open(filePath);
     if (result.type != ResultType.done) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -777,7 +741,6 @@ Future<void> _openAttachment(Appointment ap) async {
       );
     }
   } catch (e) {
-    // لو صار خطأ نقفل الديالوج لو كان مفتوح
     Navigator.of(context, rootNavigator: true).pop();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('حدث خطأ أثناء فتح الملف: $e')),
@@ -786,7 +749,6 @@ Future<void> _openAttachment(Appointment ap) async {
 }
 
 
-//navigate to chat screen
 void _openChatWithLawyer(Appointment ap) async {
   final user = await Session.getUser();
   if (user == null) {
@@ -828,11 +790,10 @@ void _openFinishedChat(Appointment ap) async {
   );
 }
 
-//navigate to feedback page
 void _openRatingPage(Appointment ap) {
   Navigator.pushNamed(
     context,
-    '/FeedbackPage', //  اسم صفحة التقييم  
+    '/FeedbackPage', 
     arguments: {
       'lawyerId': ap.lawyerId,
       'appointmentId': ap.id,
@@ -844,9 +805,7 @@ void _openRatingPage(Appointment ap) {
 
 
 
-  /// عرض تفاصيل الموعد (تتصرف حسب الحالة: قادمة / منتهية)
   void _showDetails(Appointment ap) {
-    // لو ما فيه لا تفاصيل ولا ملف، نعرض رسالة ونطلع
     if (ap.details.trim().isEmpty && ap.file.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('لا توجد تفاصيل لهذا الموعد')),
@@ -855,7 +814,7 @@ void _openRatingPage(Appointment ap) {
     }
 
     const primaryGreen = Color(0xFF0B5345);
-    final typeTitle = ap.typeLabel; // استشارة قانونية / مراجعة عقد
+    final typeTitle = ap.typeLabel; 
 
     showModalBottomSheet(
       context: context,
@@ -875,7 +834,6 @@ void _openRatingPage(Appointment ap) {
             child: Column(
               children: [
                 const SizedBox(height: 8),
-                // الهاندل الصغير
                 Container(
                   width: 40,
                   height: 4,
@@ -886,7 +844,6 @@ void _openRatingPage(Appointment ap) {
                 ),
                 const SizedBox(height: 12),
 
-                // الهيدر
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -912,14 +869,12 @@ void _openRatingPage(Appointment ap) {
                 ),
                 const Divider(height: 1),
 
-                // المحتوى
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // معلومات بسيطة
                         Row(
                           children: [
                             Expanded(
@@ -945,7 +900,6 @@ void _openRatingPage(Appointment ap) {
                         ),
                         const SizedBox(height: 16),
 
-                        // وصف الحالة
                         if (ap.details.trim().isNotEmpty) ...[
                           const Text(
                             'وصف الحالة',
@@ -981,7 +935,6 @@ void _openRatingPage(Appointment ap) {
                         ],
 
                         
-// الملف المرفق
 if (ap.file.trim().isNotEmpty) ...[
   const SizedBox(height: 24),
   const Text(
@@ -995,7 +948,7 @@ if (ap.file.trim().isNotEmpty) ...[
   const SizedBox(height: 8),
 
   InkWell(
-    onTap: () => _openAttachment(ap),   // <-- هنا الفتح
+    onTap: () => _openAttachment(ap),   
     borderRadius: BorderRadius.circular(12),
     child: Container(
       padding: const EdgeInsets.symmetric(
@@ -1037,7 +990,6 @@ if (ap.file.trim().isNotEmpty) ...[
 
                         const SizedBox(height: 24),
 
-                        // ===== لو الموعد منتهي (Past): زر رؤية المحادثة + التقييم =====
                         if (ap.status == 'Past') ...[
                           SizedBox(
                             width: double.infinity,
@@ -1066,7 +1018,6 @@ if (ap.file.trim().isNotEmpty) ...[
                           ),
                           const SizedBox(height: 16),
 
-                          // التقييم
                           if (ap.hasFeedback)
                             const Center(
                               child: Text(
@@ -1083,8 +1034,8 @@ if (ap.file.trim().isNotEmpty) ...[
                             Center(
                               child: InkWell(
                                 onTap: () {
-                                  Navigator.of(ctx).pop(); // نقفل التفاصيل
-                                  _openRatingPage(ap); // نروح للتقييم
+                                  Navigator.of(ctx).pop(); 
+                                  _openRatingPage(ap); 
                                 },
                                 borderRadius: BorderRadius.circular(30),
                                 child: Container(
@@ -1108,13 +1059,12 @@ if (ap.file.trim().isNotEmpty) ...[
                             ),
                         ],
 
-                        // ===== لو الموعد قادم (Upcoming): زر إلغاء الموعد =====
                         if (ap.status == 'Upcoming') ...[
                         Center(
                          child: InkWell(
                           onTap: () async {
-                           Navigator.of(ctx).pop(); // نقفل التفاصيل
-                           await _cancelAppointment(ap.id); // إلغاء الموعد
+                           Navigator.of(ctx).pop(); 
+                           await _cancelAppointment(ap.id); 
                           },
                           borderRadius: BorderRadius.circular(30),
                          child: Container(
