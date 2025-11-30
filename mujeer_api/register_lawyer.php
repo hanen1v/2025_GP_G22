@@ -9,7 +9,6 @@ ini_set('display_errors', 1);
 
 include 'config.php';
 
-// قراءة البيانات المرسلة من Flutter
 $raw_input = file_get_contents("php://input");
 $data = json_decode($raw_input, true);
 
@@ -18,7 +17,6 @@ if ($data === null) {
     exit;
 }
 
-// استخراج البيانات
 $fullName = $data["fullName"] ?? "";
 $username = $data["username"] ?? "";
 $password = $data["password"] ?? "";
@@ -32,17 +30,13 @@ $academicMajor = $data["academicMajor"] ?? "";
 $fSubSpecialization = $data["fSubSpecialization"] ?? "";
 $sSubSpecialization = $data["sSubSpecialization"] ?? "";
 
-// ⭐ تحويل الجنس من عربي لإنجليزي
 $gender_english = ($gender == 'ذكر') ? 'Male' : 'Female';
 
-// ⭐ تشفير كلمة المرور
 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-// ⭐ إنشاء أسماء ملفات افتراضية (سيتم تحديثها لاحقاً عند رفع الملفات)
 $license_file_name = "license_" . $username . "_" . time() . ".pdf";
 $photo_file_name = "photo_" . $username . "_" . time() . ".jpg";
 
-// التحقق من الحقول المطلوبة
 $required_fields = ['fullName', 'username', 'password', 'phoneNumber', 'licenseNumber', 'yearsOfExp', 'gender', 'mainSpecialization', 'educationQualification', 'academicMajor'];
 foreach($required_fields as $field) {
     if(empty($data[$field])) {
@@ -51,13 +45,11 @@ foreach($required_fields as $field) {
     }
 }
 
-// تأكد من نجاح الاتصال بقاعدة البيانات
 if ($conn->connect_error) {
     echo json_encode(["success" => false, "message" => "فشل الاتصال بقاعدة البيانات: " . $conn->connect_error]);
     exit;
 }
 
-// ⭐⭐ استعلام الإدخال مع جميع الأعمدة المطلوبة
 $sql = "INSERT INTO lawyer (
     FullName, 
     Username, 
@@ -83,22 +75,21 @@ if (!$stmt) {
     exit;
 }
 
-// ⭐ ربط المعاملات مع أنواع البيانات الصحيحة
 $stmt->bind_param("sssssissssssss", 
     $fullName, 
     $username, 
-    $hashed_password,  // ⭐ استخدام كلمة المرور المشفرة
+    $hashed_password,  
     $phoneNumber, 
     $licenseNumber, 
     $yearsOfExp, 
-    $gender_english,  // ⭐ أرسل الجنس بالإنجليزية
+    $gender_english,  
     $mainSpecialization, 
     $fSubSpecialization, 
     $sSubSpecialization, 
-    $license_file_name,  // ⭐ اسم ملف الرخصة
+    $license_file_name,  
     $educationQualification, 
     $academicMajor, 
-    $photo_file_name   // ⭐ اسم ملف الصورة
+    $photo_file_name
 );
 
 
@@ -123,11 +114,9 @@ $stmt->bind_param("sssssissssssss",
     }
 
     
-// ⭐⭐ التصحيح: نفذ الإدخال أولاً ثم أرسل الإشعارات
 if ($stmt->execute()) {
     $lawyerId = $conn->insert_id;
     
-    // ⭐ إضافة طلب للمشرفين
     $request_sql = "INSERT INTO request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status)
                     VALUES (1, ?, ?, ?, ?, 'Pending')";
     $request_stmt = $conn->prepare($request_sql);
@@ -137,7 +126,6 @@ if ($stmt->execute()) {
         $request_stmt->close();
     }
 
-    // ⭐ إرسال إشعارات للمشرفين (بعد نجاح الإدخال)
     $q = $conn->prepare("SELECT player_id FROM admin_devices");
     $q->execute();
     $res = $q->get_result();
@@ -157,7 +145,6 @@ if ($stmt->execute()) {
         $pushResult = send_push($players, $title, $body, $data); 
     }
 
-    // ⭐ جلب بيانات المحامي المسجل
     $user = null;
     $uRes = $conn->query("
         SELECT
