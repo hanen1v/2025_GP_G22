@@ -218,6 +218,9 @@ class _SelectTimePageState extends State<SelectTimePage> {
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
 
+
+
+
                       const SizedBox(height: 15),
 
                       daySlots.isEmpty
@@ -261,7 +264,16 @@ class _SelectTimePageState extends State<SelectTimePage> {
                                 );
                               }).toList(),
                             ),
+                      SizedBox(height: 6),
 
+Text(
+  " مدة الموعد 15 دقيقة",
+  style: TextStyle(
+    fontSize: 14,
+    color: Color.fromARGB(255, 6, 61, 65), 
+    fontWeight: FontWeight.w500,
+  ),
+),
                       const SizedBox(height: 40),
 
                       SizedBox(
