@@ -14,7 +14,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // إضافة دالة استقبال البيانات
+  
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -30,7 +30,7 @@ class _ChatScreenState extends State<ChatScreen> {
         appointmentID = args['appointmentID'];
       });
       
-      print('✅ Data received - Sender: $senderID, Receiver: $receiverID, Appointment: $appointmentID');
+      print(' Data received - Sender: $senderID, Receiver: $receiverID, Appointment: $appointmentID');
     }
   }
 
@@ -64,7 +64,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // إضافة شرط التحميل
+   
     if (senderID == null || receiverID == null || appointmentID == null) {
       return Scaffold(
         appBar: AppBar(
