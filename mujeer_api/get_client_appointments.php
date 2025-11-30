@@ -32,7 +32,7 @@ $updateSql = "
     UPDATE appointment
     SET Status = CASE
         WHEN DateTime > NOW() THEN 'Upcoming'
-        WHEN DateTime <= NOW() AND DATE_ADD(DateTime, INTERVAL 1 HOUR) > NOW() THEN 'Active'
+        WHEN DateTime <= NOW() AND DATE_ADD(DateTime, INTERVAL 15 MINUTE) > NOW() THEN 'Active'
         ELSE 'Past'
     END
     WHERE ClientID = ?
