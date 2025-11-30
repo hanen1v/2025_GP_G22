@@ -17,7 +17,6 @@ if($data === null || !isset($data->username) || !isset($data->newPassword)) {
 $username = trim($data->username);
 $newPassword = password_hash(trim($data->newPassword), PASSWORD_DEFAULT);
 
-// دالة عامة للتحديث
 function updatePassword($conn, $table, $username, $newPassword) {
     // تحقق أولاً هل المستخدم موجود
     $check = $conn->prepare("SELECT * FROM $table WHERE Username = ?");
@@ -37,19 +36,16 @@ function updatePassword($conn, $table, $username, $newPassword) {
     return false;
 }
 
-// تحديث client
 if (updatePassword($conn, "client", $username, $newPassword)) {
     echo json_encode(["success" => true, "message" => "تم تحديث كلمة المرور للعميل"]);
     exit;
 }
 
-// تحديث lawyer
 if (updatePassword($conn, "lawyer", $username, $newPassword)) {
     echo json_encode(["success" => true, "message" => "تم تحديث كلمة المرور للمحامي"]);
     exit;
 }
 
-// تحديث admin
 if (updatePassword($conn, "admin", $username, $newPassword)) {
     echo json_encode(["success" => true, "message" => "تم تحديث كلمة المرور للمشرف"]);
     exit;
