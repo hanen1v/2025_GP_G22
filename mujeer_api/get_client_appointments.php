@@ -62,6 +62,7 @@ $sql = "
             FROM feedback f 
             WHERE f.LawyerID = a.LawyerID 
               AND f.ClientID = a.ClientID
+              AND f.AppointmentID = a.AppointmentID
         ) AS HasFeedback,
 
         CASE
