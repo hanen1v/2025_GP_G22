@@ -26,7 +26,6 @@ class PlusPage extends StatelessWidget {
       ),
       child: FloatingActionButton(
         onPressed: () {
-          // تنفيذ إجراء إنشاء جديد — الآن لا يحول الروت
         },
         backgroundColor: Colors.transparent,
         elevation: 0,
