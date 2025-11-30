@@ -45,7 +45,7 @@ if (!move_uploaded_file($_FILES['photo']['tmp_name'], $targetPath)) {
   exit;
 }
 
-// تحديث اسم الصورة في جدول المحامي
+
 $stmt = $conn->prepare("UPDATE lawyer SET LawyerPhoto = ? WHERE LawyerID = ? LIMIT 1");
 if (!$stmt) {
   echo json_encode(["success" => false, "message" => "DB error: " . $conn->error]);
