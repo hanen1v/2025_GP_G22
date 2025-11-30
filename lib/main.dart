@@ -24,6 +24,11 @@ import 'pages/thank_you_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'pages/chat_screen.dart';
+import 'pages/past_chat_screen.dart';
+
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('ar', null);
@@ -49,7 +54,16 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Mujeer',
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
       theme: ThemeData(
+      snackBarTheme: const SnackBarThemeData(
+      behavior: SnackBarBehavior.floating, 
+      
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+      ),
+    ),
+        
         fontFamily: 'Tajawal', // ←   الخط موحد في كل التطبيق
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF5B4FE8)),
         textTheme: const TextTheme().apply(
