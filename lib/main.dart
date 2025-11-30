@@ -64,15 +64,15 @@ class MyApp extends StatelessWidget {
       ),
     ),
         
-        fontFamily: 'Tajawal', // ←   الخط موحد في كل التطبيق
+        fontFamily: 'Tajawal', 
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF5B4FE8)),
         textTheme: const TextTheme().apply(
-          bodyColor: Colors.black, // لون النصوص العادية
-          displayColor: Colors.black, // لون العناوين
+          bodyColor: Colors.black, 
+          displayColor: Colors.black, 
         ),
       ),
       builder: (context, child) => Directionality(
-        textDirection: TextDirection.rtl, // ← اتجاه عربي
+        textDirection: TextDirection.rtl, 
         child: child!,
       ),
       initialRoute: '/welcome',
