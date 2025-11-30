@@ -37,7 +37,7 @@ class User {
     this.licenseNumber,
   });
 
-  // من JSON لـ User (للاستقبال من السيرفر)
+ 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: _parseId(json),
@@ -59,7 +59,7 @@ class User {
       ),
       status: (json['Status'] ?? json['status'])?.toString(),
 
-      // 🟣 الحقول الإضافية
+      
       yearsOfExp:
           int.tryParse('${json['YearsOfExp'] ?? json['yearsOfExp'] ?? ''}') ??
           null,
@@ -83,7 +83,7 @@ class User {
     );
   }
 
-  // من User لـ JSON (للالرسال للسيرفر أو الحفظ)
+  
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -106,7 +106,7 @@ class User {
     };
   }
 
-  // دالة مساعدة لتحديد نوع المستخدم
+  
   static String _determineUserType(Map<String, dynamic> json) {
     if (json['ClientID'] != null || json['client_id'] != null) return 'client';
     if (json['LawyerID'] != null || json['lawyer_id'] != null) return 'lawyer';
@@ -114,7 +114,7 @@ class User {
     return (json['UserType'] ?? json['userType'] ?? 'client').toString();
   }
 
-  // دالة مساعدة لتحويل ID
+  
   static int _parseId(Map<String, dynamic> json) {
     if (json['UserID'] != null) {
       return int.tryParse('${json['UserID']}') ?? 0;
@@ -131,7 +131,7 @@ class User {
     return int.tryParse('${json['id'] ?? json['Id'] ?? 0}') ?? 0;
   }
 
-  // دالة مساعدة لتحويل التاريخ
+  
   static DateTime? _parseDate(dynamic date) {
     if (date == null) return null;
     try {
@@ -141,12 +141,12 @@ class User {
     }
   }
 
-  // دوال مساعدة للتحقق من نوع المستخدم
+  
   bool get isClient => userType == 'client';
   bool get isLawyer => userType == 'lawyer';
   bool get isAdmin => userType == 'admin';
 
-  // دالة للحصول على الصورة (مع صورة افتراضية)
+  
   String get profileImageUrl {
     if (profileImage == null || profileImage!.isEmpty) {
       return '';
@@ -173,7 +173,7 @@ class User {
     }
   }
 
-  // دوال مساعدة لحالة المحامي
+ 
   String get statusNormalized {
     final s = (status ?? '').trim().toLowerCase();
     if (s == 'approved') return 'Approved';
@@ -190,7 +190,7 @@ class User {
     return 'User{id: $id, name: $fullName, type: $userType}';
   }
 
-  // دالة للمقارنة بين مستخدمين
+ 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -240,7 +240,7 @@ class User {
   }
 }
 
-// نموذج لبيانات تسجيل الدخول
+
 class LoginRequest {
   final String username;
   final String password;
@@ -252,7 +252,7 @@ class LoginRequest {
   }
 }
 
-// نموذج لرد السيرفر بعد التسجيل
+
 class LoginResponse {
   final bool success;
   final String message;
