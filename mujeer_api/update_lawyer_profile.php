@@ -23,7 +23,7 @@ if ($lawyerId <= 0) {
     exit;
 }
 
-// نبني جملة الـ UPDATE حسب الحقول اللي وصلت فعلاً
+
 $updates = [];
 
 // username
@@ -38,13 +38,13 @@ if (!empty($data['phoneNumber'])) {
     $updates[] = "PhoneNumber = '$phone'";
 }
 
-// password (لو وصلت && مو فاضية → نحدّثها)
+// password 
 if (!empty($data['password'])) {
     $hashed = password_hash($data['password'], PASSWORD_DEFAULT);
     $updates[] = "Password = '$hashed'";
 }
 
-// YearsOfExp (حتى لو 0 نمسكها بـ isset)
+// YearsOfExp 
 if (isset($data['yearsOfExp'])) {
     $years = (int)$data['yearsOfExp'];
     $updates[] = "YearsOfExp = $years";
@@ -95,7 +95,7 @@ if (!$conn->query($sql)) {
     exit;
 }
 
-// بعد التحديث نرجع البيانات المحدّثة عشان نخزنها في الـ Session
+
 $uRes = $conn->query("
     SELECT 
       LawyerID           AS UserID,
