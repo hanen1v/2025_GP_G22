@@ -4,13 +4,11 @@ header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// تفعيل السجلات
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 include 'config.php';
 
-// سجل البيانات المستلمة
 $raw_input = file_get_contents("php://input");
 error_log("=== CLIENT REGISTRATION ATTEMPT ===");
 error_log("Raw input: " . $raw_input);
@@ -23,7 +21,6 @@ if($data === null) {
     exit;
 }
 
-// التحقق من البيانات المطلوبة
 $required_fields = ['username', 'fullName', 'password', 'phoneNumber'];
 
 foreach($required_fields as $field) {
@@ -34,7 +31,6 @@ foreach($required_fields as $field) {
     }
 }
 
-// استخراج البيانات
 $username = $conn->real_escape_string($data->username);
 $fullName = $conn->real_escape_string($data->fullName);
 $password = $data->password;
@@ -42,7 +38,6 @@ $phoneNumber = $conn->real_escape_string($data->phoneNumber);
 
 error_log("Processing client registration for: " . $username);
 
-// التحقق من عدم تكرار اسم المستخدم أو رقم الجوال
 $check_sql = "SELECT Username, PhoneNumber FROM client 
               WHERE Username = '$username' OR PhoneNumber = '$phoneNumber'";
 $check_result = $conn->query($check_sql);
@@ -62,10 +57,8 @@ if($check_result && $check_result->num_rows > 0) {
     }
 }
 
-// تشفير كلمة المرور
 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-// إدخال البيانات في جدول client
 $sql = "INSERT INTO client (Username, FullName, PhoneNumber, Password, Points) 
         VALUES ('$username', '$fullName', '$phoneNumber', '$hashed_password', 0)";
 
@@ -76,7 +69,6 @@ if($conn->query($sql) === TRUE) {
     
   $newId = $conn->insert_id;
 
-  // اجلب نفس السجل الذي تم إدخاله الآن
   $uRes = $conn->query("
     SELECT 
       ClientID   AS UserID,
