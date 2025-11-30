@@ -17,15 +17,6 @@ if (!$data) {
   exit;
 }
 
-/*
-  Required:
-    userId     : int
-    userType   : "client" | "lawyer"
-    username   : string
-    phoneNumber: string (05XXXXXXXX)
-  Optional:
-    newPassword: string
-*/
 
 $required = ['userId','userType','username','phoneNumber'];
 foreach ($required as $f) {
@@ -49,14 +40,14 @@ else {
   exit;
 }
 
-// تأكد أن المستخدم موجود
+
 $exists = $conn->query("SELECT $idCol FROM $table WHERE $idCol = $userId LIMIT 1");
 if (!$exists || $exists->num_rows === 0) {
   echo json_encode(["success"=>false, "message"=>"User not found"]);
   exit;
 }
 
-// التحقق من التكرار لغيره
+
 $check = $conn->query("
   SELECT Username, PhoneNumber, $idCol AS UID
   FROM $table
@@ -75,7 +66,7 @@ if ($check && $check->num_rows > 0) {
   }
 }
 
-// تجهيز جملة التحديث
+
 $sets = [];
 $sets[] = "Username = '$username'";
 $sets[] = "PhoneNumber = '$phoneNumber'";
@@ -93,7 +84,7 @@ if (!$conn->query($updSql)) {
   exit;
 }
 
-// رجّع السجل المحدّث بصيغة موحّدة
+
 if ($userType === 'client') {
   $res = $conn->query("
     SELECT 
