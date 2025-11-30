@@ -10,7 +10,7 @@ class AppBottomNav extends StatelessWidget {
     Navigator.of(context).pushReplacementNamed(route);
   }
 
-  // يظل IconData لأن أيقونات Iconsax ترجع IconData
+  
   Widget _navItem(BuildContext context, IconData icon, String label, String route) {
     final isSelected = currentRoute == route;
 
@@ -64,10 +64,10 @@ class AppBottomNav extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              // الترتيب: من اليمين لليسار  Home أول (يمين)
+           
               _navItem(context, Iconsax.home, 'الرئيسية', '/home'),
               _navItem(context, Iconsax.search_normal, 'بحث', '/search'),
-              const SizedBox(width: 40), // مساحة الـ FAB في الوسط
+              const SizedBox(width: 40), //  FAB  
               _navItem(context, Iconsax.note_2, 'طلباتي', '/status'),
               _navItem(context, Iconsax.more, 'المزيد', '/more'),
             ],
