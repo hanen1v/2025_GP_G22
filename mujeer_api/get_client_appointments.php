@@ -22,12 +22,7 @@ if ($data === null || !isset($data['clientId'])) {
 
 $clientId = (int)$data['clientId'];
 
-/*
- * هنا نحدّث الحالات بحسب الوقت:
- * - لو الموعد في المستقبل → Upcoming
- * - لو الوقت الحالي بين (DateTime) و (DateTime + 1 hour) → Active
- * - لو بعد ساعة من الموعد → Past
- */
+
 $updateSql = "
     UPDATE appointment
     SET Status = CASE
@@ -45,7 +40,7 @@ if ($uStmt) {
     $uStmt->close();
 }
 
-// الآن نجيب المواعيد مع معلومات المحامي + هل فيه تقييم + تفاصيل الاستشارة
+
 $sql = "
     SELECT 
         a.AppointmentID,
@@ -97,7 +92,7 @@ $result = $stmt->get_result();
 
 $appointments = [];
 while ($row = $result->fetch_assoc()) {
-    $row['HasFeedback'] = (int)$row['HasFeedback']; // 0 أو 1
+    $row['HasFeedback'] = (int)$row['HasFeedback']; // 0 or 1
     $appointments[] = $row;
 }
 
