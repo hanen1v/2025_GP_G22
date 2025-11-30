@@ -54,10 +54,10 @@ class _LawyersStripSimpleState extends State<LawyersStripSimple> {
     ),
     const Spacer(),
 
-    // زر "شاهد المزيد"
+  
     TextButton(
   onPressed: () {
-    Navigator.pushNamed(context, '/search'); // ← يفتح صفحة البحث
+    Navigator.pushNamed(context, '/search'); 
   },
   style: TextButton.styleFrom(
     foregroundColor: const Color(0xFF0B5345),
@@ -133,7 +133,7 @@ class _LawyerChip extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => LawyerDetailsPage(
-              lawyerId: lawyer.id, // ← نمرّر ID الصحيح
+              lawyerId: lawyer.id, 
             ),
           ),
         );
@@ -155,7 +155,7 @@ class _LawyerChip extends StatelessWidget {
                       : const Icon(Icons.person, color: Color(0xFF0B5345), size: 28),
                 ),
 
-                // التقييم
+                
                 Positioned(
                   top: -8,
                   right: -8,
@@ -172,8 +172,8 @@ class _LawyerChip extends StatelessWidget {
                          Iconsax.star1,
                          size: 16,
                          color: lawyer.rating > 0 
-                           ? const Color(0xFFFFC107)   // أصفر لو فيه تقييم
-                          : Colors.grey,              // رمادي لو مافيه تقييم
+                           ? const Color(0xFFFFC107)   
+                          : Colors.grey,              
                         ),
 
                         const SizedBox(width: 2),
