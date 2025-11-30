@@ -9,10 +9,10 @@ ini_set('display_errors', 1);
 
 require_once 'config.php';
 
-// التوقيت: الرياض
+
 date_default_timezone_set('Asia/Riyadh');
 
-// قراءة JSON في الطلب
+
 $raw = file_get_contents("php://input");
 $data = json_decode($raw, true);
 
@@ -26,7 +26,7 @@ if ($data === null || !isset($data['lawyerId'])) {
 
 $lawyerId = (int)$data['lawyerId'];
 
-// جلب مواعيد المحامي
+
 $sql = "
     SELECT
         a.AppointmentID,
@@ -75,7 +75,7 @@ $result = $stmt->get_result();
 $appointments = [];
 $now = new DateTime();
 
-// ستايتمنت لتحديث الحالة عند الحاجة
+
 $updateStmt = $conn->prepare("UPDATE appointment SET Status = ? WHERE AppointmentID = ?");
 
 while ($row = $result->fetch_assoc()) {
@@ -87,7 +87,7 @@ while ($row = $result->fetch_assoc()) {
         try {
             $start = new DateTime($row['DateTime']);
             $end = clone $start;
-            $end->modify('+15 minutes'); // مدة الاستشارة ساعة واحدة
+            $end->modify('+15 minutes'); 
 
             if ($now < $start) {
                 $computedStatus = 'Upcoming';
@@ -97,7 +97,7 @@ while ($row = $result->fetch_assoc()) {
                 $computedStatus = 'Past';
             }
 
-            // تحديث الحالة بالداتابيس لو تغيّرت
+           
             if ($computedStatus !== $currentStatus) {
                 if ($updateStmt) {
                     $updateStmt->bind_param("si", $computedStatus, $row['AppointmentID']);
@@ -107,7 +107,7 @@ while ($row = $result->fetch_assoc()) {
             }
 
         } catch (Exception $e) {
-            // لو حصل خطأ بالتاريخ نتجاوز
+            
         }
     }
 
