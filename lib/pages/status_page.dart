@@ -70,6 +70,7 @@ class Appointment {
       }
     }
 
+    
     return Appointment(
       id: int.tryParse('${json['AppointmentID']}') ?? 0,
       lawyerId: int.tryParse('${json['LawyerID']}') ?? 0,
