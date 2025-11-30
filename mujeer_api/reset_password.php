@@ -18,14 +18,12 @@ $username = trim($data->username);
 $newPassword = password_hash(trim($data->newPassword), PASSWORD_DEFAULT);
 
 function updatePassword($conn, $table, $username, $newPassword) {
-    // تحقق أولاً هل المستخدم موجود
     $check = $conn->prepare("SELECT * FROM $table WHERE Username = ?");
     $check->bind_param("s", $username);
     $check->execute();
     $result = $check->get_result();
 
     if ($result->num_rows > 0) {
-        // تم العثور على المستخدم → حدّث كلمة المرور
         $sql = "UPDATE $table SET Password = ? WHERE Username = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ss", $newPassword, $username);
