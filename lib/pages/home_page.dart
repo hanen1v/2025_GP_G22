@@ -76,6 +76,7 @@ class HomePage extends StatelessWidget {
         bottom: kBottomNavigationBarHeight + 185,
         child: const ServicesSection(),
       ),
+      
     ],
   ),
 ),
@@ -121,3 +122,4 @@ class HomePage extends StatelessWidget {
     );
   }
 }
+ 
