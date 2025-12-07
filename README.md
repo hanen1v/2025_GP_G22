@@ -13,7 +13,7 @@ Mujeer supports Saudi Arabia’s digital-justice goals by implementing a **manua
 - **Project Management:** Jira for sprint planning, backlog tracking, and issue management.  
 - **APIs & Services:**
   - **OpenAI GPT-4o API** – Generates customized legal contract drafts using artificial intelligence.  
-  - **Agora API** – Enables real-time chat and communication between clients and lawyers.  
+  - **Firebase API** – Enables real-time chat and communication between clients and lawyers.  
   - **Firebase API** – Handles OTP (One-Time Password) verification for secure account login.
 
 ## Launching Instructions
