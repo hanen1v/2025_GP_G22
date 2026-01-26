@@ -95,7 +95,6 @@ Future<void> _loadWallet() async {
            ),
        backgroundColor: const Color(0xFFF8F9FA),
 
-        // الملف الشخصي + تسجيل الخروج
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -103,8 +102,8 @@ Future<void> _loadWallet() async {
   color: const Color.fromARGB(255, 255, 255, 255),
   child: ListTile(
     leading: const Icon(
-      Iconsax.profile_remove, // الأيقونة نفسها بمكانها القديم
-      color: Color(0xFF0B5345), // اللون الأخضر
+      Iconsax.profile_remove, 
+      color: Color(0xFF0B5345),  
     ),
     title: const Text(
       'الملف الشخصي',
@@ -112,7 +111,7 @@ Future<void> _loadWallet() async {
         fontWeight: FontWeight.bold,
         fontFamily: 'Tajawal',
         fontSize: 16,
-        color: Color.fromARGB(255, 0, 0, 0), // نفس الأخضر
+        color: Color.fromARGB(255, 0, 0, 0),  
       ),
     ),
     subtitle: Text(
@@ -150,7 +149,6 @@ Future<void> _loadWallet() async {
 
  const SizedBox(height: 16),
 
-// بطاقة المحفظة 
 Card(
   color: Colors.white,
   elevation: 2,
@@ -165,7 +163,7 @@ Card(
         Row(
           children: const [
             Icon(
-              Iconsax.wallet_2, // ← أيقونة المحفظة من Iconsax
+              Iconsax.wallet_2, 
               color: Color(0xFF0B5345), 
               size: 26,
             ),
@@ -182,7 +180,7 @@ Card(
           ],
         ),
         Text(
-          '${points} ريال', // ← المتغير اللي فيه نقاط المستخدم
+          '${points} ريال',      
           style: TextStyle(
             fontFamily: 'Tajawal',
             color: const Color.fromARGB(255, 0, 0, 0),
@@ -216,7 +214,7 @@ Card(
       Text(
         'تسجيل الخروج',
         style: TextStyle(
-          color: Color.fromARGB(255, 0, 0, 0), // أخضر غامق
+          color: Color.fromARGB(255, 0, 0, 0),  
           fontWeight: FontWeight.bold,
           fontFamily: 'Tajawal',
           fontSize: 16,
@@ -224,7 +222,6 @@ Card(
       ),
       SizedBox(width: 8),
       Icon(Iconsax.logout, color: Color(0xFF0B5345))
- // الأيقونة بعد النص
     ],
   ),
 ),
@@ -233,7 +230,6 @@ Card(
           ],
         ),
 
-        //  البار والزر العائم  
         bottomNavigationBar: const AppBottomNav(currentRoute: '/more'),
         floatingActionButton: _buildFab(context),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -241,7 +237,6 @@ Card(
     );
   }
 
-  // القديم تماماً
   Widget _buildFab(BuildContext context) {
     return Container(
       width: 65,
