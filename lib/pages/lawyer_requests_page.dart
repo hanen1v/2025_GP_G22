@@ -10,23 +10,21 @@ import '../widgets/lawyer_bottom_nav.dart';
 import '../services/api_client.dart';
 import '../services/session.dart';
 
-/// فتح ملف PDF داخل التطبيق باستخدام open_file
 Future<void> openPdfInsideApp(String fileName) async {
   try {
     final url = "${ApiClient.base}/uploads/$fileName";
 
-    // تحميل الملف من السيرفر
     final response = await http.get(Uri.parse(url));
     if (response.statusCode != 200) {
       throw Exception("فشل تحميل الملف");
     }
 
-    // تخزينه مؤقتاً في مجلد الـ temp
+
     final dir = await getTemporaryDirectory();
     final file = File("${dir.path}/$fileName");
     await file.writeAsBytes(response.bodyBytes);
 
-    // فتحه عن طريق open_file (عارض داخلي للنظام)
+
     await OpenFile.open(file.path);
   } catch (e) {
     debugPrint("PDF ERROR: $e");
@@ -60,7 +58,7 @@ class LawyerAppointment {
     required this.file,
   });
 
-  /// تحويل القيمة من السيرفر إلى نص عربي
+
   String get typeLabel {
     switch (consultationType) {
       case 'contract':
@@ -128,7 +126,7 @@ class _LawyerRequestsPageState extends State<LawyerRequestsPage> {
     setState(() => _loading = true);
 
     try {
-      final user = await Session.getUser(); // المحامي
+      final user = await Session.getUser(); 
       if (user == null || !user.isLawyer) {
         throw Exception('المستخدم الحالي ليس محاميًا');
       }
@@ -289,7 +287,6 @@ class _LawyerRequestsPageState extends State<LawyerRequestsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // السطر العلوي: اسم العميل يمين + رقم الطلب يسار
           Row(
             children: [
               Expanded(
@@ -344,40 +341,20 @@ class _LawyerRequestsPageState extends State<LawyerRequestsPage> {
           Container(height: 1, color: const Color(0xFFE9EDF2)),
           const SizedBox(height: 12),
 
-          // السطر السفلي
           const SizedBox(height: 4),
           Directionality(
             textDirection: TextDirection.ltr,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // زر اليسار
+
                 _buildMainActionButton(ap),
 
                 const Spacer(),
 
-                // نوع الاستشارة في المنتصف
-                /*Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '"${ap.typeLabel}"',
-                    style: const TextStyle(
-                      fontFamily: 'Tajawal',
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: primaryGreen,
-                    ),
-                  ),
-                ), */
 
                 const SizedBox(width: 8),
 
-                // التاريخ والوقت يمين
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -433,13 +410,12 @@ class _LawyerRequestsPageState extends State<LawyerRequestsPage> {
     );
   }
 
-  /// Active -> محادثة العميل
-  /// Upcoming/Past -> عرض التفاصيل
+
   Widget _buildMainActionButton(LawyerAppointment ap) {
   const primaryGreen = Color(0xFF0B5345);
 
   return InkWell(
-    onTap: () => _showDetails(ap),   // لجميع الحالات
+    onTap: () => _showDetails(ap),   
     borderRadius: BorderRadius.circular(30),
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
@@ -505,7 +481,7 @@ void _openFinishedChat(LawyerAppointment ap) async {
   );
 }
 
-    /// عرض تفاصيل الموعد    
+
   void _showDetails(LawyerAppointment ap) {
     if (ap.details.trim().isEmpty && ap.file.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -535,7 +511,6 @@ void _openFinishedChat(LawyerAppointment ap) async {
             child: Column(
               children: [
                 const SizedBox(height: 8),
-                // الهاندل الصغير فوق
                 Container(
                   width: 40,
                   height: 4,
@@ -546,7 +521,6 @@ void _openFinishedChat(LawyerAppointment ap) async {
                 ),
                 const SizedBox(height: 12),
 
-                // الهيدر: عنوان + إكس
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -572,14 +546,12 @@ void _openFinishedChat(LawyerAppointment ap) async {
                 ),
                 const Divider(height: 1),
 
-                // المحتوى
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // سطر معلومات بسيط فوق
                         Row(
                           children: [
                             Expanded(
@@ -605,7 +577,6 @@ void _openFinishedChat(LawyerAppointment ap) async {
                         ),
                         const SizedBox(height: 16),
 
-                        // كارد التفاصيل
                         if (ap.details.trim().isNotEmpty) ...[
                           const Text(
                             'وصف الحالة',
@@ -637,7 +608,6 @@ void _openFinishedChat(LawyerAppointment ap) async {
                           ),
                         ],
 
-                        // كارد الملف
                         if (ap.file.trim().isNotEmpty) ...[
                           const SizedBox(height: 24),
                           const Text(
@@ -692,9 +662,7 @@ void _openFinishedChat(LawyerAppointment ap) async {
                           ),
                         ],
 
-// ... بعد جزء الملف المرفق مباشرة
 
-// زر محادثة العميل للحالة Active
 if (ap.status == 'Active') ...[
   const SizedBox(height: 24),
   SizedBox(
@@ -723,7 +691,7 @@ if (ap.status == 'Active') ...[
   ),
 ],
 
-                      // ===== زر رؤية المحادثة للطلبات المنتهية =====
+                        
 if (ap.status == 'Past') ...[
   const SizedBox(height: 24),
   SizedBox(
