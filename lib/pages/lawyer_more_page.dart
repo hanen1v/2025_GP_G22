@@ -20,8 +20,8 @@ class LawyerMorePage extends StatefulWidget {
 class _LawyerMorePageState extends State<LawyerMorePage> {
   User? _user;
   String? _status;              // Approved / Pending / Rejected
-  bool _loadingStatus = true;   // لعرض السبينر أثناء التحميل
-  Timer? _pollTimer;            // مؤقت التحديث التلقائي
+  bool _loadingStatus = true;      
+  Timer? _pollTimer;               
 
 
   @override
@@ -43,10 +43,8 @@ void dispose() {
   if (!mounted) return;
   setState(() => _user = u);
 
-  // تحميل أولي للحالة
   await _loadStatus();
 
-  // تحديث تلقائي كل 20 ثانية
   _pollTimer?.cancel();
   _pollTimer = Timer.periodic(const Duration(seconds: 20), (_) {
     if (mounted) _loadStatus();
@@ -70,7 +68,7 @@ Future<void> _loadStatus() async {
   } catch (_) {
     if (!mounted) return;
     setState(() {
-      _status = null; // فشل الجلب
+      _status = null;   
       _loadingStatus = false;
     });
   }
@@ -111,13 +109,11 @@ Future<void> _loadStatus() async {
     final file = picked.files.single;
 
     try {
-      // نرفع الصورة للسيرفر
       final newFileName = await ApiClient.uploadLawyerPhoto(
         userId: _user!.id,
         imagePath: file.path!,
       );
 
-      // نحدّث اليوزر في السشن
       final updated = _user!.copyWith(profileImage: newFileName);
       await Session.saveUser(updated);
 
@@ -130,7 +126,6 @@ Future<void> _loadStatus() async {
   }
 
 
-  // خريطة ألوان ونصوص للحالة (تستقبل القيمة المطبّعة)
   (String text, Color fg, Color bg, IconData icon) _style(String s) {
   const iconColor = Color(0xFF0B5345); 
 
@@ -150,7 +145,6 @@ Future<void> _loadStatus() async {
     final username = _user?.username ?? '';
     final points   = _user?.points ?? 0;
 
-    // الحالة المطبّعة من الموديل (User.statusNormalized)
     final rawStatus = _user?.statusNormalized ?? 'Pending';
     final (label, fg, bg, icon) = _style(rawStatus);
 
@@ -167,14 +161,13 @@ Future<void> _loadStatus() async {
 
         backgroundColor: const Color(0xFFF8F9FA),
 
-        body: RefreshIndicator(                 // اختياري: سحب للتحديث
+        body: RefreshIndicator(                  
           onRefresh: _loadUser,
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
                           const SizedBox(height: 8),
 
-            // صورة المحامي في الأعلى
             Center(
               child: Stack(
                 alignment: Alignment.bottomRight,
@@ -227,7 +220,6 @@ Future<void> _loadStatus() async {
 
             const SizedBox(height: 18),
 
-              // بطاقة الملف الشخصي
               Card(
                 color: Colors.white,
                 child: ListTile(
@@ -248,15 +240,13 @@ Future<void> _loadStatus() async {
                   MaterialPageRoute(builder: (_) => const LawyerProfilePage()),
                   );
                   if (!mounted) return;
-                  _loadUser(); // لو بعدين عدلنا ورجع من الصفحة نحدّث البيانات
+                  _loadUser();         
                 },
                 ),
               ),
 
               const SizedBox(height: 12),
 
-              // بطاقة حالة الحساب (من الجلسة مباشرة)
-              // بطاقة حالة الحساب (تتحدث لحظياً)
 Card(
   color: Colors.white,
   elevation: 2,
@@ -291,7 +281,7 @@ Card(
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              label, // تم القبول / تم الرفض / قيد المراجعة / غير معروف
+              label, 
               style: TextStyle(
                 fontFamily: 'Tajawal',
                 color: fg,
@@ -307,7 +297,6 @@ Card(
 
               const SizedBox(height: 16),
 
-              // بطاقة المحفظة
               Card(
                 color: Colors.white,
                 elevation: 2,
@@ -333,7 +322,6 @@ Card(
 
               const SizedBox(height: 12),
 
-              // كرت طلب تحديث الرخصة
               Card(
                 color: Colors.white,
                 elevation: 2,
@@ -354,14 +342,9 @@ Card(
                       color: Colors.black,
                     ),
                   ),
-                  /*subtitle: const Text(
-                    'إرسال طلب تحديث رخصة للمشرف',              
-                    style: TextStyle(
-                      fontFamily: 'Tajawal',
-                      fontSize: 13,
-                      color: Colors.black54,
-                    ),
-                  ),*/
+                  
+                  
+                  
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () async {
                     if (_user == null || !_user!.isLawyer) {
@@ -380,7 +363,6 @@ Card(
                       ),
                     );
 
-                    // بعد الرجوع لو حابة تحدثي حالة الصفحة
                     if (!mounted) return;
                     _loadUser();
                   },
@@ -389,7 +371,6 @@ Card(
 
               const SizedBox(height: 24),
 
-              // زر تسجيل الخروج
               ElevatedButton(
                 onPressed: _logout,
                 style: ElevatedButton.styleFrom(
