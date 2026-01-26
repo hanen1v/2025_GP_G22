@@ -11,7 +11,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // رسالة ترحيب
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (userName != null && userName!.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -45,7 +44,6 @@ class HomePage extends StatelessWidget {
   child: Stack(
     alignment: Alignment.bottomCenter,
     children: [
-      //  شعار المشروع أعلى اليمين 
       Positioned(
         top: 14,
         right: -20,
@@ -57,7 +55,6 @@ class HomePage extends StatelessWidget {
         ),
       ),
 
-      //  شريط المحامين 
       Positioned(
         left: 0,
         right: 0,
@@ -69,7 +66,6 @@ class HomePage extends StatelessWidget {
         ),
       ),
 
-      // قسم الخدمات  
       Positioned(
         left: 16,
         right: 16,
@@ -82,10 +78,8 @@ class HomePage extends StatelessWidget {
 ),
 
 
-      // البار السفلي
       bottomNavigationBar: const AppBottomNav(currentRoute: '/home'),
 
-      // الزر العائم في المنتصف
       floatingActionButton: _buildFab(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
