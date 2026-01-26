@@ -19,7 +19,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   // Controllers
-  late final TextEditingController _usernameCtrl; // نعرض اليوزرنيم داخل البوكس
+  late final TextEditingController _usernameCtrl;    
   final TextEditingController _phoneCtrl = TextEditingController();
   final TextEditingController _passCtrl = TextEditingController();
   final TextEditingController _confirmPassCtrl = TextEditingController();
@@ -30,9 +30,8 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    // مبدئياً خليه من اللي وصل من MorePage
     _usernameCtrl = TextEditingController(text: widget.username);
-    _loadUser(); // ← يسحب الاسم/الجوال الحقيقيين من الـ Session
+    _loadUser(); 
   }
 
   Future<void> _loadUser() async {
@@ -40,10 +39,9 @@ class _ProfilePageState extends State<ProfilePage> {
     if (!mounted) return;
     setState(() {
       _user = u;
-      // نحدّث الحقول من الجلسة إذا متوفرة
       if ((u?.username ?? '').isNotEmpty) _usernameCtrl.text = u!.username;
       if ((u?.phoneNumber ?? '').isNotEmpty) _phoneCtrl.text = u!.phoneNumber;
-      _passCtrl.clear(); // لا نخزن الباسوورد محليًا
+      _passCtrl.clear();    
     });
   }
 
@@ -59,9 +57,8 @@ class _ProfilePageState extends State<ProfilePage> {
   void _save() async {
     final newUsername = _usernameCtrl.text.trim();
     final newPhone = _phoneCtrl.text.trim();
-    final newPass = _passCtrl.text; // ممكن يكون فاضي
+    final newPass = _passCtrl.text;   
 
-    // فالديشن بسيط
     if (newUsername.isEmpty) {
       _toast('اسم المستخدم مطلوب');
       return;
@@ -78,7 +75,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     try {
-      // استدعاء API
       final updated = await ApiClient.updateProfile(
         userId: current.id,
         userType: current.userType, // 'client' أو 'lawyer'
@@ -87,16 +83,13 @@ class _ProfilePageState extends State<ProfilePage> {
         newPassword: newPass.isNotEmpty ? newPass : null,
       );
 
-      // حدث الجلسة محليًا
       await Session.saveUser(updated);
 
-      // نظّف حقل الباسوورد
       _passCtrl.clear();
 
       if (!mounted) return;
       _toast('تم حفظ التعديلات بنجاح', success: true);
-      // اختياري: ارجعي شاشة وراء
-      // Navigator.pop(context);
+
     } catch (e) {
       _toast('فشل حفظ التعديلات: $e');
     }
@@ -121,7 +114,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   _confirmPassCtrl.clear();
 
-  // 1) نطلب من المستخدم كلمة المرور أولاً
+  // 1) 
   final passwordOk = await showDialog<bool>(
     context: context,
     builder: (_) {
@@ -199,7 +192,7 @@ class _ProfilePageState extends State<ProfilePage> {
   if (passwordOk != true) return;
 
   try {
-    // 2) محاولة حذف الحساب
+    // 2) 
     final result = await ApiClient.deleteAccount(
       userId: u.id,
       userType: u.userType,
@@ -207,7 +200,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (result['success'] == true) {
-      // ✅ تم الحذف فعلاً
       await Session.clear();
       if (!mounted) return;
       _toast('تم حذف الحساب بنجاح', success: true);
@@ -220,7 +212,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final message =
         (result['message'] ?? 'فشل حذف الحساب').toString();
 
-    // 3) عنده موعد نشط
+    // 3) 
     if (code == 'HAS_ACTIVE') {
       await showDialog<void>(
         context: context,
@@ -255,7 +247,7 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
 
-    // 4) عنده مواعيد قادمة
+    // 4) 
     if (code == 'HAS_UPCOMING') {
       await showDialog<void>(
         context: context,
@@ -290,7 +282,7 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
 
-    // 5) عنده مبلغ في المحفظة (بوينتس)
+    // 5) 
     if (code == 'HAS_POINTS') {
       final confirmForce = await showDialog<bool>(
         context: context,
@@ -358,7 +350,7 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
 
-    // 6) أي خطأ آخر غير متوقع
+    // 6) 
     _toast(message);
   } catch (e) {
     _toast('فشل حذف الحساب: $e');
@@ -395,7 +387,6 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               const SizedBox(height: 24),
 
-              // Username
               TextField(
                 controller: _usernameCtrl,
                 textAlign: TextAlign.right,
@@ -403,7 +394,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(height: 16),
 
-              // رقم الجوال
+
               TextField(
                 controller: _phoneCtrl,
                 keyboardType: TextInputType.phone,
@@ -414,7 +405,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(height: 16),
 
-              // كلمة المرور (اختياري للتغيير)
+
               TextField(
                 controller: _passCtrl,
                 obscureText: _obscurePassword,
@@ -436,7 +427,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
               const SizedBox(height: 40),
 
-              // زر حفظ (عرض فقط الآن)
+
               SizedBox(
                 height: 52,
                 child: ElevatedButton(
@@ -462,7 +453,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
               const SizedBox(height: 16),
 
-              // حذف حسابي ()
+
               Center(
                 child: TextButton(
                   onPressed: _confirmDelete,
