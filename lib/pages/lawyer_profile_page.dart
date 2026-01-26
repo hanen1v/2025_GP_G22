@@ -18,11 +18,10 @@ class _LawyerProfilePageState extends State<LawyerProfilePage> {
   final TextEditingController _usernameCtrl = TextEditingController();
   final TextEditingController _phoneCtrl    = TextEditingController();
   final TextEditingController _passCtrl     = TextEditingController();
-  final TextEditingController _expCtrl      = TextEditingController(); // سنوات الخبرة
+  final TextEditingController _expCtrl      = TextEditingController(); 
   final TextEditingController _confirmPassCtrl = TextEditingController();
 
 
-  // قوائم الإختيارات (Dropdown)
   String? _selectedMainSpec;
   String? _selectedSubSpec1;
   String? _selectedSubSpec2;
@@ -33,7 +32,6 @@ class _LawyerProfilePageState extends State<LawyerProfilePage> {
   bool _isSaving = false;
   User? _user;
 
-  // القيم المتاحة للتخصصات والمؤهل
   final List<String> _mainSpecializations = [
     'عقاري',
     'قضايا العمالة',
@@ -84,11 +82,9 @@ class _LawyerProfilePageState extends State<LawyerProfilePage> {
       _user = u;
 
       if (u != null) {
-        // 🟢 بيانات عامة
         _usernameCtrl.text = u.username;
         _phoneCtrl.text    = u.phoneNumber;
 
-        // 🟣 بيانات المحامي الإضافية
         _expCtrl.text            = u.yearsOfExp?.toString() ?? '';
         _selectedMainSpec       = u.mainSpecialization;
         _selectedSubSpec1       = u.fSubSpecialization;
@@ -106,7 +102,7 @@ class _LawyerProfilePageState extends State<LawyerProfilePage> {
         _selectedAcademicMajor = null;
       }
 
-      _passCtrl.clear(); // ما نعرض الباسوورد أبداً
+      _passCtrl.clear(); 
     });
   }
 
@@ -182,7 +178,6 @@ class _LawyerProfilePageState extends State<LawyerProfilePage> {
       yearsOfExp = parsed;
     }
 
-    // تجهيز البيانات للإرسال
     final Map<String, dynamic> payload = {
       'userId'               : _user!.id,
       'username'             : username,
@@ -195,13 +190,11 @@ class _LawyerProfilePageState extends State<LawyerProfilePage> {
       'academicMajor'        : _selectedAcademicMajor,
     };
 
-    // لو الباسوورد مو فاضي → نضيفه
     final newPass = _passCtrl.text.trim();
     if (newPass.isNotEmpty) {
       payload['password'] = newPass;
     }
 
-    // نحذف الحقول الفاضية/null عشان PHP يحدث بس اللي نرسله
     payload.removeWhere((key, value) {
       if (value == null) return true;
       if (value is String && value.trim().isEmpty) return true;
@@ -228,7 +221,7 @@ class _LawyerProfilePageState extends State<LawyerProfilePage> {
 
       final body = jsonDecode(res.body);
       if (body['success'] == true) {
-        // نحدّث الـ Session باليوزر الجديد
+        
         if (body['user'] != null) {
           final updatedUser = User.fromJson(body['user']);
           await Session.saveUser(updatedUser);
@@ -238,8 +231,6 @@ class _LawyerProfilePageState extends State<LawyerProfilePage> {
         }
 
         _showSuccess(body['message'] ?? 'تم تحديث البيانات بنجاح');
-        // اختياري: نرجع لصفحة more
-        // Navigator.pop(context);
       } else {
         _showError(body['message'] ?? 'فشل في تحديث البيانات');
       }
@@ -272,7 +263,7 @@ Future<void> _confirmDelete() async {
 
   _confirmPassCtrl.clear();
 
-  // 1) أول Dialog يطلب كلمة المرور
+  // 1) 
   final ok = await showDialog<bool>(
     context: context,
     builder: (_) {
@@ -351,7 +342,7 @@ Future<void> _confirmDelete() async {
   if (ok != true) return;
 
   try {
-    // 2) نرسل طلب الحذف للسيرفر
+    // 2) 
     final body = await ApiClient.deleteAccount(
       userId: u.id,
       userType: u.userType, // "lawyer"
@@ -364,12 +355,11 @@ Future<void> _confirmDelete() async {
     final code = body['code'] as String?;
     final msg = (body['message'] ?? '').toString();
 
-    // --- مجموعات الأكواد عشان نغطي client + lawyer لو استخدمتي نفس الأسماء ---
     const activeCodes = ['HAS_ACTIVE', 'LAWYER_HAS_ACTIVE'];
     const upcomingCodes = ['HAS_UPCOMING', 'LAWYER_HAS_UPCOMING'];
     const pointsCodes = ['HAS_POINTS', 'LAWYER_HAS_POINTS'];
 
-    // ===== مواعيد نشطة =====
+
     if (!success && activeCodes.contains(code)) {
       await showDialog(
         context: context,
@@ -407,7 +397,7 @@ Future<void> _confirmDelete() async {
       return;
     }
 
-    // ===== مواعيد قادمة =====
+
     if (!success && upcomingCodes.contains(code)) {
       await showDialog(
         context: context,
@@ -445,7 +435,7 @@ Future<void> _confirmDelete() async {
       return;
     }
 
-    // ===== حالة وجود نقاط في المحفظة =====
+
     if (!success && pointsCodes.contains(code)) {
       final points = body['points']?.toString() ?? '0';
 
@@ -494,7 +484,7 @@ Future<void> _confirmDelete() async {
 
       if (confirmForce != true) return;
 
-      // إعادة الطلب مع force = true
+
       final body2 = await ApiClient.deleteAccount(
         userId: u.id,
         userType: u.userType,
@@ -579,7 +569,7 @@ Future<void> _confirmDelete() async {
       }
     }
 
-    // ===== نجاح الحذف العادي =====
+
     if (success) {
       await Session.clear();
 
@@ -618,7 +608,7 @@ Future<void> _confirmDelete() async {
       Navigator.of(context)
           .pushNamedAndRemoveUntil('/welcome', (_) => false);
     } else {
-      // أي خطأ آخر عام
+
       await showDialog(
         context: context,
         builder: (_) {
@@ -726,7 +716,6 @@ Future<void> _confirmDelete() async {
             children: [
               const SizedBox(height: 24),
 
-              // 🟢 اسم المستخدم
               TextField(
                 controller: _usernameCtrl,
                 textAlign: TextAlign.right,
@@ -734,7 +723,6 @@ Future<void> _confirmDelete() async {
               ),
               const SizedBox(height: 16),
 
-              // 🟢 رقم الجوال
               TextField(
                 controller: _phoneCtrl,
                 keyboardType: TextInputType.phone,
@@ -745,7 +733,6 @@ Future<void> _confirmDelete() async {
               ),
               const SizedBox(height: 16),
 
-              // 🟢 كلمة المرور (اختياري للتغيير)
               TextField(
                 controller: _passCtrl,
                 obscureText: _obscurePassword,
@@ -767,7 +754,6 @@ Future<void> _confirmDelete() async {
 
               const SizedBox(height: 24),
 
-              // 🟣 سنوات الخبرة
               TextField(
                 controller: _expCtrl,
                 keyboardType: TextInputType.number,
@@ -775,8 +761,8 @@ Future<void> _confirmDelete() async {
                 decoration: _inputDecoration('سنوات الخبرة'),
               ),
               const SizedBox(height: 16),
+              
 
-              // 🟣 التخصص الرئيسي (Dropdown)
               DropdownButtonFormField<String>(
                 value: _selectedMainSpec,
                 items: _mainSpecializations.map((item) {
@@ -793,7 +779,7 @@ Future<void> _confirmDelete() async {
               ),
               const SizedBox(height: 16),
 
-              // 🟣 التخصص الفرعي الأول (Dropdown)
+
               DropdownButtonFormField<String>(
                 value: _selectedSubSpec1,
                 items: _subSpecializations.map((item) {
@@ -810,7 +796,7 @@ Future<void> _confirmDelete() async {
               ),
               const SizedBox(height: 16),
 
-              // 🟣 التخصص الفرعي الثاني (Dropdown)
+
               DropdownButtonFormField<String>(
                 value: _selectedSubSpec2,
                 items: _subSpecializations.map((item) {
@@ -827,7 +813,7 @@ Future<void> _confirmDelete() async {
               ),
               const SizedBox(height: 16),
 
-              // 🟣 المؤهل العلمي
+
               DropdownButtonFormField<String>(
                 value: _selectedDegree,
                 items: _educationLevels.map((item) {
@@ -844,7 +830,7 @@ Future<void> _confirmDelete() async {
               ),
               const SizedBox(height: 16),
 
-              // 🟣 التخصص الأكاديمي
+
               DropdownButtonFormField<String>(
                 value: _selectedAcademicMajor,
                 items: _academicMajors.map((item) {
@@ -862,7 +848,6 @@ Future<void> _confirmDelete() async {
 
               const SizedBox(height: 40),
 
-              // زر حفظ
               SizedBox(
                 height: 52,
                 child: ElevatedButton(
