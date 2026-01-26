@@ -9,12 +9,10 @@ import 'package:flutter/material.dart';
 
 
 class ApiClient {
-  // مهم:
+  // 
   // على Android Emulator نستخدم 10.0.2.2 بدل localhost
   //static const String base = 'http://192.168.3.10:8888/mujeer_api';
   static const String base = 'http://10.0.2.2:8888/mujeer_api';
-  // على iOS Simulator أو Flutter Web على نفس الجهاز:
-  // static const String base = 'http://localhost:8888/mujeer_api';
 
 
   static const String profileImageBase = "$base/uploads";
@@ -45,8 +43,8 @@ class ApiClient {
         }),
       );
 
-      print('🔍 Response status: ${response.statusCode}');
-      print('🔍 Response body: ${response.body}');
+      print(' Response status: ${response.statusCode}');
+      print(' Response body: ${response.body}');
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final body = jsonDecode(response.body);
@@ -159,18 +157,16 @@ class ApiClient {
       final raw = (m['status'] as String? ?? '').trim().toLowerCase();
       if (raw == 'approved') return 'Approved';
       if (raw == 'rejected') return 'Rejected';
-      return 'Pending'; // أي قيمة غير معروفة نرجّعها Pending
+      return 'Pending'; 
     }
 
     throw Exception('Bad response: $m');
   } catch (e) {
-    // في حالة الشبكة/التايم أوت: رجّع القيمة الحالية الافتراضية
-    // تقدر تغيّرها لـ 'Pending' أو ترمي الاستثناء حسب رغبتك
     return 'Pending';
   }
 }
 
-  // ✅ الدالة المصححة
+  // 
   static Future<User?> getUserByUsername(String username) async {
     try {
       final response = await http.post(
@@ -184,15 +180,15 @@ class ApiClient {
         if (data['success'] == true && data['user'] != null) {
           return User.fromJson(data['user']);
         } else {
-          print('❌ المستخدم غير موجود: ${data['message']}');
+          print(' المستخدم غير موجود: ${data['message']}');
           return null;
         }
       } else {
-        print('❌ خطأ في السيرفر: ${response.statusCode}');
+        print(' خطأ في السيرفر: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('❌ فشل في جلب بيانات المستخدم: $e');
+      print(' فشل في جلب بيانات المستخدم: $e');
       return null;
     }
   }
@@ -213,18 +209,17 @@ class ApiClient {
       final data = json.decode(response.body);
       return data['success'] == true;
     } else {
-      print('❌ خطأ في السيرفر: ${response.statusCode}');
+      print(' خطأ في السيرفر: ${response.statusCode}');
       return false;
     }
   } catch (e) {
-    print('❌ فشل في إعادة تعيين كلمة المرور: $e');
+    print(' فشل في إعادة تعيين كلمة المرور: $e');
     return false;
   }
 }
 
 
- 
- /// تحديث سعر المحامي
+  
 static Future<bool> updateLawyerPrice(int lawyerId, double price) async {
   try {
     final response = await http.post(
@@ -247,8 +242,8 @@ static Future<bool> updateLawyerPrice(int lawyerId, double price) async {
     return false;
   }
 }
+  
 
-/// حفظ الأوقات المتاحة للمحامي
 static Future<bool> saveAvailability(int lawyerId, List<Map<String, dynamic>> availabilityData) async {
   try {
     final response = await http.post(
@@ -272,7 +267,7 @@ static Future<bool> saveAvailability(int lawyerId, List<Map<String, dynamic>> av
   }
 }
 
-/// جلب الأوقات المتاحة الحالية للمحامي
+  
 static Future<Map<String, dynamic>> getCurrentAvailability(int lawyerId) async {
   try {
     final response = await http.post(
@@ -298,7 +293,7 @@ static Future<Map<String, dynamic>> getCurrentAvailability(int lawyerId) async {
   }
 }
 
-/// جلب سعر المحامي الحالي
+  
 static Future<double> getLawyerPrice(int lawyerId) async {
   try {
     final response = await http.post(
@@ -321,7 +316,7 @@ static Future<double> getLawyerPrice(int lawyerId) async {
   }
 }
 
-/// حذف الأوقات المتاحة
+  
 static Future<bool> deleteAvailability(int lawyerId) async {
   try {
     final response = await http.post(
@@ -348,7 +343,7 @@ static Future<User> updateProfile({
   required String userType,   // 'client' | 'lawyer'
   required String username,
   required String phoneNumber,
-  String? newPassword,        // اختياري
+  String? newPassword,        
 }) async {
   final res = await http.post(
     Uri.parse('$base/update_profile.php'),
@@ -378,7 +373,7 @@ static Future<Map<String, dynamic>> deleteAccount({
   required int userId,
   required String userType, // 'client' | 'lawyer'
   required String password,
-  bool force = false,       // عشان موضوع البوينتس
+  bool force = false,         
 }) async {
   final url = Uri.parse('$base/delete_account.php');
 
@@ -410,7 +405,6 @@ static Future<Map<String, dynamic>> deleteAccount({
     throw Exception('Unexpected response format');
   }
 
-  // ما نرمي Exception هنا، نخلي الـ UI يتعامل مع success/code/message
   return body;
 }
 
@@ -442,7 +436,6 @@ static Future<Map<String, dynamic>> deleteAccount({
       throw Exception(jsonBody['message'] ?? 'Upload failed');
     }
 
-    // نرجع اسم الملف اللي حفظناه في الداتابيس
     return jsonBody['fileName']?.toString() ?? '';
   }
 
@@ -475,7 +468,6 @@ static Future<Map<String, dynamic>> requestLicenseUpdate({
   try {
     decoded = jsonDecode(rawText);
   } catch (e) {
-    // هنا لو PHP لسه يرجّع HTML راح تشوفينه في الرسالة
     throw Exception('رد غير صالح من السيرفر: $rawText');
   }
 
