@@ -441,7 +441,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
 
     // ننتظر نتيجة التحقق من شاشة OTP
     bool? verified = true;
-    /*await Navigator.push(
+    /*  await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => OTPScreen(
@@ -449,7 +449,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
         registrationType: 'client',
       ),
     ),
-  );*/
+  ); */
 
     // بعد العودة من صفحة OTP
     if (verified == true) {

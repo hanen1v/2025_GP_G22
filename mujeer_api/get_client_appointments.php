@@ -25,14 +25,14 @@ $clientId = (int)$data['clientId'];
 /*
  * هنا نحدّث الحالات بحسب الوقت:
  * - لو الموعد في المستقبل → Upcoming
- * - لو الوقت الحالي بين (DateTime) و (DateTime + 1 hour) → Active
- * - لو بعد ساعة من الموعد → Past
+ * - لو الوقت الحالي بين (DateTime) و (DateTime + 15 MINUTE) → Active
+ * - لو بعد 15 MINUTE من الموعد → Past
  */
 $updateSql = "
     UPDATE appointment
     SET Status = CASE
         WHEN DateTime > NOW() THEN 'Upcoming'
-        WHEN DateTime <= NOW() AND DATE_ADD(DateTime, INTERVAL 1 HOUR) > NOW() THEN 'Active'
+        WHEN DateTime <= NOW() AND DATE_ADD(DateTime, INTERVAL 15 MINUTE) > NOW() THEN 'Active'
         ELSE 'Past'
     END
     WHERE ClientID = ?
@@ -62,6 +62,7 @@ $sql = "
             FROM feedback f 
             WHERE f.LawyerID = a.LawyerID 
               AND f.ClientID = a.ClientID
+              AND f.AppointmentID = a.AppointmentID
         ) AS HasFeedback,
 
         CASE

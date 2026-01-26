@@ -87,7 +87,7 @@ while ($row = $result->fetch_assoc()) {
         try {
             $start = new DateTime($row['DateTime']);
             $end = clone $start;
-            $end->modify('+1 hour'); // مدة الاستشارة ساعة واحدة
+            $end->modify('+15 minutes'); // مدة الاستشارة  
 
             if ($now < $start) {
                 $computedStatus = 'Upcoming';

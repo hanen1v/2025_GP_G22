@@ -6,7 +6,7 @@ import '../services/api_client.dart';
 import 'package:iconsax/iconsax.dart';
 import '../services/session.dart';
 import '../widgets/admin_bottom_nav.dart';
-
+import 'lawyer_details_for_admin_page.dart';
 class DeleteLawyerPage extends StatefulWidget {
   const DeleteLawyerPage({super.key});
 
@@ -105,42 +105,68 @@ class _DeleteLawyerPageState extends State<DeleteLawyerPage> {
     }
   }
 
-  //lawyers card
-  Widget _buildLawyerCard(Lawyer lw) {
-    final isDeleting = _deletingIds.contains(lw.id);
-    return Container(
+//lawyers card
+Widget _buildLawyerCard(Lawyer lw) {
+  final isDeleting = _deletingIds.contains(lw.id);
+  return InkWell(
+    onTap: () {
+      // open details page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AdminLawyerDetailsPage(
+            lawyerId: lw.id, 
+          ),
+        ),
+      );
+    },
+    child: Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))],
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
-        CircleAvatar(
-         radius: 28,
-         backgroundColor: Colors.grey.shade200,
-         child: ClipOval(
-           child: lw.photoUrl.isEmpty
-           ? const Icon(Icons.person)
-          : Image.network(
-            lw.photoUrl,
-            width: 56, height: 56, fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const Icon(Icons.person),
+          CircleAvatar(
+            radius: 28,
+            backgroundColor: Colors.grey.shade200,
+            child: ClipOval(
+              child: lw.photoUrl.isEmpty
+                  ? const Icon(Icons.person)
+                  : Image.network(
+                      lw.photoUrl,
+                      width: 56,
+                      height: 56,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(Icons.person),
+                    ),
+            ),
           ),
-        ),
-      ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               lw.fullName,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           isDeleting
               ? const SizedBox(
-                  width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2))
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               : IconButton(
                   tooltip: 'حذف',
                   color: Colors.red,
@@ -149,8 +175,9 @@ class _DeleteLawyerPageState extends State<DeleteLawyerPage> {
                 ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {

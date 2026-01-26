@@ -110,7 +110,9 @@ $uRes = $conn->query("
       SSubSpecialization,
       EducationQualification,
       AcademicMajor,
-      LawyerPhoto
+      LawyerPhoto,
+      LicenseNumber,
+      'lawyer' AS UserType
     FROM lawyer
     WHERE LawyerID = $lawyerId
     LIMIT 1

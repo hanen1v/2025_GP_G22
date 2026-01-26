@@ -357,7 +357,7 @@ class _LawyerRequestsPageState extends State<LawyerRequestsPage> {
                 const Spacer(),
 
                 // نوع الاستشارة في المنتصف
-                Container(
+                /*Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
@@ -373,7 +373,7 @@ class _LawyerRequestsPageState extends State<LawyerRequestsPage> {
                       color: primaryGreen,
                     ),
                   ),
-                ),
+                ), */
 
                 const SizedBox(width: 8),
 
@@ -436,52 +436,30 @@ class _LawyerRequestsPageState extends State<LawyerRequestsPage> {
   /// Active -> محادثة العميل
   /// Upcoming/Past -> عرض التفاصيل
   Widget _buildMainActionButton(LawyerAppointment ap) {
-    const primaryGreen = Color(0xFF0B5345);
+  const primaryGreen = Color(0xFF0B5345);
 
-    if (ap.status == 'Active') {
-      return InkWell(
-        onTap: () => _openChatWithClient(ap),
+  return InkWell(
+    onTap: () => _showDetails(ap),   // لجميع الحالات
+    borderRadius: BorderRadius.circular(30),
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+      decoration: BoxDecoration(
+        color: primaryGreen.withOpacity(0.08),
         borderRadius: BorderRadius.circular(30),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-          decoration: BoxDecoration(
-            color: primaryGreen.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: const Text(
-            'محادثة العميل',
-            style: TextStyle(
-              fontFamily: 'Tajawal',
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: primaryGreen,
-            ),
-          ),
+      ),
+      child: const Text(
+        'عرض التفاصيل',
+        style: TextStyle(
+          fontFamily: 'Tajawal',
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: primaryGreen,
         ),
-      );
-    } else {
-      return InkWell(
-        onTap: () => _showDetails(ap),
-        borderRadius: BorderRadius.circular(30),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-          decoration: BoxDecoration(
-            color: primaryGreen.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: const Text(
-            'عرض التفاصيل',
-            style: TextStyle(
-              fontFamily: 'Tajawal',
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: primaryGreen,
-            ),
-          ),
-        ),
-      );
-    }
-  }
+      ),
+    ),
+  );
+}
+
 
   // ================== LOGIC ==================
 
@@ -714,6 +692,36 @@ void _openFinishedChat(LawyerAppointment ap) async {
                           ),
                         ],
 
+// ... بعد جزء الملف المرفق مباشرة
+
+// زر محادثة العميل للحالة Active
+if (ap.status == 'Active') ...[
+  const SizedBox(height: 24),
+  SizedBox(
+    width: double.infinity,
+    child: ElevatedButton.icon(
+      onPressed: () {
+        _openChatWithClient(ap);
+      },
+      icon: const Icon(Icons.chat_bubble_outline),
+      label: const Text(
+        'محادثة العميل',
+        style: TextStyle(
+          fontFamily: 'Tajawal',
+          fontSize: 14,
+        ),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primaryGreen,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    ),
+  ),
+],
 
                       // ===== زر رؤية المحادثة للطلبات المنتهية =====
 if (ap.status == 'Past') ...[

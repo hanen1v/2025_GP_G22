@@ -151,7 +151,10 @@ Future<void> _loadStatus() async {
     final points   = _user?.points ?? 0;
 
     // الحالة المطبّعة من الموديل (User.statusNormalized)
-    final (label, fg, bg, icon) = _style(_status ?? 'Pending');
+    final rawStatus = _user?.statusNormalized ?? 'Pending';
+    final (label, fg, bg, icon) = _style(rawStatus);
+
+    //final (label, fg, bg, icon) = _style(_status ?? 'Pending');
 
 
     return Directionality(
@@ -320,7 +323,7 @@ Card(
                         Text('المحفظة',
                           style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.bold, color: Colors.black, fontSize: 16)),
                       ]),
-                      Text('$points نقطة',
+                      Text('$points ريال',
                         style: const TextStyle(fontFamily: 'Tajawal', color: Colors.black, fontWeight: FontWeight.w600, fontSize: 15)),
                     ],
                   ),

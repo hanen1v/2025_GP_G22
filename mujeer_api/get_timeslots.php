@@ -13,13 +13,11 @@ if (!isset($_GET['lawyer_id'])) {
 
 $lawyerId = intval($_GET['lawyer_id']);
 
-
-$sql = "SELECT id, day, time 
-        FROM timeslot 
-        WHERE lawyer_id = ? AND is_booked = 0
-        ORDER BY 
-            FIELD(day, 'sunday','monday','tuesday','wednesday','thursday','friday','saturday'),
-            time ASC";
+$sql = "SELECT id, time
+        FROM timeslot
+        WHERE lawyer_id = ?
+          AND is_booked = 0
+        ORDER BY time ASC";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $lawyerId);
@@ -30,9 +28,8 @@ $slots = [];
 
 while ($row = $result->fetch_assoc()) {
     $slots[] = [
-        "id" => $row["id"],
-        "day" => $row["day"],
-        "time" => $row["time"]
+        "id"   => (int)$row["id"],
+        "time" => $row["time"]          
     ];
 }
 

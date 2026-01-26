@@ -7,7 +7,6 @@ require_once __DIR__ . '/config.php';
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
-// قراءة البيانات من POST
 $lawyerId   = isset($_POST['lawyer_id'])   ? intval($_POST['lawyer_id'])   : 0;
 $clientId   = isset($_POST['client_id'])   ? intval($_POST['client_id'])   : 0;
 $timeslotId = isset($_POST['timeslot_id']) ? intval($_POST['timeslot_id']) : 0;
@@ -26,12 +25,32 @@ if ($lawyerId == 0 || $clientId == 0 || $timeslotId == 0 || $price <= 0 || $deta
 try {
     $conn->begin_transaction();
 
-    // 1) إنشاء الموعد
+    $slotSql = "SELECT `time` FROM timeslot WHERE id = ? AND is_booked = 0";
+    $slotStmt = $conn->prepare($slotSql);
+    if (!$slotStmt) {
+        throw new Exception("فشل تجهيز استعلام التايم سلوت: " . $conn->error);
+    }
+    $slotStmt->bind_param("i", $timeslotId);
+    $slotStmt->execute();
+    $slotRes = $slotStmt->get_result();
+
+    if ($slotRes->num_rows === 0) {
+        throw new Exception("الوقت المحدد غير متاح أو غير موجود");
+    }
+
+    $slotRow = $slotRes->fetch_assoc();
+    $slotDateTime = $slotRow['time']; 
+    $slotStmt->close();
+
     $stmt = $conn->prepare("
         INSERT INTO appointment (LawyerID, ClientID, DateTime, Status, Price, timeslot_id)
-        VALUES (?, ?, NOW(), 'Upcoming', ?, ?)
+        VALUES (?, ?, ?, 'Upcoming', ?, ?)
     ");
-    $stmt->bind_param("iidi", $lawyerId, $clientId, $price, $timeslotId);
+    if (!$stmt) {
+        throw new Exception("فشل تجهيز استعلام إنشاء الموعد: " . $conn->error);
+    }
+    // i = int, i = int, s = string (datetime), d = double, i = int
+    $stmt->bind_param("iisdi", $lawyerId, $clientId, $slotDateTime, $price, $timeslotId);
     $stmt->execute();
 
     if ($stmt->affected_rows <= 0) {
@@ -41,37 +60,42 @@ try {
     $appointmentId = $stmt->insert_id;
     $stmt->close();
 
-    // 2) تفاصيل الاستشارة
     $stmt2 = $conn->prepare("
         INSERT INTO consultation (AppointmentID, Details, File)
         VALUES (?, ?, ?)
     ");
+    if (!$stmt2) {
+        throw new Exception("فشل تجهيز استعلام الاستشارة: " . $conn->error);
+    }
     $stmt2->bind_param("iss", $appointmentId, $details, $fileName);
     $stmt2->execute();
     $stmt2->close();
 
-    // 3) تحديث نقاط المحامي (تزيد بعدد السعر)
     $pointsToAdd = (int)round($price);
     $stmt3 = $conn->prepare("
         UPDATE lawyer
         SET Points = Points + ?
         WHERE LawyerID = ?
     ");
+    if (!$stmt3) {
+        throw new Exception("فشل تجهيز استعلام النقاط: " . $conn->error);
+    }
     $stmt3->bind_param("ii", $pointsToAdd, $lawyerId);
     $stmt3->execute();
     $stmt3->close();
 
-    // 4) تحديث التايم سلوت إلى محجوز بدل الحذف
     $stmt4 = $conn->prepare("
         UPDATE timeslot
         SET is_booked = 1
         WHERE id = ?
     ");
+    if (!$stmt4) {
+        throw new Exception("فشل تجهيز استعلام تحديث التايم سلوت: " . $conn->error);
+    }
     $stmt4->bind_param("i", $timeslotId);
     $stmt4->execute();
     $stmt4->close();
 
-    // إنهاء العملية
     $conn->commit();
 
     echo json_encode([

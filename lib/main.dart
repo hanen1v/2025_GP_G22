@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'pages/home_page.dart';
 import 'pages/search_page.dart';
 import 'pages/plus_page.dart';
@@ -28,8 +29,13 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'pages/chat_screen.dart';
 import 'pages/past_chat_screen.dart';
 
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
 void main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
+   await initializeDateFormatting('ar', null);
   
   try {
     await Firebase.initializeApp(
@@ -56,7 +62,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Mujeer',
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
       theme: ThemeData(
+        snackBarTheme: const SnackBarThemeData(
+      behavior: SnackBarBehavior.floating, // أهم سطر
+      
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+      ),
+    ),
         fontFamily: 'Tajawal', // ←   الخط موحد في كل التطبيق
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF5B4FE8)),
         textTheme: const TextTheme().apply(
@@ -68,6 +82,8 @@ class MyApp extends StatelessWidget {
         textDirection: TextDirection.rtl, // ← اتجاه عربي
         child: child!,
       ),
+
+      
       initialRoute: '/welcome',
       routes: {
         '/welcome': (context) => const WelcomePage(),

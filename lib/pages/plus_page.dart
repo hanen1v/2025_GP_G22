@@ -7,7 +7,7 @@ class PlusPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: const Center(child: Text('Plus Page (create new)', style: TextStyle(fontSize: 24))),
+      body: const Center(child: Text('خدمات الذكاء الاصطناعي (قريبا)', style: TextStyle(fontSize: 24))),
       
       bottomNavigationBar: const AppBottomNav(currentRoute: '/plus'),
       floatingActionButton: _buildFab(context),

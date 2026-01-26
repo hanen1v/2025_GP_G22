@@ -374,20 +374,21 @@ static Future<User> updateProfile({
 }
 
 
-static Future<void> deleteAccount({
+static Future<Map<String, dynamic>> deleteAccount({
   required int userId,
   required String userType, // 'client' | 'lawyer'
-  String? password,         // اختياري للتأكيد
-  
+  required String password,
+  bool force = false,       // عشان موضوع البوينتس
 }) async {
   final url = Uri.parse('$base/delete_account.php');
-  final payload = {
+
+  final payload = <String, dynamic>{
     'userId': userId,
     'userType': userType,
-    if ((password ?? '').isNotEmpty) 'password': password,
+    'password': password,
+    if (force) 'force': true,
   };
 
-  // (تطلع في الـ Run / Terminal)
   debugPrint('🔴 DELETE REQ → $url');
   debugPrint('🔴 DELETE BODY → ${jsonEncode(payload)}');
 
@@ -405,10 +406,15 @@ static Future<void> deleteAccount({
   }
 
   final body = jsonDecode(res.body);
-  if (body is! Map || body['success'] != true) {
-    throw Exception(body['message'] ?? 'Failed to delete account');
+  if (body is! Map<String, dynamic>) {
+    throw Exception('Unexpected response format');
   }
+
+  // ما نرمي Exception هنا، نخلي الـ UI يتعامل مع success/code/message
+  return body;
 }
+
+
 
 
   static Future<String> uploadLawyerPhoto({
@@ -575,6 +581,7 @@ static Future<void> uploadLicenseUpdateFile({
     Uri.parse('$base/cancel_appointment.php'),
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({'appointmentId': appointmentId}),
+    
   );
 
   if (res.statusCode < 200 || res.statusCode >= 300) {
@@ -587,5 +594,118 @@ static Future<void> uploadLicenseUpdateFile({
   }
 }
 
+static Future<Map<String, dynamic>> getUnbookedAvailability(int lawyerId) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$base/lawyer_availability.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'lawyer_id': lawyerId,
+        'action': 'get_unbooked_availability'
+      }),
+    );
+    
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return {
+        'success': true,
+        'data': data['data'] ?? [],
+      };
+    }
+    return {'success': false, 'data': []};
+  } catch (e) {
+    print('Error getting unbooked availability: $e');
+    return {'success': false, 'data': []};
+  }
+}
+
+static Future<User> refreshUserData(int userId, String userType) async {
+  final url = Uri.parse('$base/refresh_user.php');
+  final res = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'userId': userId, 'userType': userType}),
+  );
+
+  if (res.statusCode < 200 || res.statusCode >= 300) {
+    throw Exception('HTTP ${res.statusCode}: ${res.body}');
+  }
+
+  final body = jsonDecode(res.body);
+  if (body['success'] != true) {
+    throw Exception(body['message'] ?? 'Failed');
+  }
+
+  return User.fromJson(body['user']);
+}
+
+
+
+static Future<Map<String, dynamic>> checkBookedSlots(
+  int lawyerId, 
+  List<Map<String, dynamic>> slots
+) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$base/lawyer_availability.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'lawyer_id': lawyerId,
+        'slots': slots,
+        'action': 'check_booked_slots'
+      }),
+    );
+    
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return {
+        'success': data['success'] == true,
+        'booked_slots': data['booked_slots'] ?? [],
+        'unbooked_slots': data['unbooked_slots'] ?? [],
+        'total_checked': data['total_checked'] ?? 0,
+      };
+    }
+    return {
+      'success': false, 
+      'booked_slots': [], 
+      'unbooked_slots': [],
+      'total_checked': 0
+    };
+  } catch (e) {
+    print('Error checking booked slots: $e');
+    return {
+      'success': false, 
+      'booked_slots': [], 
+      'unbooked_slots': [],
+      'total_checked': 0
+    };
+  }
+}
+
+static Future<bool> deleteSelectedAvailability(
+  int lawyerId, 
+  List<Map<String, dynamic>> slotsToDelete
+) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$base/lawyer_availability.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'lawyer_id': lawyerId,
+        'slots_to_delete': slotsToDelete,
+        'action': 'delete_selected'
+      }),
+    );
+    
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['success'] == true;
+    }
+    return false;
+  } catch (e) {
+    print('Error deleting selected availability: $e');
+    return false;
+  }
+}
 
 }

@@ -23,13 +23,14 @@ if ($data === null || !isset($data['appointmentId'])) {
 $appointmentId = (int)$data['appointmentId'];
 
 try {
-    // نبدأ Transaction عشان كل العمليات تصير مع بعض
+    // نبدأ Transaction عشان كل العمليات تكون مع بعض
     $conn->begin_transaction();
 
-    // 1) نجيب بيانات الموعد أولاً
+    // 1) نجيب بيانات الموعد أولاً (لاحظ أضفنا ClientID)
     $sql = "
         SELECT 
             AppointmentID,
+            ClientID,
             LawyerID,
             Price,
             timeslot_id,
@@ -52,26 +53,27 @@ try {
         throw new Exception("الموعد غير موجود");
     }
 
-    $row        = $result->fetch_assoc();
-    $lawyerId   = (int)$row['LawyerID'];
-    $price      = $row['Price'] !== null ? (float)$row['Price'] : 0.0;
-    $timeslotId = $row['timeslot_id'] !== null ? (int)$row['timeslot_id'] : 0;
-    $status     = $row['Status'];
-    $dateTimeStr= $row['DateTime'];
+    $row         = $result->fetch_assoc();
+    $clientId    = (int)$row['ClientID'];
+    $lawyerId    = (int)$row['LawyerID'];
+    $price       = $row['Price'] !== null ? (float)$row['Price'] : 0.0;
+    $timeslotId  = $row['timeslot_id'] !== null ? (int)$row['timeslot_id'] : 0;
+    $status      = $row['Status'];
+    $dateTimeStr = $row['DateTime'];
 
     $stmt->close();
 
-    // نتأكد أن حالته Upcoming
+    // نتأكد أن حالته Upcoming فقط
     if ($status !== 'Upcoming') {
         throw new Exception("لا يمكن إلغاء هذا الموعد (حالته ليست Upcoming)");
     }
 
-    // نحسب هل وقت الموعد لسه ما عدا
-    $now      = new DateTime();              // وقت السيرفر الحالي
-    $apptTime = new DateTime($dateTimeStr);  // وقت الموعد من الداتابيس
+    // نحسب هل وقت الموعد ما عدا
+    $now       = new DateTime();              // وقت السيرفر الحالي
+    $apptTime  = new DateTime($dateTimeStr);  // وقت الموعد من الداتابيس
     $canFreeTimeslot = ($timeslotId > 0 && $apptTime > $now);
 
-    // 2) إذا وقت الموعد ما عدا نرجع الـ timeslot متاح (is_booked = 0)
+    // 2) إذا وقت الموعد لسه ما عدا نرجّع الـ timeslot متاح
     if ($canFreeTimeslot) {
         $sqlTs = "UPDATE timeslot SET is_booked = 0 WHERE id = ? LIMIT 1";
         $stmtTs = $conn->prepare($sqlTs);
@@ -83,9 +85,16 @@ try {
         $stmtTs->close();
     }
 
-    // 3) نضيف السعر كنقاط للمحامي (غيّري اسم العمود points إذا مختلف)
-    if ($price > 0 && $lawyerId > 0) {
-        $sqlLawyer = "UPDATE lawyer SET points = points + ? WHERE LawyerID = ? LIMIT 1";
+    // 3) تحويل المبلغ من محفظة المحامي لمحفظة العميل
+    //    خصم من المحامي وإضافة للعميل
+    if ($price > 0 && $lawyerId > 0 && $clientId > 0) {
+        // خصم من المحامي (مع ضمان ما يصير أقل من صفر)
+        $sqlLawyer = "
+            UPDATE lawyer 
+            SET Points = GREATEST(Points - ?, 0) 
+            WHERE LawyerID = ? 
+            LIMIT 1
+        ";
         $stmtL = $conn->prepare($sqlLawyer);
         if (!$stmtL) {
             throw new Exception("DB Error (prepare lawyer): " . $conn->error);
@@ -93,9 +102,24 @@ try {
         $stmtL->bind_param("di", $price, $lawyerId);
         $stmtL->execute();
         $stmtL->close();
+
+        // إضافة المبلغ (كنقاط) للعميل
+        $sqlClient = "
+            UPDATE client 
+            SET Points = Points + ? 
+            WHERE ClientID = ? 
+            LIMIT 1
+        ";
+        $stmtC = $conn->prepare($sqlClient);
+        if (!$stmtC) {
+            throw new Exception("DB Error (prepare client): " . $conn->error);
+        }
+        $stmtC->bind_param("di", $price, $clientId);
+        $stmtC->execute();
+        $stmtC->close();
     }
 
-    // 4) نحذف الموعد نفسه (لسه شرطه Upcoming)
+    // 4) حذف الموعد نفسه (لسه شرطه Upcoming)
     $sqlDel = "
         DELETE FROM appointment
         WHERE AppointmentID = ?
@@ -120,19 +144,19 @@ try {
 
     echo json_encode([
         "success" => true,
-        "message" => "تم إلغاء الموعد بنجاح، وتحديث التوقيت والنقاط"
+        "message" => "تم إلغاء الموعد بنجاح، وتم تحويل المبلغ إلى محفظتك."
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
     // لو صار أي خطأ نرجّع كل شيء
     if ($conn->errno === 0) {
-        // لو الترانزكشن شغّال نعمل rollback
-        $conn->rollback();
+        // محاولة إرجاع الترانزكشن لو كانت شغّالة
+        @$conn->rollback();
     }
 
     echo json_encode([
         "success" => false,
-        "message" => $e->getMessage()
+        "message" => $e->getMessage(),
     ], JSON_UNESCAPED_UNICODE);
 }
 

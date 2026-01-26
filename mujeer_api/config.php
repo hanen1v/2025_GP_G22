@@ -6,7 +6,7 @@ $DB_USER = 'root';
 $DB_PASS = 'root';
 
 define('ONESIGNAL_APP_ID', '52e7af05-5276-4ccd-9715-1cb9820f4361'); 
-define('ONESIGNAL_REST_API_KEY', 'os_v2_app_klt26bksozgm3fyvds4yed2dmhuzz3i5bv6ezzmuayihpfhxtceboihpwwfdus5rmbk7nw2w3hfdz7zfbdpv24klni2tnjcc2vjmiry'); 
+define('ONESIGNAL_REST_API_KEY', 'os_v2_app_klt26bksozgm3fyvds4yed2dmgchalzcatku7s5ki2wnwthyedcoavlnfqk5mwghy6bwugveo4ebr57trqa6dteeo56ljn4yayrcopi'); 
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

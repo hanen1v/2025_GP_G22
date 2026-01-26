@@ -218,6 +218,9 @@ class _LawyerProfilePageState extends State<LawyerProfilePage> {
         body: jsonEncode(payload),
       );
 
+      print('UPDATE RESPONSE status: ${res.statusCode}');
+      print('UPDATE RESPONSE body: ${res.body}');
+
       if (res.statusCode < 200 || res.statusCode >= 300) {
         _showError('حدث خطأ في الاتصال بالسيرفر: ${res.statusCode}');
         return;
@@ -269,13 +272,17 @@ Future<void> _confirmDelete() async {
 
   _confirmPassCtrl.clear();
 
+  // 1) أول Dialog يطلب كلمة المرور
   final ok = await showDialog<bool>(
     context: context,
     builder: (_) {
       return Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-          title: const Text('حذف الحساب'),
+          title: const Text(
+            'تأكيد حذف الحساب',
+            style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.bold),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -288,59 +295,54 @@ Future<void> _confirmDelete() async {
                 controller: _confirmPassCtrl,
                 obscureText: true,
                 decoration: const InputDecoration(
-                  labelText: 'كلمة المرور ',
+                  labelText: 'كلمة المرور',
                 ),
               ),
             ],
           ),
           actions: [
-  // زر إلغاء
-  TextButton(
-    onPressed: () => Navigator.pop(context, false),
-    child: const Text(
-      'إلغاء',
-      style: TextStyle(
-        fontFamily: 'Tajawal',
-        color: Color(0xFF0B5345), // أخضر
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  ),
-
-  // زر حذف
-  ElevatedButton(
-    onPressed: () {
-      if (_confirmPassCtrl.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('يجب إدخال كلمة المرور لحذف الحساب'),
-          ),
-        );
-        return;
-      }
-      Navigator.pop(context, true);
-    },
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Color(0xFF0B5345), // أخضر
-      foregroundColor: Colors.white,       // نص أبيض
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      elevation: 0,
-    ),
-    child: const Text(
-      'حذف',
-      style: TextStyle(
-        fontFamily: 'Tajawal',
-        fontSize: 15,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-    ),
-  ),
-],
-
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text(
+                'إلغاء',
+                style: TextStyle(
+                  fontFamily: 'Tajawal',
+                  color: Color(0xFF0B5345),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_confirmPassCtrl.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('يجب إدخال كلمة المرور لحذف الحساب'),
+                    ),
+                  );
+                  return;
+                }
+                Navigator.pop(context, true);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0B5345),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                elevation: 0,
+              ),
+              child: const Text(
+                'حذف',
+                style: TextStyle(
+                  fontFamily: 'Tajawal',
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
       );
     },
@@ -349,22 +351,353 @@ Future<void> _confirmDelete() async {
   if (ok != true) return;
 
   try {
-    await ApiClient.deleteAccount(
+    // 2) نرسل طلب الحذف للسيرفر
+    final body = await ApiClient.deleteAccount(
       userId: u.id,
-      userType: u.userType,        // <-- مهم جداً: lawyer
+      userType: u.userType, // "lawyer"
       password: _confirmPassCtrl.text,
     );
 
-    await Session.clear();
-
     if (!mounted) return;
-    _toast('تم حذف الحساب بنجاح', success: true);
 
-    Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (_) => false);
+    final success = body['success'] == true;
+    final code = body['code'] as String?;
+    final msg = (body['message'] ?? '').toString();
+
+    // --- مجموعات الأكواد عشان نغطي client + lawyer لو استخدمتي نفس الأسماء ---
+    const activeCodes = ['HAS_ACTIVE', 'LAWYER_HAS_ACTIVE'];
+    const upcomingCodes = ['HAS_UPCOMING', 'LAWYER_HAS_UPCOMING'];
+    const pointsCodes = ['HAS_POINTS', 'LAWYER_HAS_POINTS'];
+
+    // ===== مواعيد نشطة =====
+    if (!success && activeCodes.contains(code)) {
+      await showDialog(
+        context: context,
+        builder: (_) {
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: AlertDialog(
+              title: const Text(
+                'لا يمكن حذف الحساب (موعد نشط)',
+                style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.bold),
+              ),
+              content: Text(
+                msg.isNotEmpty
+                    ? msg
+                    : 'لديك مواعيد نشطة، قم بإكمالها أو إلغائها قبل إيقاف الحساب.',
+                style: const TextStyle(fontFamily: 'Tajawal'),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'حسناً',
+                    style: TextStyle(
+                      fontFamily: 'Tajawal',
+                      color: Color(0xFF0B5345),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+      return;
+    }
+
+    // ===== مواعيد قادمة =====
+    if (!success && upcomingCodes.contains(code)) {
+      await showDialog(
+        context: context,
+        builder: (_) {
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: AlertDialog(
+              title: const Text(
+                'لا يمكن حذف الحساب (موعد قادم)',
+                style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.bold),
+              ),
+              content: Text(
+                msg.isNotEmpty
+                    ? msg
+                    : 'لديك مواعيد قادمة، قم بإلغائها أو انتظار انتهائها قبل إيقاف الحساب.',
+                style: const TextStyle(fontFamily: 'Tajawal'),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'حسناً',
+                    style: TextStyle(
+                      fontFamily: 'Tajawal',
+                      color: Color(0xFF0B5345),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+      return;
+    }
+
+    // ===== حالة وجود نقاط في المحفظة =====
+    if (!success && pointsCodes.contains(code)) {
+      final points = body['points']?.toString() ?? '0';
+
+      final confirmForce = await showDialog<bool>(
+        context: context,
+        builder: (_) {
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: AlertDialog(
+              title: const Text(
+                'رصيد غير مسترد في المحفظة',
+                style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.bold),
+              ),
+              content: Text(
+                'لديك نقاط في محفظتك بقيمة ($points نقطة).\n'
+                'عند حذف الحساب سيتم فقدان هذه النقاط نهائياً، هل ما زلت متأكداً من حذف الحساب؟',
+                style: const TextStyle(fontFamily: 'Tajawal'),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text(
+                    'تراجع',
+                    style: TextStyle(
+                      fontFamily: 'Tajawal',
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0B5345),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text(
+                    'حذف ',
+                    style: TextStyle(fontFamily: 'Tajawal'),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      if (confirmForce != true) return;
+
+      // إعادة الطلب مع force = true
+      final body2 = await ApiClient.deleteAccount(
+        userId: u.id,
+        userType: u.userType,
+        password: _confirmPassCtrl.text,
+        force: true,
+      );
+
+      if (!mounted) return;
+
+      if (body2['success'] == true) {
+        await Session.clear();
+        await showDialog(
+          context: context,
+          builder: (_) {
+            return Directionality(
+              textDirection: TextDirection.rtl,
+              child: AlertDialog(
+                title: const Text(
+                  'تم حذف الحساب (مع فقدان النقاط)',
+                  style:
+                      TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.bold),
+                ),
+                content: Text(
+                  (body2['message'] ?? 'تم حذف الحساب بنجاح').toString(),
+                  style: const TextStyle(fontFamily: 'Tajawal'),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      'حسناً',
+                      style: TextStyle(
+                        fontFamily: 'Tajawal',
+                        color: Color(0xFF0B5345),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/welcome', (_) => false);
+        return;
+      } else {
+        await showDialog(
+          context: context,
+          builder: (_) {
+            return Directionality(
+              textDirection: TextDirection.rtl,
+              child: AlertDialog(
+                title: const Text(
+                  'خطأ في حذف الحساب',
+                  style:
+                      TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.bold),
+                ),
+                content: Text(
+                  (body2['message'] ?? 'فشل حذف الحساب').toString(),
+                  style: const TextStyle(fontFamily: 'Tajawal'),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      'حسناً',
+                      style: TextStyle(
+                        fontFamily: 'Tajawal',
+                        color: Color(0xFF0B5345),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+        return;
+      }
+    }
+
+    // ===== نجاح الحذف العادي =====
+    if (success) {
+      await Session.clear();
+
+      await showDialog(
+        context: context,
+        builder: (_) {
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: AlertDialog(
+              title: const Text(
+                'تم حذف الحساب',
+                style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.bold),
+              ),
+              content: Text(
+                msg.isNotEmpty ? msg : 'تم حذف الحساب بنجاح.',
+                style: const TextStyle(fontFamily: 'Tajawal'),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'حسناً',
+                    style: TextStyle(
+                      fontFamily: 'Tajawal',
+                      color: Color(0xFF0B5345),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/welcome', (_) => false);
+    } else {
+      // أي خطأ آخر عام
+      await showDialog(
+        context: context,
+        builder: (_) {
+          String title = 'خطأ في الحذف';
+
+          if (activeCodes.contains(code)) {
+            title = 'لا يمكن حذف الحساب (موعد نشط)';
+          } else if (upcomingCodes.contains(code)) {
+            title = 'لا يمكن حذف الحساب (موعد قادم)';
+          } else if (pointsCodes.contains(code)) {
+            title = 'رصيد غير مسترد في المحفظة';
+          }
+
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: AlertDialog(
+              title: Text(
+                title,
+                style: const TextStyle(
+                    fontFamily: 'Tajawal', fontWeight: FontWeight.bold),
+              ),
+              content: Text(
+                msg.isNotEmpty ? msg : 'فشل حذف الحساب، حاول مرة أخرى.',
+                style: const TextStyle(fontFamily: 'Tajawal'),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'حسناً',
+                    style: TextStyle(
+                      fontFamily: 'Tajawal',
+                      color: Color(0xFF0B5345),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
   } catch (e) {
-    _toast('فشل حذف الحساب: $e');
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (_) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            title: const Text(
+              'خطأ غير متوقع',
+              style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.bold),
+            ),
+            content: Text(
+              e.toString(),
+              style: const TextStyle(fontFamily: 'Tajawal'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'حسناً',
+                  style: TextStyle(
+                    fontFamily: 'Tajawal',
+                    color: Color(0xFF0B5345),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
+
 
 
   @override

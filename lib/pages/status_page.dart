@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../services/session.dart';
 import '../services/api_client.dart';
@@ -103,6 +105,7 @@ class _StatusPageState extends State<StatusPage> {
   List<Appointment> _allAppointments = [];
   bool _loading = true;
   String? _error;
+  bool _notClientOrGuest = false;
 
 
   List<Appointment> get _filteredAppointments =>
@@ -118,14 +121,29 @@ class _StatusPageState extends State<StatusPage> {
     setState(() {
       _loading = true;
       _error = null;
+      _notClientOrGuest = false;
     });
 
     try {
       final user = await Session.getUser();
-      if (user == null || !user.isClient) {
-        throw Exception('المستخدم الحالي ليس عميلًا');
-        
-      }
+      
+      if (user == null) {
+      setState(() {
+        _notClientOrGuest = true;
+        _allAppointments = [];
+      });
+      return;
+    }
+
+    // مسجّل لكن مو عميل
+    if (!user.isClient) {
+      setState(() {
+        _notClientOrGuest = true;
+        _allAppointments = [];
+      });
+      return;
+    }
+
 
       final res = await http.post(
         Uri.parse('${ApiClient.base}/get_client_appointments.php'),
@@ -197,7 +215,19 @@ class _StatusPageState extends State<StatusPage> {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
-
+if (_notClientOrGuest) {
+    return const Center(
+      child: Text(
+        'يبدو أنك غير مسجّل دخول كعميل.\nقم بتسجيل الدخول لعرض طلباتك.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontFamily: 'Tajawal',
+          fontSize: 14,
+          color: Colors.grey,
+        ),
+      ),
+    );
+  }
     if (_error != null) {
       return Center(
         child: Text(
@@ -701,6 +731,60 @@ Future<void> _cancelAppointment(int appointmentId) async {
 }
 
 
+Future<void> _openAttachment(Appointment ap) async {
+  // لو ما فيه اسم ملف نطلع
+  if (ap.file.trim().isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('لا يوجد ملف مرفق')),
+    );
+    return;
+  }
+
+  // 1) رابط الملف من السيرفر
+  // عدّلي المسار حسب المكان الفعلي للملفات عندك في الـ PHP
+  final url = '${ApiClient.base}/uploads/${ap.file}';
+
+  // نعرض شاشة تحميل صغيرة
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => const Center(
+      child: CircularProgressIndicator(),
+    ),
+  );
+
+  try {
+    // 2) تحميل الملف من السيرفر
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode != 200) {
+      throw Exception('HTTP ${response.statusCode}');
+    }
+
+    // 3) حفظ الملف في مسار مؤقت داخل الجهاز
+    final dir = await getTemporaryDirectory();
+    final filePath = '${dir.path}/${ap.file}';
+    final file = File(filePath);
+    await file.writeAsBytes(response.bodyBytes);
+
+    // قفل شاشة التحميل
+    Navigator.of(context, rootNavigator: true).pop();
+
+    // 4) فتح الملف بتطبيق النظام (داخل الجهاز)
+    final result = await OpenFile.open(filePath);
+    if (result.type != ResultType.done) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('تعذر فتح الملف: ${result.message}')),
+      );
+    }
+  } catch (e) {
+    // لو صار خطأ نقفل الديالوج لو كان مفتوح
+    Navigator.of(context, rootNavigator: true).pop();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('حدث خطأ أثناء فتح الملف: $e')),
+    );
+  }
+}
+
 
 //navigate to chat screen
 void _openChatWithLawyer(Appointment ap) async {
@@ -745,12 +829,15 @@ void _openFinishedChat(Appointment ap) async {
 }
 
 //navigate to feedback page
-void _openRatingPage(int lawyerId) {
+void _openRatingPage(Appointment ap) {
   Navigator.pushNamed(
     context,
     '/FeedbackPage', //  اسم صفحة التقييم  
     arguments: {
-      'lawyerId': lawyerId,
+      'lawyerId': ap.lawyerId,
+      'appointmentId': ap.id,
+      
+      
     },
   );
 }
@@ -893,53 +980,60 @@ void _openRatingPage(int lawyerId) {
                           ),
                         ],
 
-                        // الملف المرفق
-                        if (ap.file.trim().isNotEmpty) ...[
-                          const SizedBox(height: 24),
-                          const Text(
-                            'الملف المرفق',
-                            style: TextStyle(
-                              fontFamily: 'Tajawal',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F6FA),
-                              borderRadius: BorderRadius.circular(12),
-                              border: const Border(
-                                top: BorderSide(color: Color(0xFFD0D7FF)),
-                                bottom: BorderSide(color: Color(0xFFD0D7FF)),
-                                left: BorderSide(color: Color(0xFFD0D7FF)),
-                                right: BorderSide(color: Color(0xFFD0D7FF)),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.picture_as_pdf,
-                                  color: primaryGreen,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    ap.file,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontFamily: 'Tajawal',
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                        
+// الملف المرفق
+if (ap.file.trim().isNotEmpty) ...[
+  const SizedBox(height: 24),
+  const Text(
+    'الملف المرفق',
+    style: TextStyle(
+      fontFamily: 'Tajawal',
+      fontWeight: FontWeight.w600,
+      fontSize: 14,
+    ),
+  ),
+  const SizedBox(height: 8),
+
+  InkWell(
+    onTap: () => _openAttachment(ap),   // <-- هنا الفتح
+    borderRadius: BorderRadius.circular(12),
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+          horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F6FA),
+        borderRadius: BorderRadius.circular(12),
+        border: const Border(
+          top: BorderSide(color: Color(0xFFD0D7FF)),
+          bottom: BorderSide(color: Color(0xFFD0D7FF)),
+          left: BorderSide(color: Color(0xFFD0D7FF)),
+          right: BorderSide(color: Color(0xFFD0D7FF)),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.picture_as_pdf,
+            color: primaryGreen,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              ap.file,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontFamily: 'Tajawal',
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+],
+
 
                         const SizedBox(height: 24),
 
@@ -990,7 +1084,7 @@ void _openRatingPage(int lawyerId) {
                               child: InkWell(
                                 onTap: () {
                                   Navigator.of(ctx).pop(); // نقفل التفاصيل
-                                  _openRatingPage(ap.lawyerId); // نروح للتقييم
+                                  _openRatingPage(ap); // نروح للتقييم
                                 },
                                 borderRadius: BorderRadius.circular(30),
                                 child: Container(

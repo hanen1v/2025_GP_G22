@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../pages/profile_page.dart';
 import '../services/session.dart';
 import '../models/user.dart';
+import '../services/api_client.dart';
 
 class MorePage extends StatefulWidget {
   const MorePage({super.key});
@@ -14,12 +16,30 @@ class MorePage extends StatefulWidget {
 
 class _MorePageState extends State<MorePage> {
   User? _user;
+  Timer? _walletTimer;
+  
 
   @override
   void initState() {
     super.initState();
     _loadUser();
+    _loadWallet();
+    _startWalletAutoRefresh();
   }
+
+
+void _startWalletAutoRefresh() {
+     _walletTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _loadWallet();
+    });
+  }
+
+  @override
+  void dispose() {
+    _walletTimer?.cancel();
+    super.dispose();
+  }
+
 
   Future<void> _loadUser() async {
     final u = await Session.getUser();
@@ -27,17 +47,34 @@ class _MorePageState extends State<MorePage> {
     setState(() => _user = u);
   }
 
+
+Future<void> _loadWallet() async {
+    final u = await Session.getUser();
+    if (u == null) return;
+
+    try {
+      final refreshed = await ApiClient.refreshUserData(u.id, u.userType);
+
+      await Session.saveUser(refreshed);
+
+      if (!mounted) return;
+      setState(() {
+        _user = refreshed;
+      });
+    } catch (e) {
+      debugPrint("Error refreshing user: $e");
+    }
+  }
+
+
   Future<void> _logout() async {
   try {
-    // مسح الجلسة لو فيه مستخدم محفوظ
     await Session.clear();
   } catch (_) {
-    // لو ما فيه جلسة (ضيف) تجاهل الخطأ
   }
 
   if (!mounted) return;
 
-  // Welcome توجيه  لصفحة 
   Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (route) => false);
   
 }
@@ -47,7 +84,7 @@ class _MorePageState extends State<MorePage> {
   Widget build(BuildContext context) {
     final fullName = _user?.fullName ?? 'ضيف';
     final username = _user?.username ?? '';
-    final points = _user?.points ?? 0; // ← رصيد النقاط
+    final points = _user?.points ?? 0;
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -105,6 +142,7 @@ class _MorePageState extends State<MorePage> {
   );
   if (!mounted) return;
   _loadUser();
+  _loadWallet(); 
 },
 
   ),
@@ -144,7 +182,7 @@ Card(
           ],
         ),
         Text(
-          '${points} نقطة', // ← المتغير اللي فيه نقاط المستخدم
+          '${points} ريال', // ← المتغير اللي فيه نقاط المستخدم
           style: TextStyle(
             fontFamily: 'Tajawal',
             color: const Color.fromARGB(255, 0, 0, 0),

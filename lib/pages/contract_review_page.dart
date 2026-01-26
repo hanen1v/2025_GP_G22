@@ -10,7 +10,7 @@ class ContractReviewPage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(title: const Text('مراجعة عقد')),
         body: const Center(
-          child: Text('صفحة مراجعة العقود  (Placeholder)', style: TextStyle(fontSize: 16)),
+          child: Text('صفحة مراجعة العقود  (قريبا)', style: TextStyle(fontSize: 16)),
         ),
       ),
     );
