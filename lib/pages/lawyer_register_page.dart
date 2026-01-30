@@ -126,8 +126,8 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
 
     try {
       var response = await http.post(
-        //Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
-        Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+        Uri.parse('http://10.71.214.246:8888/mujeer_api/check_availability.php'),
+        //Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
 
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'username': username, 'userType': 'lawyer'}),
@@ -160,8 +160,8 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
 
     try {
       var response = await http.post(
-        //Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
-        Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+        Uri.parse('http://10.71.214.246:8888/mujeer_api/check_availability.php'),
+        //Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'phoneNumber': phone, 'userType': 'lawyer'}),
       );
@@ -193,8 +193,8 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
 
     try {
       var response = await http.post(
-        //Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
-        Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+        Uri.parse('http://10.71.214.246:8888/mujeer_api/check_availability.php'),
+        //Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'licenseNumber': license, 'userType': 'lawyer'}),
       );
@@ -719,8 +719,8 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
 
       print('📤 إرسال بيانات المحامي بعد التحقق الناجح: $requestData');
 
-      //const String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
-      const String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
+      const String baseUrl = 'http://10.71.214.246:8888/mujeer_api';
+      //const String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
 
       final response = await http
           .post(

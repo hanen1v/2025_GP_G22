@@ -11,15 +11,18 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (userName != null && userName!.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               'مرحباً بعودتك $userName! 👋',
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Tajawal',
-                fontSize: 16,
+                fontSize: screenWidth * 0.04,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
@@ -28,9 +31,9 @@ class HomePage extends StatelessWidget {
             duration: const Duration(seconds: 3),
             behavior: SnackBarBehavior.floating,
             margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height * 0.15,
-              left: 20,
-              right: 20,
+              bottom: screenHeight * 0.15,
+              left: screenWidth * 0.05,
+              right: screenWidth * 0.05,
             ),
           ),
         );
@@ -39,56 +42,60 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-
       body: SafeArea(
-  child: Stack(
-    alignment: Alignment.bottomCenter,
-    children: [
-      Positioned(
-        top: 14,
-        right: -20,
-        child: Image.asset(
-          'assets/logo/mujeer_logo.png',
-          width: 185, 
-          height: 75, 
-          fit: BoxFit.contain,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // الشعار
+              Container(
+                alignment: Alignment.centerRight,
+                padding: EdgeInsets.only(
+                  top: screenHeight * 0.02,
+                  right: screenWidth * 0.04,
+                  left: screenWidth * 0.04,
+                ),
+                child: Image.asset(
+                  'assets/logo/mujeer_logo.png',
+                  width: screenWidth * 0.46,
+                  height: screenHeight * 0.1,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              
+              SizedBox(height: screenHeight * 0.02),
+              
+              // المحامين فوق
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+                child: const LawyersStripSimple(),
+              ),
+              
+              SizedBox(height: screenHeight * 0.03),
+              
+              // الخدمات تحت
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+                child: const ServicesSection(),
+              ),
+              
+              SizedBox(height: screenHeight * 0.05),
+            ],
+          ),
         ),
       ),
-
-      Positioned(
-        left: 0,
-        right: 0,
-        top: 115, 
-        bottom: 10,
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: LawyersStripSimple(),
-        ),
-      ),
-
-      Positioned(
-        left: 16,
-        right: 16,
-        bottom: kBottomNavigationBarHeight + 185,
-        child: const ServicesSection(),
-      ),
-      
-    ],
-  ),
-),
-
-
       bottomNavigationBar: const AppBottomNav(currentRoute: '/home'),
-
       floatingActionButton: _buildFab(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
   Widget _buildFab(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    
     return Container(
-      width: 65,
-      height: 65,
+      width: screenWidth * 0.16,
+      height: screenWidth * 0.16,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const LinearGradient(
@@ -111,9 +118,12 @@ class HomePage extends StatelessWidget {
         onPressed: () => Navigator.pushReplacementNamed(context, '/plus'),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
+        child: Icon(
+          Icons.add,
+          color: Colors.white,
+          size: screenWidth * 0.07,
+        ),
       ),
     );
   }
 }
- 

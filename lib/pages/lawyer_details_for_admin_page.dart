@@ -25,7 +25,8 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 
   Future<void> _fetchLawyerDetails() async {
     final url = Uri.parse(
-        'http://10.0.2.2:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
+        //'http://10.0.2.2:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
+        'http://10.71.214.246:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -43,7 +44,8 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 
   Future<void> _fetchRatings() async {
     final url = Uri.parse(
-        'http://10.0.2.2:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
+        //'http://10.0.2.2:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
+        'http://10.71.214.246:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
     try {
       final response = await http.get(url);
 
@@ -62,7 +64,8 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 
   Future<void> _fetchComments() async {
     final url = Uri.parse(
-        'http://10.0.2.2:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
+        //'http://10.0.2.2:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
+        'http://10.71.214.246:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
     try {
       final res = await http.get(url);
       if (res.statusCode == 200) {

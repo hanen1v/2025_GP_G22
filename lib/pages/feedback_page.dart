@@ -26,8 +26,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
   int _rating = 0;
 
-  //static const String _phpPage = 'http://192.168.3.10:8888/mujeer_api/add_feedback.php';
-  static const String _phpPage = 'http://10.0.2.2:8888/mujeer_api/add_feedback.php';
+  static const String _phpPage = 'http://10.71.214.246:8888/mujeer_api/add_feedback.php';
+  //static const String _phpPage = 'http://10.0.2.2:8888/mujeer_api/add_feedback.php';
 
   @override
   void initState() {

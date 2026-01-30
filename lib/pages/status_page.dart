@@ -15,6 +15,7 @@ class Appointment {
   final int id;            // AppointmentID
   final int lawyerId;      // LawyerID
   final String lawyerName; // اسم المحامي
+  final String lawyerNumber;
   final String status;     // Upcoming / Active / Past
   final String date;       // تاريخ جاهز للعرض
   final String time;       // وقت جاهز للعرض
@@ -29,6 +30,7 @@ class Appointment {
     required this.id,
     required this.lawyerId,
     required this.lawyerName,
+    required this.lawyerNumber,
     required this.status,
     required this.date,
     required this.time,
@@ -41,6 +43,7 @@ class Appointment {
   });
 
 
+  // label عربي لنوع الاستشارة
   String get typeLabel {
     switch (consultationType) {
       case 'contract':
@@ -53,7 +56,7 @@ class Appointment {
     }
   }
 
-
+  // رابط الصورة الجاهز للاستخدام
   String get lawyerPhotoUrl {
     if (lawyerPhoto.isEmpty) return '';
     return '${ApiClient.base}/uploads/$lawyerPhoto';
@@ -76,12 +79,13 @@ class Appointment {
       id: int.tryParse('${json['AppointmentID']}') ?? 0,
       lawyerId: int.tryParse('${json['LawyerID']}') ?? 0,
       lawyerName: (json['LawyerName'] ?? '').toString(),
+      lawyerNumber: (json['lawyerNumber'] ?? '').toString(),
       status: (json['Status'] ?? 'Upcoming').toString(),
       date: date,
       time: time,
       requestNo: '${json['AppointmentID']}',
       hasFeedback: '${json['HasFeedback']}' == '1',
-      lawyerPhoto: (json['LawyerPhoto'] ?? '').toString(), 
+      lawyerPhoto: (json['LawyerPhoto'] ?? '').toString(), // <-- مهم
       consultationType: (json['consultation_type'] ?? '').toString(),
       details: (json['details'] ?? '').toString(),
       file: (json['file'] ?? '').toString(),
@@ -134,6 +138,7 @@ class _StatusPageState extends State<StatusPage> {
       return;
     }
 
+    // مسجّل لكن مو عميل
     if (!user.isClient) {
       setState(() {
         _notClientOrGuest = true;
@@ -351,9 +356,10 @@ if (_notClientOrGuest) {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
+        // ===== السطر العلوي: صورة + اسم المحامي + رقم الطلب =====
         Row(
           children: [
+            // صورة المحامي
             ClipRRect(
               borderRadius: BorderRadius.circular(40),
               child: SizedBox(
@@ -377,7 +383,7 @@ if (_notClientOrGuest) {
 
             const SizedBox(width: 10),
 
-
+            // اسم المحامي
             Expanded(
               child: Text(
                 ap.lawyerName,
@@ -393,7 +399,7 @@ if (_notClientOrGuest) {
 
             const SizedBox(width: 8),
 
-
+            // بادج رقم الطلب
             Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -418,19 +424,23 @@ if (_notClientOrGuest) {
         Container(height: 1, color: const Color(0xFFE9EDF2)),
         const SizedBox(height: 12),
 
+// ===== السطر السفلي: يمين (تاريخ + وقت) / يسار (زر) =====
 const SizedBox(height: 8),
 Directionality(
   textDirection: TextDirection.ltr,
   child: Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
+      // زر الإجراء (إلغاء / محادثة / تقييم)
       _buildActionsForStatus(ap, _currentTab),
 
       const Spacer(),
 
+      // التاريخ و الوقت 
       Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          // التاريخ
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -452,6 +462,7 @@ Directionality(
             ],
           ),
           const SizedBox(height: 8),
+          // الوقت
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -513,6 +524,7 @@ Directionality(
         height: 64,
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) {
+          // لو فيه مشكلة بالصورة نرجع للأيقونة
           return Container(
             width: 64,
             height: 64,
@@ -528,6 +540,7 @@ Directionality(
     );
   }
 
+    /// الأزرار (إلغاء / محادثة / قيّم الآن / عرض التفاصيل)
   Widget _buildActionsForStatus(Appointment ap, String statusFilter) {
     const primaryGreen = Color(0xFF0B5345);
 
@@ -539,6 +552,7 @@ Directionality(
         onTap: () => _showDetails(ap),
       );
     } else if (statusFilter == 'Active') {
+      // محادثة
       return _pillButton(
         label: 'محادثة المحامي',
         textColor: primaryGreen,
@@ -546,6 +560,7 @@ Directionality(
         onTap: () => _openChatWithLawyer(ap),
       );
     } else {
+      // Past
 return _pillButton(
   label: 'عرض التفاصيل',
   textColor: primaryGreen,
@@ -557,6 +572,7 @@ return _pillButton(
   }
 
 
+//  (chip)
 Widget _pillButton({
   required String label,
   required Color textColor,
@@ -621,7 +637,9 @@ Widget _pillButton({
 
   // ================== LOGIC ==================
 
+/// إلغاء الموعد من السيرفر + تحديث الليست
 Future<void> _cancelAppointment(int appointmentId) async {
+  // نعرض رسالة تأكيد قبل تنفيذ الإلغاء
   final confirm = await showDialog<bool>(
     context: context,
     builder: (context) {
@@ -674,8 +692,10 @@ Future<void> _cancelAppointment(int appointmentId) async {
     },
   );
 
+  // إذا المستخدم اختار "لا" نوقف
   if (confirm != true) return;
 
+  // نبدأ الإلغاء الآن
   try {
     final res = await http.post(
       Uri.parse('${ApiClient.base}/cancel_appointment.php'),
@@ -689,13 +709,14 @@ Future<void> _cancelAppointment(int appointmentId) async {
         res.statusCode < 300 &&
         body is Map &&
         body['success'] == true) {
+      // نجاح الإلغاء
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('تم إلغاء الموعد بنجاح'),
         ),
       );
 
-      _loadAppointments(); 
+      _loadAppointments(); // تحديث الطلبات
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -714,6 +735,7 @@ Future<void> _cancelAppointment(int appointmentId) async {
 
 
 Future<void> _openAttachment(Appointment ap) async {
+  // لو ما فيه اسم ملف نطلع
   if (ap.file.trim().isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('لا يوجد ملف مرفق')),
@@ -721,9 +743,11 @@ Future<void> _openAttachment(Appointment ap) async {
     return;
   }
 
-  // 1) 
+  // 1) رابط الملف من السيرفر
+  // عدّلي المسار حسب المكان الفعلي للملفات عندك في الـ PHP
   final url = '${ApiClient.base}/uploads/${ap.file}';
 
+  // نعرض شاشة تحميل صغيرة
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -733,21 +757,22 @@ Future<void> _openAttachment(Appointment ap) async {
   );
 
   try {
-    // 2) 
+    // 2) تحميل الملف من السيرفر
     final response = await http.get(Uri.parse(url));
     if (response.statusCode != 200) {
       throw Exception('HTTP ${response.statusCode}');
     }
 
-    // 3) 
+    // 3) حفظ الملف في مسار مؤقت داخل الجهاز
     final dir = await getTemporaryDirectory();
     final filePath = '${dir.path}/${ap.file}';
     final file = File(filePath);
     await file.writeAsBytes(response.bodyBytes);
 
+    // قفل شاشة التحميل
     Navigator.of(context, rootNavigator: true).pop();
 
-    // 4) 
+    // 4) فتح الملف بتطبيق النظام (داخل الجهاز)
     final result = await OpenFile.open(filePath);
     if (result.type != ResultType.done) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -755,6 +780,7 @@ Future<void> _openAttachment(Appointment ap) async {
       );
     }
   } catch (e) {
+    // لو صار خطأ نقفل الديالوج لو كان مفتوح
     Navigator.of(context, rootNavigator: true).pop();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('حدث خطأ أثناء فتح الملف: $e')),
@@ -780,6 +806,9 @@ void _openChatWithLawyer(Appointment ap) async {
       'senderID': 'C${user.id}',         
       'receiverID': 'L${ap.lawyerId}',   
       'appointmentID': ap.id,
+      'appointmentDate' : ap.date,
+      'appointmentTime' : ap.time,
+      'lawyerNumber': ap.lawyerNumber,
     },
   );
 }
@@ -809,7 +838,7 @@ void _openFinishedChat(Appointment ap) async {
 void _openRatingPage(Appointment ap) {
   Navigator.pushNamed(
     context,
-    '/FeedbackPage',   
+    '/FeedbackPage', //  اسم صفحة التقييم  
     arguments: {
       'lawyerId': ap.lawyerId,
       'appointmentId': ap.id,
@@ -821,7 +850,9 @@ void _openRatingPage(Appointment ap) {
 
 
 
+  /// عرض تفاصيل الموعد (تتصرف حسب الحالة: قادمة / منتهية)
   void _showDetails(Appointment ap) {
+    // لو ما فيه لا تفاصيل ولا ملف، نعرض رسالة ونطلع
     if (ap.details.trim().isEmpty && ap.file.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('لا توجد تفاصيل لهذا الموعد')),
@@ -850,6 +881,7 @@ void _openRatingPage(Appointment ap) {
             child: Column(
               children: [
                 const SizedBox(height: 8),
+                // الهاندل الصغير
                 Container(
                   width: 40,
                   height: 4,
@@ -860,6 +892,7 @@ void _openRatingPage(Appointment ap) {
                 ),
                 const SizedBox(height: 12),
 
+                // الهيدر
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -885,12 +918,14 @@ void _openRatingPage(Appointment ap) {
                 ),
                 const Divider(height: 1),
 
+                // المحتوى
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // معلومات بسيطة
                         Row(
                           children: [
                             Expanded(
@@ -916,6 +951,7 @@ void _openRatingPage(Appointment ap) {
                         ),
                         const SizedBox(height: 16),
 
+                        // وصف الحالة
                         if (ap.details.trim().isNotEmpty) ...[
                           const Text(
                             'وصف الحالة',
@@ -951,6 +987,7 @@ void _openRatingPage(Appointment ap) {
                         ],
 
                         
+// الملف المرفق
 if (ap.file.trim().isNotEmpty) ...[
   const SizedBox(height: 24),
   const Text(
@@ -964,7 +1001,7 @@ if (ap.file.trim().isNotEmpty) ...[
   const SizedBox(height: 8),
 
   InkWell(
-    onTap: () => _openAttachment(ap),   
+    onTap: () => _openAttachment(ap),   // <-- هنا الفتح
     borderRadius: BorderRadius.circular(12),
     child: Container(
       padding: const EdgeInsets.symmetric(
@@ -1006,7 +1043,7 @@ if (ap.file.trim().isNotEmpty) ...[
 
                         const SizedBox(height: 24),
 
-                        // (Past)
+                        // ===== لو الموعد منتهي (Past): زر رؤية المحادثة + التقييم =====
                         if (ap.status == 'Past') ...[
                           SizedBox(
                             width: double.infinity,
@@ -1035,6 +1072,7 @@ if (ap.file.trim().isNotEmpty) ...[
                           ),
                           const SizedBox(height: 16),
 
+                          // التقييم
                           if (ap.hasFeedback)
                             const Center(
                               child: Text(
@@ -1051,8 +1089,8 @@ if (ap.file.trim().isNotEmpty) ...[
                             Center(
                               child: InkWell(
                                 onTap: () {
-                                  Navigator.of(ctx).pop(); 
-                                  _openRatingPage(ap); 
+                                  Navigator.of(ctx).pop(); // نقفل التفاصيل
+                                  _openRatingPage(ap); // نروح للتقييم
                                 },
                                 borderRadius: BorderRadius.circular(30),
                                 child: Container(
@@ -1076,13 +1114,13 @@ if (ap.file.trim().isNotEmpty) ...[
                             ),
                         ],
 
-                        // (Upcoming)
+                        // ===== لو الموعد قادم (Upcoming): زر إلغاء الموعد =====
                         if (ap.status == 'Upcoming') ...[
                         Center(
                          child: InkWell(
                           onTap: () async {
-                           Navigator.of(ctx).pop(); 
-                           await _cancelAppointment(ap.id); 
+                           Navigator.of(ctx).pop(); // نقفل التفاصيل
+                           await _cancelAppointment(ap.id); // إلغاء الموعد
                           },
                           borderRadius: BorderRadius.circular(30),
                          child: Container(

@@ -25,7 +25,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
 
   Future<void> _fetchLawyerDetails() async {
     final url = Uri.parse(
-        'http://10.0.2.2:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
+        'http://10.71.214.246:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -43,7 +43,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
 
   Future<void> _fetchRatings() async {
     final url = Uri.parse(
-        'http://10.0.2.2:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
+        'http://10.71.214.246:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
     try {
       final response = await http.get(url);
 
@@ -62,7 +62,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
 
   Future<void> _fetchComments() async {
     final url = Uri.parse(
-        'http://10.0.2.2:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
+        'http://10.71.214.246:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
     try {
       final res = await http.get(url);
       if (res.statusCode == 200) {
@@ -88,130 +88,170 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    
     return Scaffold(
       backgroundColor: Colors.grey[100],
-
-      // ★★ زر + في المنتصف مثل السيرتش ★★
       floatingActionButton: _buildFab(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
-      // ★★ نفس ناف بار السيرتش بالضبط ★★
       bottomNavigationBar: const AppBottomNav(currentRoute: '/search'),
-
+      
       body: isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
-                  color: Color.fromARGB(255, 6, 61, 65)))
+                color: const Color.fromARGB(255, 6, 61, 65),
+                strokeWidth: screenWidth * 0.008,
+              ),
+            )
           : Stack(
               children: [
                 SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 100, 16, 50),
+                  padding: EdgeInsets.fromLTRB(
+                    screenWidth * 0.04,
+                    screenHeight * 0.08,
+                    screenWidth * 0.04,
+                    kBottomNavigationBarHeight + bottomPadding + screenHeight * 0.12, // زدنا المساحة
+                  ),
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(screenWidth * 0.045), // خففنا قليلاً
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(screenWidth * 0.05),
                       boxShadow: const [
                         BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 8,
-                            offset: Offset(0, 3)),
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: Offset(0, 3),
+                        ),
                       ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         CircleAvatar(
-                          radius: 45,
+                          radius: screenWidth * 0.11,
                           backgroundImage: NetworkImage(lawyer!['image']),
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: screenHeight * 0.01),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.star,
-                                color: Colors.amber, size: 22),
-                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: screenWidth * 0.055,
+                            ),
+                            SizedBox(width: screenWidth * 0.01),
                             Text(
                               lawyer!['rating'].toString(),
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: screenWidth * 0.04,
+                              ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 15),
+                        SizedBox(height: screenHeight * 0.015),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 4, horizontal: 14),
+                          padding: EdgeInsets.symmetric(
+                            vertical: screenHeight * 0.005,
+                            horizontal: screenWidth * 0.035,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(screenWidth * 0.025),
                           ),
                           child: Text(
                             'رقم الرخصة: ${lawyer!['license']}',
-                            style:
-                                TextStyle(color: Colors.grey[700], fontSize: 12),
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontSize: screenWidth * 0.03,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: screenHeight * 0.012),
                         Text(
                           lawyer!['name'],
-                          style: const TextStyle(
-                            fontSize: 20,
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.05,
                             fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 6, 61, 65),
+                            color: const Color.fromARGB(255, 6, 61, 65),
                           ),
                         ),
-                        const SizedBox(height: 30),
+                        SizedBox(height: screenHeight * 0.028), // خففنا من 0.03
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            _roundedBox(Icons.work_outline, 'الخبرة',
-                                lawyer!['experience']),
-                            _roundedBox(Icons.school_outlined,
-                                'التخصص الأكاديمي', lawyer!['academic']),
-                            _roundedBox(Icons.workspace_premium_outlined,
-                                'الدرجة العلمية', lawyer!['degree']),
+                            _roundedBox(
+                              Icons.work_outline,
+                              'الخبرة',
+                              lawyer!['experience'],
+                              screenWidth,
+                              screenHeight,
+                            ),
+                            _roundedBox(
+                              Icons.school_outlined,
+                              'التخصص الأكاديمي',
+                              lawyer!['academic'],
+                              screenWidth,
+                              screenHeight,
+                            ),
+                            _roundedBox(
+                              Icons.workspace_premium_outlined,
+                              'الدرجة العلمية',
+                              lawyer!['degree'],
+                              screenWidth,
+                              screenHeight,
+                            ),
                           ],
                         ),
-                        const SizedBox(height: 50),
+                        SizedBox(height: screenHeight * 0.045), // خففنا من 0.05
                         Align(
                           alignment: Alignment.centerRight,
                           child: Text(
                             'التخصصات القانونية:',
                             style: TextStyle(
-                              color: Color.fromARGB(255, 6, 61, 65),
-                              fontSize: 15,
+                              color: const Color.fromARGB(255, 6, 61, 65),
+                              fontSize: screenWidth * 0.038,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: screenHeight * 0.01),
                         Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
+                          spacing: screenWidth * 0.015,
+                          runSpacing: screenHeight * 0.01,
                           children: [
-                            _smallTag(lawyer!['speciality']),
-                            _smallTag(lawyer!['subSpeciality']),
-                            _smallTag(lawyer!['ssubSpeciality']),
+                            _smallTag(lawyer!['speciality'], screenWidth),
+                            _smallTag(lawyer!['subSpeciality'], screenWidth),
+                            _smallTag(lawyer!['ssubSpeciality'], screenWidth),
                           ],
                         ),
-                        const SizedBox(height: 30),
+                        SizedBox(height: screenHeight * 0.028), // خففنا من 0.03
 
                         // تقييمات
                         loadingRatings
-                            ? const CircularProgressIndicator(
-                                color: Color.fromARGB(255, 6, 61, 65))
+                            ? CircularProgressIndicator(
+                                color: const Color.fromARGB(255, 6, 61, 65),
+                                strokeWidth: screenWidth * 0.008,
+                              )
                             : (ratings == null
-                                ? const Text("لا يوجد تقييمات")
-                                : _buildRatingsSection()),
+                                ? Text(
+                                    "لا يوجد تقييمات",
+                                    style: TextStyle(fontSize: screenWidth * 0.04),
+                                  )
+                                : _buildRatingsSection(screenWidth, screenHeight)),
 
-                        const SizedBox(height: 40),
+                        SizedBox(height: screenHeight * 0.035), // خففنا من 0.04
 
-                        _buildCommentsSection(),
-                        const SizedBox(height: 40),
-
+                        _buildCommentsSection(screenWidth, screenHeight),
+                        
+                        // مساحة إضافية قبل الزر
+                        SizedBox(height: screenHeight * 0.035),
+                        
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -221,39 +261,47 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                                 MaterialPageRoute(
                                   builder: (context) => CaseDetailsPage(
                                     lawyerId: widget.lawyerId,
-                                    price:
-                                        (lawyer!['price'] as num).toDouble(),
+                                    price: (lawyer!['price'] as num).toDouble(),
                                   ),
                                 ),
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color.fromARGB(255, 6, 61, 65),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              backgroundColor: const Color.fromARGB(255, 6, 61, 65),
+                              padding: EdgeInsets.symmetric(
+                                vertical: screenHeight * 0.018, // خففنا
+                              ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
+                                borderRadius: BorderRadius.circular(screenWidth * 0.075),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               'حجز موعد',
                               style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold),
+                                color: Colors.white,
+                                fontSize: screenWidth * 0.04,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
+                        
+                        // مساحة إضافية في النهاية لمنع الـ overflow
+                        SizedBox(height: kBottomNavigationBarHeight * 0.6),
                       ],
                     ),
                   ),
                 ),
 
                 Positioned(
-                  top: 45,
-                  right: 16,
+                  top: screenHeight * 0.05,
+                  right: screenWidth * 0.04,
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.grey),
+                    icon: Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.grey,
+                      size: screenWidth * 0.06,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -262,81 +310,115 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
     );
   }
 
-  Widget _buildFab(BuildContext context) => Container(
-        width: 65,
-        height: 65,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-              colors: [Color.fromARGB(255, 6, 61, 65), Color.fromARGB(255, 8, 65, 69)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight),
-          boxShadow: const [
-            BoxShadow(
-                color: Color.fromARGB(255, 31, 79, 83),
-                blurRadius: 10,
-                offset: Offset(0, 4))
-          ],
-        ),
-        child: FloatingActionButton(
-          onPressed: () => Navigator.pushReplacementNamed(context, '/plus'),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: const Icon(Icons.add, color: Colors.white, size: 28),
-        ),
-      );
-
-
-
-  Widget _roundedBox(IconData icon, String title, String value) {
+  Widget _buildFab(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    
     return Container(
-      width: 100,
-      height: 100,
-      padding: const EdgeInsets.all(8),
+      width: screenWidth * 0.16,
+      height: screenWidth * 0.16,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.grey[700], size: 22),
-          const SizedBox(height: 6),
-          Text(title,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center),
-          const SizedBox(height: 4),
-          Text(value,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center),
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [
+            Color.fromARGB(255, 6, 61, 65),
+            Color.fromARGB(255, 8, 65, 69)
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromARGB(255, 31, 79, 83),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
         ],
+      ),
+      child: FloatingActionButton(
+        onPressed: () => Navigator.pushReplacementNamed(context, '/plus'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Icon(
+          Icons.add,
+          color: Colors.white,
+          size: screenWidth * 0.07,
+        ),
       ),
     );
   }
 
-  Widget _smallTag(String text) {
+  Widget _roundedBox(
+  IconData icon,
+  String title,
+  String value,
+  double screenWidth,
+  double screenHeight,
+) {
+  return Container(
+    width: screenWidth * 0.24,
+    padding: EdgeInsets.all(screenWidth * 0.02),
+    decoration: BoxDecoration(
+      color: Colors.grey[200],
+      borderRadius: BorderRadius.circular(screenWidth * 0.045),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min, // ⭐ مهم
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          icon,
+          color: Colors.grey[700],
+          size: screenWidth * 0.05,
+        ),
+        SizedBox(height: screenHeight * 0.005),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: screenWidth * 0.028,
+            color: Colors.grey,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: screenHeight * 0.003),
+        Text(
+          value,
+          textAlign: TextAlign.center,
+          maxLines: 2, // ⭐ حماية إضافية
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: screenWidth * 0.028,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
+  Widget _smallTag(String text, double screenWidth) {
     if (text.isEmpty) return const SizedBox.shrink();
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.022, // خففنا
+        vertical: screenWidth * 0.013, // خففنا
+      ),
       decoration: BoxDecoration(
         color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(screenWidth * 0.045), // خففنا
       ),
       child: Text(
         text,
-        style: const TextStyle(color: Colors.black87, fontSize: 13),
+        style: TextStyle(
+          color: Colors.black87,
+          fontSize: screenWidth * 0.03, // خففنا
+        ),
       ),
     );
   }
 
-  Widget _buildRatingsSection() {
+  Widget _buildRatingsSection(double screenWidth, double screenHeight) {
     final avg = ratings!['average'];
     final count = ratings!['count'];
     final stars = ratings!['stars'];
@@ -353,13 +435,13 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
           child: Text(
             "التقييمات:",
             style: TextStyle(
-              color: Color.fromARGB(255, 6, 61, 65),
-              fontSize: 15,
+              color: const Color.fromARGB(255, 6, 61, 65),
+              fontSize: screenWidth * 0.038,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        const SizedBox(height: 15),
+        SizedBox(height: screenHeight * 0.012), // خففنا
         Align(
           alignment: Alignment.centerRight,
           child: Column(
@@ -367,17 +449,17 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
             children: [
               Text(
                 "$avg / 5",
-                style: const TextStyle(
-                  fontSize: 24,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.055, // خففنا
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.right,
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: screenHeight * 0.003), // خففنا
               Text(
                 "$count من التقييمات",
-                style: const TextStyle(
-                  fontSize: 14,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.032, // خففنا
                   color: Colors.grey,
                 ),
                 textAlign: TextAlign.right,
@@ -385,48 +467,51 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
             ],
           ),
         ),
-        const SizedBox(height: 15),
+        SizedBox(height: screenHeight * 0.012), // خففنا
         Column(
           children: List.generate(5, (i) {
             int star = 5 - i;
             double p = percent(star);
 
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: EdgeInsets.symmetric(vertical: screenHeight * 0.004), // خففنا
               child: Row(
                 children: [
-                  Text("${p.toStringAsFixed(2)}%"),
-                  const SizedBox(width: 6),
+                  Text(
+                    "${p.toStringAsFixed(2)}%",
+                    style: TextStyle(fontSize: screenWidth * 0.03), // خففنا
+                  ),
+                  SizedBox(width: screenWidth * 0.012), // خففنا
                   Expanded(
                     child: Stack(
                       children: [
                         Container(
-                          height: 8,
+                          height: screenHeight * 0.007, // خففنا
                           decoration: BoxDecoration(
                             color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(screenWidth * 0.045),
                           ),
                         ),
                         Container(
-                          height: 8,
+                          height: screenHeight * 0.007, // خففنا
                           width: (p * 2),
                           decoration: BoxDecoration(
                             color: star == 5
                                 ? const Color.fromARGB(255, 6, 61, 65)
                                 : Colors.grey[400],
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(screenWidth * 0.045),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: screenWidth * 0.012), // خففنا
                   Row(
                     children: List.generate(
                       star,
-                      (x) => const Icon(
+                      (x) => Icon(
                         Icons.star,
-                        size: 18,
+                        size: screenWidth * 0.04, // خففنا
                         color: Colors.amber,
                       ),
                     ),
@@ -440,17 +525,21 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
     );
   }
 
-  Widget _buildCommentsSection() {
+  Widget _buildCommentsSection(double screenWidth, double screenHeight) {
     if (loadingComments) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
-          color: Color.fromARGB(255, 6, 61, 65),
+          color: const Color.fromARGB(255, 6, 61, 65),
+          strokeWidth: screenWidth * 0.008,
         ),
       );
     }
 
     if (comments.isEmpty) {
-      return const Text("لا توجد تعليقات");
+      return Text(
+        "لا توجد تعليقات",
+        style: TextStyle(fontSize: screenWidth * 0.04),
+      );
     }
 
     final firstThree = comments.take(3).toList();
@@ -463,13 +552,13 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
           child: Text(
             "آراء العملاء:",
             style: TextStyle(
-              color: Color.fromARGB(255, 6, 61, 65),
-              fontSize: 15,
+              color: const Color.fromARGB(255, 6, 61, 65),
+              fontSize: screenWidth * 0.038,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: screenHeight * 0.018), // خففنا
         Column(
           children: firstThree.map((c) {
             return Column(
@@ -481,29 +570,32 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                     Row(
                       children: List.generate(
                         c["rate"],
-                        (x) =>
-                            const Icon(Icons.star, size: 18, color: Colors.amber),
+                        (x) => Icon(
+                          Icons.star,
+                          size: screenWidth * 0.042, // خففنا
+                          color: Colors.amber,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: screenWidth * 0.018), // خففنا
                     Expanded(
                       child: Text(
                         c["username"],
                         textDirection: TextDirection.rtl,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          fontSize: screenWidth * 0.035, // خففنا
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: screenHeight * 0.005), // خففنا
                 Text(
                   c["review"],
-                  style: const TextStyle(fontSize: 14),
+                  style: TextStyle(fontSize: screenWidth * 0.033), // خففنا
                 ),
-                const Divider(height: 25),
+                Divider(height: screenHeight * 0.022), // خففنا
               ],
             );
           }).toList(),
@@ -512,12 +604,13 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
           Center(
             child: TextButton(
               onPressed: _showAllComments,
-              child: const Text(
+              child: Text(
                 "المزيد",
                 style: TextStyle(
-                    color: Color.fromARGB(255, 6, 61, 65),
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold),
+                  color: const Color.fromARGB(255, 6, 61, 65),
+                  fontSize: screenWidth * 0.038,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -526,22 +619,27 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
   }
 
   void _showAllComments() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(screenWidth * 0.05),
+        ),
       ),
       builder: (_) {
         return Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(screenWidth * 0.05),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: comments.map((c) {
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
+                  padding: EdgeInsets.only(bottom: screenHeight * 0.018), // خففنا
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -551,29 +649,32 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                           Row(
                             children: List.generate(
                               c["rate"],
-                              (x) => const Icon(Icons.star,
-                                  size: 18, color: Colors.amber),
+                              (x) => Icon(
+                                Icons.star,
+                                size: screenWidth * 0.042, // خففنا
+                                color: Colors.amber,
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: screenWidth * 0.018), // خففنا
                           Expanded(
                             child: Text(
                               c["username"],
                               textDirection: TextDirection.rtl,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: screenWidth * 0.035, // خففنا
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: screenHeight * 0.005), // خففنا
                       Text(
                         c["review"],
-                        style: const TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: screenWidth * 0.033), // خففنا
                       ),
-                      const Divider(),
+                      Divider(),
                     ],
                   ),
                 );

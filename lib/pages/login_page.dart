@@ -24,38 +24,37 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // زر العودة
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-              ),
-              const SizedBox(height: 20),
+  child: SingleChildScrollView(
+    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+    padding: const EdgeInsets.all(24.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+        ),
+        const SizedBox(height: 20),
 
-              // العنوان
-              const Text(
-                'تسجيل الدخول',
-                style: TextStyle(
-                  fontFamily: 'Tajawal',
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'أدخل بياناتك للدخول إلى حسابك',
-                style: TextStyle(
-                  fontFamily: 'Tajawal',
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 40),
+        const Text(
+          'تسجيل الدخول',
+          style: TextStyle(
+            fontFamily: 'Tajawal',
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        Text(
+          'أدخل بياناتك للدخول إلى حسابك',
+          style: TextStyle(
+            fontFamily: 'Tajawal',
+            fontSize: 16,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 40),
 
               // حقل اسم المستخدم
               TextField(

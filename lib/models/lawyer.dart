@@ -18,8 +18,8 @@ factory Lawyer.fromJson(Map<String, dynamic> j) {
   final ratingVal= j['Rating'] ?? j['rating'] ?? 0;
 
   
-  const baseUrl = 'http://10.0.2.2:8888/mujeer_api';
-  //  const baseUrl = 'http://192.168.3.10:8888/mujeer_api';
+  //const baseUrl = 'http://10.0.2.2:8888/mujeer_api';
+    const baseUrl = 'http://10.71.214.246:8888/mujeer_api';
   
   final photoUrl = rawPhoto.isEmpty
       ? ''

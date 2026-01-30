@@ -73,8 +73,8 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
 
     try {
       var response = await http.post(
-        //Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
-        Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+        Uri.parse('http://10.71.214.246:8888/mujeer_api/check_availability.php'),
+        //Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
 
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'username': username, 'userType': 'client'}),
@@ -107,8 +107,8 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
 
     try {
       var response = await http.post(
-        //Uri.parse('http://192.168.3.10:8888/mujeer_api/check_availability.php'),
-        Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+        Uri.parse('http://10.71.214.246:8888/mujeer_api/check_availability.php'),
+        //Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
 
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'phoneNumber': phone, 'userType': 'client'}),
@@ -474,8 +474,8 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
 
       print('📤 إرسال بيانات العميل بعد التحقق: $requestData');
 
-      String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
-      //String baseUrl = 'http://192.168.3.10:8888/mujeer_api';
+      //String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
+      String baseUrl = 'http://10.71.214.246:8888/mujeer_api';
 
       var response = await http
           .post(
