@@ -23,7 +23,11 @@ dependencies:
   cloud_firestore: ^6.1.0
   table_calendar: ^3.1.2
   intl: ^0.19.0
+<<<<<<< HEAD
   url_launcher: ^6.1.14 
+=======
+  url_launcher: ^6.3.0
+>>>>>>> b2a90290d60384cd5d52fd4c251d3b4dba688aba
 
 dev_dependencies:
   flutter_test:

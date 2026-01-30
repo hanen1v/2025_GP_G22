@@ -7,6 +7,7 @@ class Appointment {
   final double price;
   final int timeslotId;
   final String lawyerName;
+  final String lawyerNumber;
   final String lawyerPhoto;
   final bool hasFeedback;
 
@@ -20,6 +21,7 @@ class Appointment {
     required this.timeslotId,
     required this.lawyerName,
     required this.lawyerPhoto,
+    required this.lawyerNumber,
     required this.hasFeedback,
   });
 
@@ -33,6 +35,7 @@ class Appointment {
       price: double.tryParse('${json['Price']}') ?? 0,
       timeslotId: int.parse('${json['timeslot_id']}'),
       lawyerName: (json['LawyerName'] ?? '').toString(),
+      lawyerNumber:  (json['lawyerNumber'] ?? '').toString(),
       lawyerPhoto: (json['LawyerPhoto'] ?? '').toString(),
       hasFeedback: (json['HasFeedback'] ?? 0) == 1,
     );
