@@ -42,8 +42,7 @@ class _SelectTimePageState extends State<SelectTimePage> {
 
   Future<void> _fetchTimes() async {
     final url = Uri.parse(
-        //"http://10.0.2.2:8888/mujeer_api/get_timeslots.php?lawyer_id=${widget.lawyerId}");
-        "http://10.71.214.246:8888/mujeer_api/get_timeslots.php?lawyer_id=${widget.lawyerId}");
+        "http://10.0.2.2:8888/mujeer_api/get_timeslots.php?lawyer_id=${widget.lawyerId}");
 
     try {
       final response = await http.get(url);

@@ -207,11 +207,21 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
                 () => _obscureConfirmPassword = !_obscureConfirmPassword,
               ),
               validator: (value) {
-                if (value!.isEmpty) return 'يرجى تأكيد كلمة المرور';
-                if (value != _passwordController.text)
-                  return 'كلمة المرور غير متطابقة';
-                return null;
-              },
+  if (value!.isEmpty) return 'كلمة المرور مطلوبة';
+  if (value.length < 8) 
+    return 'كلمة المرور يجب أن تكون 8 أحرف على الأقل';
+  if (value.contains(' '))
+    return 'كلمة المرور يجب ألا تحتوي على مسافات';
+  if (!RegExp(r'[A-Z]').hasMatch(value))
+    return 'يجب أن تحتوي على حرف كبير واحد على الأقل';
+  if (!RegExp(r'[a-z]').hasMatch(value))
+    return 'يجب أن تحتوي على حرف صغير واحد على الأقل';
+  if (!RegExp(r'[0-9]').hasMatch(value))
+    return 'يجب أن تحتوي على رقم واحد على الأقل';
+  if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value))
+    return 'يجب أن تحتوي على حرف خاص واحد على الأقل (!@#\$%)';
+  return null;
+}
             ),
             const SizedBox(height: 12),
             _buildPhoneField(),
@@ -282,6 +292,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
           keyboardType: TextInputType.phone,
           decoration: InputDecoration(
             labelText: 'رقم الجوال *',
+            hintText: '05XXXXXXXX',
             labelStyle: const TextStyle(fontFamily: 'Tajawal'),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             focusedBorder: const OutlineInputBorder(
@@ -441,7 +452,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
 
     // ننتظر نتيجة التحقق من شاشة OTP
     bool? verified = true;
-    /*  await Navigator.push(
+      await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => OTPScreen(
@@ -449,7 +460,7 @@ class _ClientRegisterPageState extends State<ClientRegisterPage> {
         registrationType: 'client',
       ),
     ),
-  ); */
+  ); 
 
     // بعد العودة من صفحة OTP
     if (verified == true) {

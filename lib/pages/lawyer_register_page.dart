@@ -48,26 +48,24 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   // القوائم المحددة
   final List<String> _genders = ['ذكر', 'أنثى'];
   final List<String> _mainSpecializations = [
-    'عقاري',
-    'قضايا العمالة',
-    'جنائي',
-    'تجاري',
-    'اسري',
-    'عمل',
-    'أحوال شخصية',
-    'اداري',
-    'ملكية فكرية',
+    'القضايا الجنائية',
+    'القضايا الأسرية',
+    'القضايا التجارية',
+    'القضايا العمالية',
+    'القضايا العقارية',
+    'القضايا الإدارية',
+    'القضايا المالية',
+    'قضايا الأحوال الشخصية',
   ];
   final List<String> _subSpecializations = [
-    'عقاري',
-    'قضايا العمالة',
-    'جنائي',
-    'تجاري',
-    'اسري',
-    'عمل',
-    'أحوال شخصية',
-    'اداري',
-    'ملكية فكرية',
+     'القضايا الجنائية',
+    'القضايا الأسرية',
+    'القضايا التجارية',
+    'القضايا العمالية',
+    'القضايا العقارية',
+    'القضايا الإدارية',
+    'القضايا المالية',
+    'قضايا الأحوال الشخصية',
   ];
   final List<String> _educationLevels = [
     'بكالوريوس',
@@ -75,7 +73,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
     'دكتوراه',
     'دبلوم',
   ];
-  final List<String> _academicMajors = ['شريعة', 'قانون'];
+  final List<String> _academicMajors = ['الشريعة', 'القانون'];
 
   bool _isLoading = false;
   bool _isCheckingUsername = false;
@@ -272,12 +270,22 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
               obscureText: _obscurePassword,
               onToggleVisibility: () =>
                   setState(() => _obscurePassword = !_obscurePassword),
-              validator: (value) {
-                if (value!.isEmpty) return 'كلمة المرور مطلوبة';
-                if (value.length < 6)
-                  return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
-                return null;
-              },
+               validator: (value) {
+  if (value!.isEmpty) return 'كلمة المرور مطلوبة';
+  if (value.length < 8) 
+    return 'كلمة المرور يجب أن تكون 8 أحرف على الأقل';
+  if (value.contains(' '))
+    return 'كلمة المرور يجب ألا تحتوي على مسافات';
+  if (!RegExp(r'[A-Z]').hasMatch(value))
+    return 'يجب أن تحتوي على حرف كبير واحد على الأقل';
+  if (!RegExp(r'[a-z]').hasMatch(value))
+    return 'يجب أن تحتوي على حرف صغير واحد على الأقل';
+  if (!RegExp(r'[0-9]').hasMatch(value))
+    return 'يجب أن تحتوي على رقم واحد على الأقل';
+  if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value))
+    return 'يجب أن تحتوي على حرف خاص واحد على الأقل (!@#\$%)';
+  return null;
+}
             ),
             const SizedBox(height: 12),
             _buildPasswordField(
@@ -579,18 +587,23 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
             minimumSize: const Size(double.infinity, 50),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                fileName ?? 'اختر ملف',
-                style: TextStyle(
-                  fontFamily: 'Tajawal',
-                  color: fileName != null ? Colors.black : Colors.grey,
-                ),
-              ),
-              const Icon(Icons.attach_file),
-            ],
-          ),
+  children: [
+    Expanded(
+      child: Text(
+        fileName ?? 'اختر ملف',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontFamily: 'Tajawal',
+          color: fileName != null ? Colors.black : Colors.grey,
+        ),
+      ),
+    ),
+    const SizedBox(width: 8),
+    const Icon(Icons.attach_file),
+  ],
+),
+
         ),
         if (isRequired && fileName == null) ...[
           const SizedBox(height: 4),
@@ -981,6 +994,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
           keyboardType: TextInputType.phone,
           decoration: InputDecoration(
             labelText: 'رقم الجوال *',
+            hintText: '05XXXXXXXX',
             labelStyle: const TextStyle(fontFamily: 'Tajawal'),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             focusedBorder: const OutlineInputBorder(

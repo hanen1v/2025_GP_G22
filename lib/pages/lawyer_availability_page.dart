@@ -20,7 +20,9 @@ class _LawyerAvailabilityPageState extends State<LawyerAvailabilityPage> {
   double _sessionPrice = 0.0;
   final List<DateTime> _selectedDates = [];
   final List<String> _selectedTimes = [];
-  
+  String? _priceMessage;
+  bool _priceSaved = false;
+  bool _isSavingPrice = false;
   bool _loading = false;
   bool _saving = false;
   bool _deleting = false;
@@ -33,64 +35,64 @@ class _LawyerAvailabilityPageState extends State<LawyerAvailabilityPage> {
   
   final Map<String, List<Map<String, dynamic>>> _timeSlots = {
     'صباح': [
-      {'time': '06:00', 'label': '6:00 ص', 'value': '06:00:00'},
-      {'time': '06:20', 'label': '6:20 ص', 'value': '06:20:00'},
-      {'time': '06:40', 'label': '6:40 ص', 'value': '06:40:00'},
-      {'time': '07:00', 'label': '7:00 ص', 'value': '07:00:00'},
-      {'time': '07:20', 'label': '7:20 ص', 'value': '07:20:00'},
-      {'time': '07:40', 'label': '7:40 ص', 'value': '07:40:00'},
-      {'time': '08:00', 'label': '8:00 ص', 'value': '08:00:00'},
-      {'time': '08:20', 'label': '8:20 ص', 'value': '08:20:00'},
-      {'time': '08:40', 'label': '8:40 ص', 'value': '08:40:00'},
-      {'time': '09:00', 'label': '9:00 ص', 'value': '09:00:00'},
-      {'time': '09:20', 'label': '9:20 ص', 'value': '09:20:00'},
-      {'time': '09:40', 'label': '9:40 ص', 'value': '09:40:00'},
-      {'time': '10:00', 'label': '10:00 ص', 'value': '10:00:00'},
-      {'time': '10:20', 'label': '10:20 ص', 'value': '10:20:00'},
-      {'time': '10:40', 'label': '10:40 ص', 'value': '10:40:00'},
-      {'time': '11:00', 'label': '11:00 ص', 'value': '11:00:00'},
-      {'time': '11:20', 'label': '11:20 ص', 'value': '11:20:00'},
-      {'time': '11:40', 'label': '11:40 ص', 'value': '11:40:00'},
+      {'time': '06:00', 'label': '6:00', 'value': '06:00:00'},
+      {'time': '06:20', 'label': '6:20', 'value': '06:20:00'},
+      {'time': '06:40', 'label': '6:40', 'value': '06:40:00'},
+      {'time': '07:00', 'label': '7:00', 'value': '07:00:00'},
+      {'time': '07:20', 'label': '7:20', 'value': '07:20:00'},
+      {'time': '07:40', 'label': '7:40', 'value': '07:40:00'},
+      {'time': '08:00', 'label': '8:00', 'value': '08:00:00'},
+      {'time': '08:20', 'label': '8:20', 'value': '08:20:00'},
+      {'time': '08:40', 'label': '8:40', 'value': '08:40:00'},
+      {'time': '09:00', 'label': '9:00', 'value': '09:00:00'},
+      {'time': '09:20', 'label': '9:20', 'value': '09:20:00'},
+      {'time': '09:40', 'label': '9:40', 'value': '09:40:00'},
+      {'time': '10:00', 'label': '10:00', 'value': '10:00:00'},
+      {'time': '10:20', 'label': '10:20', 'value': '10:20:00'},
+      {'time': '10:40', 'label': '10:40', 'value': '10:40:00'},
+      {'time': '11:00', 'label': '11:00', 'value': '11:00:00'},
+      {'time': '11:20', 'label': '11:20', 'value': '11:20:00'},
+      {'time': '11:40', 'label': '11:40', 'value': '11:40:00'},
     ],
     'ظهر': [
-      {'time': '12:00', 'label': '12:00 م', 'value': '12:00:00'},
-      {'time': '12:20', 'label': '12:20 م', 'value': '12:20:00'},
-      {'time': '12:40', 'label': '12:40 م', 'value': '12:40:00'},
-      {'time': '13:00', 'label': '1:00 م', 'value': '13:00:00'},
-      {'time': '13:20', 'label': '1:20 م', 'value': '13:20:00'},
-      {'time': '13:40', 'label': '1:40 م', 'value': '13:40:00'},
-      {'time': '14:00', 'label': '2:00 م', 'value': '14:00:00'},
-      {'time': '14:20', 'label': '2:20 م', 'value': '14:20:00'},
-      {'time': '14:40', 'label': '2:40 م', 'value': '14:40:00'},
-      {'time': '15:00', 'label': '3:00 م', 'value': '15:00:00'},
-      {'time': '15:20', 'label': '3:20 م', 'value': '15:20:00'},
-      {'time': '15:40', 'label': '3:40 م', 'value': '15:40:00'},
-      {'time': '16:00', 'label': '4:00 م', 'value': '16:00:00'},
-      {'time': '16:20', 'label': '4:20 م', 'value': '16:20:00'},
-      {'time': '16:40', 'label': '4:40 م', 'value': '16:40:00'},
+      {'time': '12:00', 'label': '12:00', 'value': '12:00:00'},
+      {'time': '12:20', 'label': '12:20', 'value': '12:20:00'},
+      {'time': '12:40', 'label': '12:40', 'value': '12:40:00'},
+      {'time': '13:00', 'label': '13:00', 'value': '13:00:00'},
+      {'time': '13:20', 'label': '13:20', 'value': '13:20:00'},
+      {'time': '13:40', 'label': '13:40', 'value': '13:40:00'},
+      {'time': '14:00', 'label': '14:00', 'value': '14:00:00'},
+      {'time': '14:20', 'label': '14:20', 'value': '14:20:00'},
+      {'time': '14:40', 'label': '14:40', 'value': '14:40:00'},
+      {'time': '15:00', 'label': '15:00', 'value': '15:00:00'},
+      {'time': '15:20', 'label': '15:20', 'value': '15:20:00'},
+      {'time': '15:40', 'label': '15:40', 'value': '15:40:00'},
+      {'time': '16:00', 'label': '16:00', 'value': '16:00:00'},
+      {'time': '16:20', 'label': '16:20', 'value': '16:20:00'},
+      {'time': '16:40', 'label': '16:40', 'value': '16:40:00'},
     ],
     'مساء': [
-      {'time': '17:00', 'label': '5:00 م', 'value': '17:00:00'},
-      {'time': '17:20', 'label': '5:20 م', 'value': '17:20:00'},
-      {'time': '17:40', 'label': '5:40 م', 'value': '17:40:00'},
-      {'time': '18:00', 'label': '6:00 م', 'value': '18:00:00'},
-      {'time': '18:20', 'label': '6:20 م', 'value': '18:20:00'},
-      {'time': '18:40', 'label': '6:40 م', 'value': '18:40:00'},
-      {'time': '19:00', 'label': '7:00 م', 'value': '19:00:00'},
-      {'time': '19:20', 'label': '7:20 م', 'value': '19:20:00'},
-      {'time': '19:40', 'label': '7:40 م', 'value': '19:40:00'},
-      {'time': '20:00', 'label': '8:00 م', 'value': '20:00:00'},
-      {'time': '20:20', 'label': '8:20 م', 'value': '20:20:00'},
-      {'time': '20:40', 'label': '8:40 م', 'value': '20:40:00'},
-      {'time': '21:00', 'label': '9:00 م', 'value': '21:00:00'},
-      {'time': '21:20', 'label': '9:20 م', 'value': '21:20:00'},
-      {'time': '21:40', 'label': '9:40 م', 'value': '21:40:00'},
-      {'time': '22:00', 'label': '10:00 م', 'value': '22:00:00'},
-      {'time': '22:20', 'label': '10:20 م', 'value': '22:20:00'},
-      {'time': '22:40', 'label': '10:40 م', 'value': '22:40:00'},
-      {'time': '23:00', 'label': '11:00 م', 'value': '23:00:00'},
-      {'time': '23:20', 'label': '11:20 م', 'value': '23:20:00'},
-      {'time': '23:40', 'label': '11:40 م', 'value': '23:40:00'},
+      {'time': '17:00', 'label': '17:00', 'value': '17:00:00'},
+      {'time': '17:20', 'label': '17:20', 'value': '17:20:00'},
+      {'time': '17:40', 'label': '17:40', 'value': '17:40:00'},
+      {'time': '18:00', 'label': '18:00', 'value': '18:00:00'},
+      {'time': '18:20', 'label': '18:20', 'value': '18:20:00'},
+      {'time': '18:40', 'label': '18:40', 'value': '18:40:00'},
+      {'time': '19:00', 'label': '19:00', 'value': '19:00:00'},
+      {'time': '19:20', 'label': '19:20', 'value': '19:20:00'},
+      {'time': '19:40', 'label': '19:40', 'value': '19:40:00'},
+      {'time': '20:00', 'label': '20:00', 'value': '20:00:00'},
+      {'time': '20:20', 'label': '20:20', 'value': '20:20:00'},
+      {'time': '20:40', 'label': '20:40', 'value': '20:40:00'},
+      {'time': '21:00', 'label': '21:00', 'value': '21:00:00'},
+      {'time': '21:20', 'label': '21:20', 'value': '21:20:00'},
+      {'time': '21:40', 'label': '21:40', 'value': '21:40:00'},
+      {'time': '22:00', 'label': '22:00', 'value': '22:00:00'},
+      {'time': '22:20', 'label': '22:20', 'value': '22:20:00'},
+      {'time': '22:40', 'label': '22:40', 'value': '22:40:00'},
+      {'time': '23:00', 'label': '23:00', 'value': '23:00:00'},
+      {'time': '23:20', 'label': '23:20', 'value': '23:20:00'},
+      {'time': '23:40', 'label': '23:40', 'value': '23:40:00'},
     ],
   };
 
@@ -243,55 +245,129 @@ class _LawyerAvailabilityPageState extends State<LawyerAvailabilityPage> {
   }
 
   Future<void> _saveAvailability() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedDates.isEmpty || _selectedTimes.isEmpty) {
-      _showError('يرجى اختيار يوم واحد على الأقل ووقت واحد على الأقل');
-      return;
-    }
+  if (!_formKey.currentState!.validate()) return;
+  if (_selectedDates.isEmpty || _selectedTimes.isEmpty) {
+    _showError('يرجى اختيار يوم واحد على الأقل ووقت واحد على الأقل');
+    return;
+  }
 
-    setState(() => _saving = true);
+  // تأكيد على السعر
+  if (_sessionPrice <= 0) {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('تنبيه', style: TextStyle(fontFamily: 'Tajawal')),
+        content: const Text(
+          'لم يتم تحديد سعر للجلسة. هل تريد المتابعة بدون تحديد سعر؟',
+          style: TextStyle(fontFamily: 'Tajawal'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('إلغاء', style: TextStyle(fontFamily: 'Tajawal')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('متابعة', style: TextStyle(fontFamily: 'Tajawal')),
+          ),
+        ],
+      ),
+    );
     
-    try {
-      final priceUpdated = await ApiClient.updateLawyerPrice(_user!.id, _sessionPrice);
-      
-      if (!priceUpdated) {
-        _showError('حدث خطأ في تحديث السعر');
-        return;
-      }
-
-      final List<Map<String, dynamic>> availabilityData = [];
-      for (final date in _selectedDates) {
-        for (final time in _selectedTimes) {
-          availabilityData.add({
-            'day': date.toIso8601String().split('T')[0],
-            'time': time,
-          });
-        }
-      }
-
-      final success = await ApiClient.saveAvailability(
-        _user!.id,
-        availabilityData,
-      );
-      
-      if (!mounted) return;
-      
-      if (success) {
-        _showSuccess('تم حفظ الإتاحة بنجاح');
-        await _loadCurrentData();
-      } else {
-        _showError('حدث خطأ أثناء حفظ الأوقات');
-      }
-    } catch (e) {
-      if (!mounted) return;
-      _showError('حدث خطأ في الاتصال: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _saving = false);
-      }
+    if (confirm != true) {
+      return;
     }
   }
 
+  setState(() => _saving = true);
+  
+  try {
+    // ✅ حفظ السعر أولاً (حتى لو كان صفراً)
+    if (_sessionPrice > 0) {
+      await ApiClient.updateLawyerPrice(_user!.id, _sessionPrice);
+    }
+
+    final List<Map<String, dynamic>> availabilityData = [];
+    for (final date in _selectedDates) {
+      for (final time in _selectedTimes) {
+        availabilityData.add({
+          'day': date.toIso8601String().split('T')[0],
+          'time': time,
+        });
+      }
+    }
+
+    final success = await ApiClient.saveAvailability(
+      _user!.id,
+      availabilityData,
+    );
+    
+    if (!mounted) return;
+    
+    if (success) {
+      _showSuccess('تم حفظ الإتاحة والسعر بنجاح');
+      await _loadCurrentData();
+    } else {
+      _showError('حدث خطأ أثناء حفظ الأوقات');
+    }
+  } catch (e) {
+    if (!mounted) return;
+    _showError('حدث خطأ في الاتصال: $e');
+  } finally {
+    if (mounted) {
+      setState(() => _saving = false);
+    }
+  }
+}
+Future<void> _savePriceOnly() async {
+  if (_sessionPrice <= 0) {
+    _showError('يرجى إدخال سعر صحيح');
+    return;
+  }
+
+  setState(() {
+    _isSavingPrice = true;
+    _priceMessage = null;
+    _priceSaved = false;
+  });
+
+  try {
+    final priceUpdated = await ApiClient.updateLawyerPrice(_user!.id, _sessionPrice);
+    
+    if (!mounted) return;
+    
+    if (priceUpdated) {
+      setState(() {
+        _priceMessage = '✅ تم حفظ السعر بنجاح';
+        _priceSaved = true;
+      });
+      
+      // إخفاء الرسالة بعد 3 ثواني
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _priceMessage = null;
+          });
+        }
+      });
+    } else {
+      setState(() {
+        _priceMessage = '❌ فشل في حفظ السعر، حاول مرة أخرى';
+        _priceSaved = false;
+      });
+    }
+  } catch (e) {
+    if (!mounted) return;
+    setState(() {
+      _priceMessage = '❌ خطأ في الاتصال: $e';
+      _priceSaved = false;
+    });
+  } finally {
+    if (mounted) {
+      setState(() => _isSavingPrice = false);
+    }
+  }
+}
   /// حذف الأوقات المحددة مع التحقق المسبق من المحجوزة
   Future<void> _deleteSelectedSlots() async {
     if (_selectedSlotsToDelete.isEmpty) {
@@ -447,68 +523,133 @@ class _LawyerAvailabilityPageState extends State<LawyerAvailabilityPage> {
     );
   }
 
-  Widget _buildPriceField() {
-    return Card(
-      color: Colors.white,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Iconsax.money, color: Color(0xFF0B5345), size: 20),
-                const SizedBox(width: 6),
-                const Text(
-                  'سعر الجلسة',
+ Widget _buildPriceField() {
+  return Card(
+    color: Colors.white,
+    elevation: 2,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Iconsax.money, color: Color(0xFF0B5345)),
+              SizedBox(width: 8),
+              Text(
+                'سعر الجلسة',
+                style: TextStyle(
+                  fontFamily: 'Tajawal',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          TextFormField(
+            keyboardType: TextInputType.number,
+            initialValue: _sessionPrice > 0 ? _sessionPrice.toString() : '',
+            decoration: InputDecoration(
+              hintText: 'أدخل سعر الجلسة بالريال',
+              hintStyle: const TextStyle(fontFamily: 'Tajawal'),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFF0B5345)),
+              ),
+              prefixIcon: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                child: Text(
+                  'ر.س',
                   style: TextStyle(
                     fontFamily: 'Tajawal',
+                    color: Color(0xFF0B5345),
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              keyboardType: TextInputType.number,
-              initialValue: _sessionPrice > 0 ? _sessionPrice.toString() : '',
-              decoration: InputDecoration(
-                hintText: 'أدخل سعر الجلسة بالريال',
-                hintStyle: const TextStyle(fontFamily: 'Tajawal', fontSize: 13),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFF0B5345)),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
               ),
-              style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13),
-              onChanged: (value) {
-                setState(() {
-                  _sessionPrice = double.tryParse(value) ?? 0.0;
-                });
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'يرجى إدخال سعر الجلسة';
-                }
-                if (double.tryParse(value) == null) {
-                  return 'يرجى إدخال سعر صحيح';
-                }
-                return null;
-              },
+            ),
+            style: const TextStyle(fontFamily: 'Tajawal'),
+            onChanged: (value) {
+              setState(() {
+                _sessionPrice = double.tryParse(value) ?? 0.0;
+              });
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          /// زر حفظ السعر (نفس تنسيق حفظ الإتاحة)
+          ElevatedButton(
+            onPressed: _isSavingPrice
+                ? null
+                : () async {
+                    if (_sessionPrice <= 0) {
+                      _showError('يرجى إدخال سعر صحيح');
+                      return;
+                    }
+                    await _savePriceOnly();
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0B5345),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 2,
+              minimumSize: const Size(double.infinity, 50),
+            ),
+            child: _isSavingPrice
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                    ),
+                  )
+                : const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'حفظ السعر',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Tajawal',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(Iconsax.save_2, color: Colors.white),
+                    ],
+                  ),
+          ),
+
+          if (_priceMessage != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _priceMessage!,
+              style: TextStyle(
+                fontFamily: 'Tajawal',
+                fontSize: 12,
+                color: _priceSaved ? Colors.green : Colors.red,
+              ),
             ),
           ],
-        ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildCalendarSection() {
     return Card(

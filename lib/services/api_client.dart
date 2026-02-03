@@ -551,21 +551,37 @@ static Future<void> uploadLicenseUpdateFile({
     body: jsonEncode({'clientId': clientId}),
   );
 
+  print('========== RAW RESPONSE START ==========');
+  print(res.body);
+  print('=========== RAW RESPONSE END ==========');
+
   if (res.statusCode < 200 || res.statusCode >= 300) {
-    throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    throw Exception('HTTP ${res.statusCode}\n${res.body}');
   }
 
-  final body = jsonDecode(res.body);
+  dynamic body;
+  try {
+    body = jsonDecode(res.body);
+  } catch (e) {
+    throw Exception('JSON DECODE ERROR:\n${res.body}');
+  }
+
   if (body is! Map || body['success'] != true) {
-    throw Exception(body['message'] ?? 'فشل تحميل المواعيد');
+    throw Exception('API ERROR:\n${body['message'] ?? body}');
   }
 
   final List list = body['appointments'] ?? [];
-  return list
-      .cast<Map<String, dynamic>>()
-      .map((m) => Appointment.fromJson(m))
-      .toList();
+
+  return list.map((m) {
+    try {
+      return Appointment.fromJson(m);
+    } catch (e) {
+      throw Exception('PARSING ERROR:\n$m\n\n$e');
+    }
+  }).toList();
 }
+
+
 
 
  Future<void> cancelAppointment(int appointmentId) async {
