@@ -251,7 +251,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     // 4. الانتقال لصفحة OTP مع الرقم المحول
-    // bool? verified = true;
+     bool? verified = true;
     //   await Navigator.push(
     //   context,
     //   MaterialPageRoute(
