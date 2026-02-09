@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/services_section.dart';
 import '../widgets/lawyers_strip_simple.dart';
+import 'ai_contract_drafting.dart';
 
 class HomePage extends StatelessWidget {
   final String? userName;
@@ -65,7 +66,6 @@ class HomePage extends StatelessWidget {
               
               SizedBox(height: screenHeight * 0.02),
               
-              // المحامين فوق
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
                 child: const LawyersStripSimple(),
@@ -73,7 +73,6 @@ class HomePage extends StatelessWidget {
               
               SizedBox(height: screenHeight * 0.03),
               
-              // الخدمات تحت
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
                 child: const ServicesSection(),
@@ -115,7 +114,11 @@ class HomePage extends StatelessWidget {
         ],
       ),
       child: FloatingActionButton(
-        onPressed: () => Navigator.pushReplacementNamed(context, '/plus'),
+       onPressed: () {
+  Navigator.pushNamed(context, '/ai-contract');
+},
+
+
         backgroundColor: Colors.transparent,
         elevation: 0,
         child: Icon(

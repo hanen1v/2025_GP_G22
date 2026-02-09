@@ -260,7 +260,9 @@ Card(
         ],
       ),
       child: FloatingActionButton(
-        onPressed: () => Navigator.pushReplacementNamed(context, '/plus'),
+        onPressed: () {
+  Navigator.pushNamed(context, '/ai-contract');
+},
         backgroundColor: Colors.transparent,
         elevation: 0,
         child: const Icon(Icons.add, color: Colors.white, size: 28),
