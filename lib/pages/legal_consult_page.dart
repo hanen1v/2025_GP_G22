@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_bottom_nav.dart';
+import '../models/request_type.dart';
 
 class LegalConsultPage extends StatelessWidget {
   const LegalConsultPage({super.key});
@@ -48,8 +49,14 @@ class LegalConsultPage extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () =>
-                            Navigator.pushNamed(context, "/search"),
+                        onPressed: () {
+  Navigator.pushNamed(
+    context,
+    "/search",
+    arguments: RequestType.consultation,
+  );
+},
+
                         style: ElevatedButton.styleFrom(
                           backgroundColor: mainColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
