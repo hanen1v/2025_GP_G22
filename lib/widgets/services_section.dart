@@ -1,31 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../pages/legal_consult_page.dart';   
+import '../models/request_type.dart';
+
 
 class ServicesSection extends StatelessWidget {
   const ServicesSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    
     final services = [
       {
         'title': 'استشارة قانونية',
         'icon': Iconsax.message_question,
-        'action': () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const LegalConsultPage()),
-          );
-        },
+      'action': () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const LegalConsultPage(),
+      settings: RouteSettings(
+        arguments: RequestType.consultation,
+      ),
+    ),
+  );
+},
+
       },
       {
         'title': 'مراجعة عقد',
         'icon': Iconsax.document_text,
         'action': () {
-          Navigator.pushNamed(context, '/contractReview');
+        Navigator.pushNamed(
+  context,
+  '/search',
+  arguments: RequestType.contractReview,
+);
+
         },
       },
     ];
@@ -35,37 +45,37 @@ class ServicesSection extends StatelessWidget {
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
+          children: const [
             Padding(
-              padding: EdgeInsets.only(bottom: screenWidth * 0.005),
+              padding: EdgeInsets.only(bottom: 2),
               child: Icon(
                 Iconsax.category,
-                color: const Color(0xFF0B5345),
-                size: screenWidth * 0.05, // 5% من العرض
+                color: Color(0xFF0B5345),
+                size: 19,
               ),
             ),
-            SizedBox(width: screenWidth * 0.012),
+            SizedBox(width: 5),
             Text(
               'الخدمات',
               style: TextStyle(
-                fontSize: screenWidth * 0.055, // 5.5% من العرض
+                fontSize: 22,
                 color: Colors.black87,
               ),
             ),
           ],
         ),
 
-        SizedBox(height: screenHeight * 0.02), // 2% من الطول
+        const SizedBox(height: 16),
 
         GridView.builder(
           itemCount: services.length,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            mainAxisSpacing: screenHeight * 0.015, // 1.5% من الطول
-            crossAxisSpacing: screenWidth * 0.03, // 3% من العرض
-            mainAxisExtent: screenHeight * 0.18, // 18% من الطول
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            mainAxisExtent: 140,
           ),
           itemBuilder: (context, i) {
             final s = services[i];
@@ -74,34 +84,32 @@ class ServicesSection extends StatelessWidget {
               elevation: 1.5,
               shadowColor: Colors.black12,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(screenWidth * 0.035),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: InkWell(
-                borderRadius: BorderRadius.circular(screenWidth * 0.035),
+                borderRadius: BorderRadius.circular(14),
                 onTap: s['action'] as VoidCallback,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.03, // 3% من العرض
-                    vertical: screenHeight * 0.02, // 2% من الطول
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         s['icon'] as IconData,
-                        size: screenWidth * 0.09, // 9% من العرض
+                        size: 36,
                         color: const Color(0xFF0B5345),
                       ),
-                      SizedBox(height: screenHeight * 0.01), // 1% من الطول
+                      const SizedBox(height: 8),
                       Flexible(
                         child: Text(
                           s['title'] as String,
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.038, // 3.8% من العرض
+                          style: const TextStyle(
+                            fontSize: 15,
                             height: 1.2,
                           ),
                         ),
