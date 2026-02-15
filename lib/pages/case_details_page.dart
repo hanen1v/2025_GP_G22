@@ -3,15 +3,21 @@ import '../widgets/app_bottom_nav.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:file_picker/file_picker.dart';
 import 'select_time_page.dart';
+import 'payment_page.dart';
+import '../models/request_type.dart'; 
 
 class CaseDetailsPage extends StatefulWidget {
   final int lawyerId;
   final double price;
+  final int timeslotId;
+  final RequestType requestType; 
 
   const CaseDetailsPage({
     super.key,
     required this.lawyerId,
     required this.price,
+    required this.timeslotId,
+    required this.requestType, 
   });
 
   @override
@@ -65,14 +71,17 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'أدخل تفاصيل الطلب:',
-                        style: TextStyle(
+                      Text(
+                        widget.requestType == RequestType.contractReview
+                            ? 'أدخل ملاحظاتك (اختياري):'
+                            : 'أدخل تفاصيل الطلب:',
+                        style: const TextStyle(
                           color: Color.fromARGB(255, 6, 61, 65),
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+
                       const SizedBox(height: 16),
 
                       TextField(
@@ -86,70 +95,74 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
                           ),
-                          errorText:
-                              _detailsError ? 'يجب إدخال تفاصيل الطلب' : null,
+                          errorText: _detailsError
+                              ? 'يجب إدخال تفاصيل الطلب'
+                              : null,
                         ),
                       ),
 
                       const SizedBox(height: 24),
 
                       Row(
-  children: [
-    Icon(Iconsax.attach_circle, color: Colors.grey[700]),
-    const SizedBox(width: 8),
+                        children: [
+                          Icon(Iconsax.attach_circle,
+                              color: Colors.grey[700]),
+                          const SizedBox(width: 8),
 
-    Expanded( // ⭐ الحل هنا
-      child: Text(
-        'إرفاق ملف (اختياري)',
-        style: const TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-        ),
-        overflow: TextOverflow.ellipsis,
-      ),
-    ),
+                          
+                          Text(
+                            widget.requestType == RequestType.contractReview
+                                ? 'إرفاق ملف (إجباري)'
+                                : 'إرفاق ملف (اختياري)',
+                            style: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w500),
+                          ),
 
-    ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.grey[300],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(25),
-        ),
-      ),
-      onPressed: () async {
-        final result = await FilePicker.platform.pickFiles(
-          type: FileType.custom,
-          allowedExtensions: ['pdf', 'jpg', 'png', 'doc', 'docx'],
-        );
+                          const Spacer(),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[300],
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                            ),
+                            onPressed: () async {
+                              final result =
+                                  await FilePicker.platform.pickFiles(
+                                type: FileType.custom,
+                                allowedExtensions: [
+                                  'pdf',
+                                  'jpg',
+                                  'png',
+                                  'doc',
+                                  'docx'
+                                ],
+                              );
 
-        if (result != null && result.files.isNotEmpty) {
-          setState(() {
-            _attachedFile = result.files.single.name;
-          });
-        }
-      },
-      child: const Text(
-        'اختيار ملف',
-        style: TextStyle(color: Colors.black87),
-      ),
-    ),
-  ],
-),
-
+                              if (result != null &&
+                                  result.files.isNotEmpty) {
+                                setState(() {
+                                  _attachedFile =
+                                      result.files.single.name;
+                                });
+                              }
+                            },
+                            child: const Text(
+                              'اختيار ملف',
+                              style: TextStyle(color: Colors.black87),
+                            ),
+                          ),
+                        ],
+                      ),
 
                       if (_attachedFile != null) ...[
-  const SizedBox(height: 8),
-  SizedBox(
-    width: double.infinity,
-    child: Text(
-      _attachedFile!,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: const TextStyle(color: Colors.grey, fontSize: 14),
-    ),
-  ),
-],
-
+                        const SizedBox(height: 8),
+                        Text(
+                          _attachedFile!,
+                          style: const TextStyle(
+                              color: Colors.grey, fontSize: 14),
+                        ),
+                      ],
 
                       const SizedBox(height: 60),
 
@@ -165,29 +178,46 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
                             ),
                           ),
                           onPressed: () {
-                            if (_detailsController.text
-                                .trim()
-                                .isEmpty) {
+                            if (widget.requestType ==
+                                    RequestType.consultation &&
+                                _detailsController.text
+                                    .trim()
+                                    .isEmpty) {
                               setState(() => _detailsError = true);
-                            } else {
-                              setState(() => _detailsError = false);
+                              return;
+                            }
 
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => SelectTimePage(
-                                    lawyerId: widget.lawyerId,
-                                    price: widget.price,
-                                    caseDetails:
-                                        _detailsController.text,
-                                    attachedFileName: _attachedFile,
-                                  ),
+                            if (widget.requestType ==
+                                    RequestType.contractReview &&
+                                _attachedFile == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'يجب إرفاق ملف لمراجعة العقد'),
                                 ),
                               );
+                              return;
                             }
+
+                            setState(() => _detailsError = false);
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PaymentPage(
+                                  lawyerId: widget.lawyerId,
+                                  timeslotId: widget.timeslotId,
+                                  price: widget.price,
+                                  caseDetails:
+                                      _detailsController.text,
+                                  attachedFileName: _attachedFile,
+                                   requestType: widget.requestType,
+                                ),
+                              ),
+                            );
                           },
                           child: const Text(
-                            'تحديد وقت الموعد',
+                            'الانتقال إلى الدفع',
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
