@@ -4,6 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
  import 'lawyer_details_page.dart';
+import '../models/request_type.dart';
 
 
 class SearchPage extends StatefulWidget {
@@ -14,6 +15,8 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
+  late RequestType requestType;
+
   int selectedSort = -1;
   String searchQuery = '';
 
@@ -27,8 +30,7 @@ class _SearchPageState extends State<SearchPage> {
 
 
 Future<void> _fetchLawyers() async {
-  //final url = Uri.parse('http://10.0.2.2:8888/mujeer_api/get_lawyers.php');
-  final url = Uri.parse('http://10.71.214.246:8888/mujeer_api/get_lawyers.php');
+  final url = Uri.parse('http://10.0.2.2:8888/mujeer_api/get_lawyers.php');
   try {
     final response = await http.get(url);
     if (response.statusCode == 200) {
@@ -53,7 +55,6 @@ List<Map<String, dynamic>> lawyers = [];
 
   List<Map<String, dynamic>> filteredLawyers = [];
 
-  //  الفلاتر
   List<String> selectedAcademic = [];
   List<String> selectedDegree = [];
   List<String> selectedSpeciality = [];
@@ -71,16 +72,22 @@ List<Map<String, dynamic>> lawyers = [];
     'قضايا الأحوال الشخصية',
   ];
 
-  @override
-  void initState() {
-    super.initState();
-      _fetchLawyers();
-  
-  }
+@override
+void initState() {
+  super.initState();
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    requestType =
+        ModalRoute.of(context)?.settings.arguments as RequestType? ??
+        RequestType.consultation;
+  });
+
+  _fetchLawyers();
+}
 
 
 
-  //  البحث
+
   void _searchLawyers(String query) {
     setState(() {
       searchQuery = query.trim();
@@ -92,7 +99,6 @@ List<Map<String, dynamic>> lawyers = [];
     });
   }
 
-  //  الفرز
   void _applySorting() {
     setState(() {
       switch (selectedSort) {
@@ -122,7 +128,6 @@ List<Map<String, dynamic>> lawyers = [];
     });
   }
 
-  //   الفلاتر
 
   void _applyFilters() {
   setState(() {
@@ -159,11 +164,12 @@ List<Map<String, dynamic>> lawyers = [];
 
   @override
   Widget build(BuildContext context) {
+  
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: Column(
         children: [
-          //  أعلى الصفحة
           Container(
             decoration: const BoxDecoration(
               color: Colors.white,
@@ -174,7 +180,6 @@ List<Map<String, dynamic>> lawyers = [];
             padding: const EdgeInsets.fromLTRB(16, 50, 16, 16),
             child: Column(
               children: [
-                //   Search bar
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -197,12 +202,10 @@ List<Map<String, dynamic>> lawyers = [];
                 ),
                 const SizedBox(height: 16),
 
-                //  الفلتر والفرز
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      // زر الفلتر
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6),
                         child: GestureDetector(
@@ -224,7 +227,6 @@ List<Map<String, dynamic>> lawyers = [];
                         ),
                       ),
 
-                      // أزرار الفرز
                       ...List.generate(sortOptions.length, (index) {
                         final isSelected = selectedSort == index;
                         return Padding(
@@ -270,7 +272,6 @@ onTap: () {
             ),
           ),
 
-          //  عرض النتائج
           Expanded(
             child: filteredLawyers.isEmpty
                 ? const Center(
@@ -308,13 +309,7 @@ onTap: () {
         ),
       ],
     ),
-      // margin: const EdgeInsets.only(bottom: 16),
-      // padding: const EdgeInsets.all(16),
-      // decoration: BoxDecoration(
-      //   color: Colors.white,
-      //   borderRadius: BorderRadius.circular(12),
-      //   boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))],
-      // ),
+      
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -330,7 +325,13 @@ onTap: () {
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     Row(
                       children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 18),
+                        Icon(
+  Icons.star,
+  color: (lawyer['rating'] == null || lawyer['rating'] == 0)
+      ? Colors.grey
+      : Colors.amber,
+  size: 18,
+),
                         const SizedBox(width: 4),
                         Text(lawyer['rating'].toString(),
                             style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -358,7 +359,7 @@ onTap: () {
       ),
     if (lawyer['speciality'] != null && lawyer['speciality'].toString().isNotEmpty)
       _infoChip(
-        Icons.balance, // ⚖️ رمز العدالة للتخصص الرئيسي
+        Icons.balance,
         lawyer['speciality'],
       ),
   ],
@@ -383,7 +384,11 @@ onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-builder: (context) => LawyerDetailsPage(lawyerId: int.parse(lawyer['id'].toString())),
+builder: (context) => LawyerDetailsPage(
+  lawyerId: int.parse(lawyer['id'].toString()),
+  requestType: requestType,
+),
+
           ),
         );
       },
@@ -402,29 +407,8 @@ builder: (context) => LawyerDetailsPage(lawyerId: int.parse(lawyer['id'].toStrin
         ),
       ),
     ),
-// GestureDetector(
-//   onTap: () {
-//     Navigator.push(
-//       context,
-//       MaterialPageRoute(
-//         builder: (context) => LawyerDetailsPage(
-//           lawyerId: int.parse(lawyer['id'].toString()),
-//         ),
-//       ),
-//     );
-//   },
-//   child: Container(
-//     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-//     decoration: BoxDecoration(
-//       color: const Color.fromARGB(255, 6, 61, 65),
-//       borderRadius: BorderRadius.circular(10),
-//     ),
-//     child: const Text(
-//       'عرض التفاصيل',
-//       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-//     ),
-//   ),
-// ),
+
+
 
   ],
 )
@@ -434,102 +418,7 @@ builder: (context) => LawyerDetailsPage(lawyerId: int.parse(lawyer['id'].toStrin
     );
   }
 
-// Widget _buildLawyerCard(Map<String, dynamic> lawyer) {
-//   return Container(
-//     margin: const EdgeInsets.symmetric(vertical: 8),
-//     padding: const EdgeInsets.all(12),
-//     decoration: BoxDecoration(
-//       color: Colors.white,
-//       borderRadius: BorderRadius.circular(12),
-//       boxShadow: [
-//         BoxShadow(
-//           color: Colors.grey.withOpacity(0.1),
-//           blurRadius: 6,
-//           offset: const Offset(0, 3),
-//         ),
-//       ],
-//     ),
-//     child: Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Row(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             // صورة المحامي
-//             ClipRRect(
-//               borderRadius: BorderRadius.circular(10),
-//               child: Image.network(
-//                 lawyer['image'],
-//                 width: 70,
-//                 height: 70,
-//                 fit: BoxFit.cover,
-//                 errorBuilder: (context, error, stackTrace) => const Icon(
-//                   Icons.person,
-//                   size: 70,
-//                   color: Colors.grey,
-//                 ),
-//               ),
-//             ),
-//             const SizedBox(width: 12),
 
-//             // الاسم والتقييم
-//             Expanded(
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(
-//                     lawyer['name'],
-//                     style: const TextStyle(
-//                       fontSize: 16,
-//                       fontWeight: FontWeight.bold,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 4),
-//                   Row(
-//                     children: [
-//                       const Icon(Icons.star, color: Colors.amber, size: 18),
-//                       const SizedBox(width: 4),
-//                       Text(
-//                         "${lawyer['rating']}",
-//                         style: const TextStyle(fontSize: 14),
-//                       ),
-//                     ],
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-
-//         const SizedBox(height: 10),
-
-        
-//         Row(
-//           mainAxisAlignment: MainAxisAlignment.start,
-//           children: [
-//             _infoChip(Icons.work_outline, lawyer['experience']),      // 🧳 الخبرة
-//             const SizedBox(width: 8),
-//             _infoChip(Icons.balance, lawyer['speciality']),            // ⚖️ التخصص الرئيسي
-//             const SizedBox(width: 8),
-//             _infoChip(Icons.school_outlined, lawyer['academic']),      // 🎓 المؤهل الأكاديمي
-//           ],
-//         ),
-
-//         const SizedBox(height: 10),
-
-//         // السعر
-//         Text(
-//           "السعر: ${lawyer['price']} ريال",
-//           style: const TextStyle(
-//             fontSize: 14,
-//             color: Colors.black87,
-//             fontWeight: FontWeight.w500,
-//           ),
-//         ),
-//       ],
-//     ),
-//   );
-// }
 
 
   Widget _infoChip(IconData icon, String? label) {
@@ -538,15 +427,10 @@ builder: (context) => LawyerDetailsPage(lawyerId: int.parse(lawyer['id'].toStrin
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
      decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(10)), 
-    // padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-    // decoration: BoxDecoration(
-    //   color: const Color(0xFFF9FAFB), // الرمادي الفاتح مثل أول
-    //   borderRadius: BorderRadius.circular(20),
-    //   border: Border.all(color: const Color(0xFFE5E7EB)), // نفس لون الحدود القديم
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: const Color(0xFF374151)), // نفس لون الأيقونة القديمة
+        Icon(icon, size: 18, color: const Color(0xFF374151)), 
         const SizedBox(width: 6),
         Text(
           label,
@@ -577,9 +461,7 @@ builder: (context) => LawyerDetailsPage(lawyerId: int.parse(lawyer['id'].toStrin
           ],
         ),
         child: FloatingActionButton(
-          onPressed: () {
-  Navigator.pushNamed(context, '/ai-contract');
-},
+          onPressed: () => Navigator.pushReplacementNamed(context, '/plus'),
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: const Icon(Icons.add, color: Colors.white, size: 28),
