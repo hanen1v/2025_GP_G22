@@ -3,6 +3,8 @@ import '../services/api_client.dart';
 import '../models/lawyer.dart';
 import 'package:iconsax/iconsax.dart';
 import '../pages/lawyer_details_page.dart';
+import '../models/request_type.dart';
+
 
 class LawyersStripSimple extends StatefulWidget {
   const LawyersStripSimple({super.key, this.onSeeMore});
@@ -14,7 +16,6 @@ class LawyersStripSimple extends StatefulWidget {
 
 class _LawyersStripSimpleState extends State<LawyersStripSimple> {
   late Future<List<Lawyer>> _future;
-  
   @override
   void initState() {
     super.initState();
@@ -23,121 +24,92 @@ class _LawyersStripSimpleState extends State<LawyersStripSimple> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(bottom: screenHeight * 0.003),
-                    child: Icon(
-                      Iconsax.profile_2user,
-                      color: const Color(0xFF0B5345),
-                      size: screenWidth * 0.048,
-                    ),
-                  ),
-                  SizedBox(width: screenWidth * 0.012),
-                  Text(
-                    'محامونا',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.055,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-
-              // زر "شاهد المزيد"
-              TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/search');
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF0B5345),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.02,
-                    vertical: screenHeight * 0.005,
-                  ),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'شاهد الجميع',
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.035,
-                      ),
-                    ),
-                    SizedBox(width: screenWidth * 0.01),
-                    Icon(
-                      Icons.chevron_right,
-                      size: screenWidth * 0.045,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+  children: [
+  
+    Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: const [
+        Padding(
+          padding: EdgeInsets.only(bottom: 2),
+          child: Icon(
+            Iconsax.profile_2user, 
+            color: Color(0xFF0B5345),
+            size: 19,
           ),
+        ),
+        SizedBox(width: 5),
+        Text(
+          'محامونا',
+          style: TextStyle(
+            fontSize: 22,
+            color: Colors.black87,
+          ),
+        ),
+      ],
+    ),
+    const Spacer(),
 
-          SizedBox(height: screenHeight * 0.025),
+  
+    TextButton(
+  onPressed: () {
+    Navigator.pushNamed(context, '/search'); 
+  },
+  style: TextButton.styleFrom(
+    foregroundColor: const Color(0xFF0B5345),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    minimumSize: Size.zero,
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  ),
+  child: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: const [
+      Text('شاهد الجميع'),
+      SizedBox(width: 4),
+      Icon(Icons.chevron_right, size: 18),
+    ],
+  ),
+),
 
+
+  ],
+),
+
+          const SizedBox(height: 20),
           FutureBuilder<List<Lawyer>>(
             future: _future,
             builder: (context, s) {
               if (s.connectionState == ConnectionState.waiting) {
-                return SizedBox(
-                  height: screenHeight * 0.16,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: screenWidth * 0.008,
-                    ),
-                  ),
-                );
+                return const SizedBox(height: 128, child: Center(child: CircularProgressIndicator()));
               }
-              
               if (s.hasError) {
                 return Padding(
-                  padding: EdgeInsets.all(screenWidth * 0.04),
-                  child: Text(
-                    'فشل التحميل: ${s.error}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: screenWidth * 0.04),
-                  ),
+                  padding: const EdgeInsets.all(12),
+                  child: Text('فشل التحميل: ${s.error}', textAlign: TextAlign.center),
                 );
               }
-              
               final list = s.data ?? [];
               if (list.isEmpty) {
-                return Padding(
-                  padding: EdgeInsets.all(screenWidth * 0.04),
-                  child: Text(
-                    'لا يوجد محامون متاحون الآن',
-                    style: TextStyle(fontSize: screenWidth * 0.04),
-                  ),
+                return const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Text('لا يوجد محامون متاحون الآن'),
                 );
               }
-              
               return SizedBox(
-                height: screenHeight * 0.175,
+                height: 140,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   itemCount: list.length,
-                  separatorBuilder: (_, __) => SizedBox(width: screenWidth * 0.04),
+                  separatorBuilder: (_, __) => const SizedBox(width: 16),
                   itemBuilder: (_, i) => _LawyerChip(lawyer: list[i]),
-                  clipBehavior: Clip.none,
-                  physics: const BouncingScrollPhysics(),
+                  clipBehavior: Clip.none,                      
+                  physics: const BouncingScrollPhysics(), 
                 ),
               );
             },
@@ -154,8 +126,6 @@ class _LawyerChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
     final photo = lawyer.photoUrl;
 
     return GestureDetector(
@@ -163,12 +133,16 @@ class _LawyerChip extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => LawyerDetailsPage(lawyerId: lawyer.id),
+            builder: (context) => LawyerDetailsPage(
+  lawyerId: lawyer.id,
+  requestType: RequestType.consultation,
+),
+
           ),
         );
       },
       child: SizedBox(
-        width: screenWidth * 0.25,
+        width: 96,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -176,51 +150,39 @@ class _LawyerChip extends StatelessWidget {
               clipBehavior: Clip.none,
               children: [
                 CircleAvatar(
-                  radius: screenWidth * 0.125,
+                  radius: 50,
                   backgroundColor: const Color(0xFFE8F3F2),
                   backgroundImage: photo.isNotEmpty ? NetworkImage(photo) : null,
                   child: photo.isNotEmpty
                       ? null
-                      : Icon(
-                          Icons.person,
-                          color: const Color(0xFF0B5345),
-                          size: screenWidth * 0.07,
-                        ),
+                      : const Icon(Icons.person, color: Color(0xFF0B5345), size: 28),
                 ),
 
-                // التقييم
+                
                 Positioned(
-                  top: -screenWidth * 0.02,
-                  right: -screenWidth * 0.02,
+                  top: -8,
+                  right: -8,
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.02,
-                      vertical: screenHeight * 0.004,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(screenWidth * 0.035),
-                      boxShadow: const [
-                        BoxShadow(color: Colors.black12, blurRadius: 3),
-                      ],
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 3)],
                     ),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Iconsax.star1,
-                          size: screenWidth * 0.04,
-                          color: lawyer.rating > 0
-                              ? const Color(0xFFFFC107)
-                              : Colors.grey,
+                         Iconsax.star1,
+                         size: 16,
+                         color: lawyer.rating > 0 
+                           ? const Color(0xFFFFC107)   
+                          : Colors.grey,              
                         ),
-                        SizedBox(width: screenWidth * 0.005),
+
+                        const SizedBox(width: 2),
                         Text(
                           lawyer.rating.toStringAsFixed(1),
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.028,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -229,48 +191,39 @@ class _LawyerChip extends StatelessWidget {
 
                 // Approved
                 Positioned(
-                  bottom: -screenWidth * 0.005,
-                  right: screenWidth * 0.01,
+                  bottom: -2,
+                  right: 4,
                   child: Container(
-                    width: screenWidth * 0.045,
-                    height: screenWidth * 0.045,
+                    width: 18,
+                    height: 18,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
-                      boxShadow: const [
-                        BoxShadow(color: Colors.black12, blurRadius: 3),
-                      ],
+                      boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 3)],
                     ),
                     alignment: Alignment.center,
                     child: Container(
-                      width: screenWidth * 0.04,
-                      height: screenWidth * 0.04,
+                      width: 16,
+                      height: 16,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         color: Color(0xFF26C281),
                       ),
-                      child: Icon(
-                        Icons.check,
-                        size: screenWidth * 0.03,
-                        color: Colors.white,
-                      ),
+                      child: const Icon(Icons.check, size: 12, color: Colors.white),
                     ),
                   ),
                 ),
               ],
             ),
 
-            SizedBox(height: screenHeight * 0.025),
+            const SizedBox(height: 20),
 
             Text(
               lawyer.fullName,
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: screenWidth * 0.034,
-                height: 1.2,
-              ),
+              style: const TextStyle(fontSize: 13.5, height: 1.2),
             ),
           ],
         ),
