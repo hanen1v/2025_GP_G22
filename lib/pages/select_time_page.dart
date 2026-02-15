@@ -4,20 +4,22 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../widgets/app_bottom_nav.dart';
 import 'payment_page.dart';
+import 'case_details_page.dart';
+import '../models/request_type.dart';
+
+
 
 class SelectTimePage extends StatefulWidget {
   final int lawyerId;
-  final String caseDetails;
-  final String? attachedFileName;
   final double price;
-
+  final RequestType requestType; 
   const SelectTimePage({
     super.key,
     required this.lawyerId,
-    required this.caseDetails,
-    this.attachedFileName,
     required this.price,
+    required this.requestType, 
   });
+
 
   @override
   State<SelectTimePage> createState() => _SelectTimePageState();
@@ -290,22 +292,24 @@ Text(
                           onPressed: selectedSlot == null
                               ? null
                               : () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PaymentPage(
-                                        lawyerId: widget.lawyerId,
-                                        timeslotId: selectedSlot!,
-                                        price: widget.price,
-                                        caseDetails: widget.caseDetails,
-                                        attachedFileName:
-                                            widget.attachedFileName,
-                                      ),
-                                    ),
-                                  );
+                                Navigator.push(
+  context,
+  MaterialPageRoute(
+builder: (context) => CaseDetailsPage(
+  lawyerId: widget.lawyerId,
+  price: widget.price,
+  timeslotId: selectedSlot!,
+  requestType: widget.requestType, 
+),
+
+
+    settings: RouteSettings(arguments: selectedSlot),
+  ),
+);
+
                                 },
                           child: const Text(
-                            "الانتقال إلى الدفع",
+                            "الانتقال إلى إدخال تفاصيل الطلب",
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
