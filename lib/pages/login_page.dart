@@ -24,37 +24,38 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
-  child: SingleChildScrollView(
-    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-    padding: const EdgeInsets.all(24.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-        ),
-        const SizedBox(height: 20),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // زر العودة
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+              ),
+              const SizedBox(height: 20),
 
-        const Text(
-          'تسجيل الدخول',
-          style: TextStyle(
-            fontFamily: 'Tajawal',
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-
-        Text(
-          'أدخل بياناتك للدخول إلى حسابك',
-          style: TextStyle(
-            fontFamily: 'Tajawal',
-            fontSize: 16,
-            color: Colors.grey,
-          ),
-        ),
-        const SizedBox(height: 40),
+              // العنوان
+              const Text(
+                'تسجيل الدخول',
+                style: TextStyle(
+                  fontFamily: 'Tajawal',
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'أدخل بياناتك للدخول إلى حسابك',
+                style: TextStyle(
+                  fontFamily: 'Tajawal',
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 40),
 
               // حقل اسم المستخدم
               TextField(
@@ -252,20 +253,20 @@ class _LoginPageState extends State<LoginPage> {
 
     // 4. الانتقال لصفحة OTP مع الرقم المحول
     bool? verified = true;
-    //   await Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => OTPScreen(
-    //       phoneNumber: formattedNumber,
-    //     ),
-    //   ),
-    // ); 
+    /* await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OTPScreen(
+          phoneNumber: formattedNumber,
+        ),
+      ),
+    );*/
 
     // 5. معالجة النتيجة
     if (verified == true) {
-      //  تسجيل الجهاز بعد التحقق الناجح فقط إذا كان أدمن
+      // ✅ تسجيل الجهاز بعد التحقق الناجح فقط إذا كان أدمن
       if (user.isAdmin) {
-        await _registerDeviceWithRetry();
+        await _registerDeviceWithRetry(user.id);
       }
       _redirectBasedOnUserType(user);
     } else {
@@ -274,17 +275,17 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // دالة مساعدة لتسجيل الجهاز مع إعادة المحاولة
-  Future<void> _registerDeviceWithRetry() async {
+  Future<void> _registerDeviceWithRetry(int adminId) async {
     try {
       print('🔄 محاولة تسجيل جهاز الأدمن...');
-      await ApiClient.registerAdminDevice();
+      await ApiClient.registerAdminDevice(adminId);
       print('✅ تم تسجيل الجهاز بنجاح');
     } catch (e) {
       print('⚠️ فشل تسجيل الجهاز: $e - إعادة المحاولة...');
       // إعادة المحاولة بعد ثانية
       await Future.delayed(Duration(seconds: 1));
       try {
-        await ApiClient.registerAdminDevice();
+        await ApiClient.registerAdminDevice(adminId);
         print('✅ تم تسجيل الجهاز في المحاولة الثانية');
       } catch (e2) {
         print('❌ فشل تسجيل الجهاز بعد المحاولتين: $e2');
@@ -329,7 +330,7 @@ class _LoginPageState extends State<LoginPage> {
     // التوجيه للصفحة المناسبة حسب نوع المستخدم
     if (user.isAdmin) {
       // تم تسجيل الجهاز بالفعل في _navigateToOTP
-      ApiClient.registerAdminDevice();
+      ApiClient.registerAdminDevice(user.id);
       Navigator.pushReplacementNamed(context, '/requestsManagement');
     } else if (user.isLawyer) {
       // المحامي يروح لصفحة المزيد
