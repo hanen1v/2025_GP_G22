@@ -46,6 +46,7 @@ class LawyerAppointment {
   final String consultationType;
   final String details;
   final String file;
+  final String PhoneNumber;
 
   LawyerAppointment({
     required this.id,
@@ -58,6 +59,7 @@ class LawyerAppointment {
     required this.consultationType,
     required this.details,
     required this.file,
+    required this.PhoneNumber,
   });
 
   /// تحويل القيمة من السيرفر إلى نص عربي
@@ -97,6 +99,7 @@ class LawyerAppointment {
       consultationType: (json['consultation_type'] ?? '').toString(),
       details: (json['details'] ?? '').toString(),
       file: (json['file'] ?? '').toString(),
+      PhoneNumber: (json['PhoneNumber'] ?? '').toString(),
     );
   }
 }
@@ -482,7 +485,7 @@ void _openChatWithClient(LawyerAppointment ap) async {
       'appointmentID': ap.id,
       'appointmentDate' : ap.date,
       'appointmentTime' : ap.time,
-      'lawyerNumber': null,
+      'PhoneNumber': ap.PhoneNumber,
     },
   );
 }
