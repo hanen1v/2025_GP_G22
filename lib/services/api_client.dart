@@ -9,10 +9,11 @@ import 'package:flutter/material.dart';
 
 
 class ApiClient {
-  // 
-  // على Android Emulator نستخدم 10.0.2.2 بدل localhost
-  static const String base = 'http://10.164.73.246:8888/mujeer_api';
- // static const String base = 'http://10.0.2.2:8888/mujeer_api';
+  // مهم:
+  //static const String base = 'http://192.168.3.10:8888/mujeer_api';
+  static const String base = 'http://10.0.2.2:8888/mujeer_api';
+  // على iOS Simulator أو Flutter Web على نفس الجهاز:
+  // static const String base = 'http://localhost:8888/mujeer_api';
 
 
   static const String profileImageBase = "$base/uploads";
@@ -43,8 +44,8 @@ class ApiClient {
         }),
       );
 
-      print(' Response status: ${response.statusCode}');
-      print(' Response body: ${response.body}');
+      print('🔍 Response status: ${response.statusCode}');
+      print('🔍 Response body: ${response.body}');
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final body = jsonDecode(response.body);
@@ -111,7 +112,7 @@ class ApiClient {
 
   
 //send playerID
-  static Future<void> registerAdminDevice() async {
+  static Future<void> registerAdminDevice(int adminId) async {
     final playerId = OneSignal.User.pushSubscription.id;
 
     if (playerId == null || playerId.isEmpty) {
@@ -123,7 +124,7 @@ class ApiClient {
       Uri.parse('$base/register_device.php'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'admin_id': 1,
+        'admin_id': adminId,
         'player_id': playerId,
       }),
     );
@@ -157,16 +158,18 @@ class ApiClient {
       final raw = (m['status'] as String? ?? '').trim().toLowerCase();
       if (raw == 'approved') return 'Approved';
       if (raw == 'rejected') return 'Rejected';
-      return 'Pending'; 
+      return 'Pending'; // أي قيمة غير معروفة نرجّعها Pending
     }
 
     throw Exception('Bad response: $m');
   } catch (e) {
+    // في حالة الشبكة/التايم أوت: رجّع القيمة الحالية الافتراضية
+    // تقدر تغيّرها لـ 'Pending' أو ترمي الاستثناء حسب رغبتك
     return 'Pending';
   }
 }
 
-  // 
+  // ✅ الدالة المصححة
   static Future<User?> getUserByUsername(String username) async {
     try {
       final response = await http.post(
@@ -180,15 +183,15 @@ class ApiClient {
         if (data['success'] == true && data['user'] != null) {
           return User.fromJson(data['user']);
         } else {
-          print(' المستخدم غير موجود: ${data['message']}');
+          print('❌ المستخدم غير موجود: ${data['message']}');
           return null;
         }
       } else {
-        print(' خطأ في السيرفر: ${response.statusCode}');
+        print('❌ خطأ في السيرفر: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print(' فشل في جلب بيانات المستخدم: $e');
+      print('❌ فشل في جلب بيانات المستخدم: $e');
       return null;
     }
   }
@@ -209,17 +212,18 @@ class ApiClient {
       final data = json.decode(response.body);
       return data['success'] == true;
     } else {
-      print(' خطأ في السيرفر: ${response.statusCode}');
+      print('❌ خطأ في السيرفر: ${response.statusCode}');
       return false;
     }
   } catch (e) {
-    print(' فشل في إعادة تعيين كلمة المرور: $e');
+    print('❌ فشل في إعادة تعيين كلمة المرور: $e');
     return false;
   }
 }
 
 
-  
+ 
+ /// تحديث سعر المحامي
 static Future<bool> updateLawyerPrice(int lawyerId, double price) async {
   try {
     final response = await http.post(
@@ -242,8 +246,8 @@ static Future<bool> updateLawyerPrice(int lawyerId, double price) async {
     return false;
   }
 }
-  
 
+/// حفظ الأوقات المتاحة للمحامي
 static Future<bool> saveAvailability(int lawyerId, List<Map<String, dynamic>> availabilityData) async {
   try {
     final response = await http.post(
@@ -267,7 +271,7 @@ static Future<bool> saveAvailability(int lawyerId, List<Map<String, dynamic>> av
   }
 }
 
-  
+/// جلب الأوقات المتاحة الحالية للمحامي
 static Future<Map<String, dynamic>> getCurrentAvailability(int lawyerId) async {
   try {
     final response = await http.post(
@@ -293,7 +297,7 @@ static Future<Map<String, dynamic>> getCurrentAvailability(int lawyerId) async {
   }
 }
 
-  
+/// جلب سعر المحامي الحالي
 static Future<double> getLawyerPrice(int lawyerId) async {
   try {
     final response = await http.post(
@@ -316,7 +320,7 @@ static Future<double> getLawyerPrice(int lawyerId) async {
   }
 }
 
-  
+/// حذف الأوقات المتاحة
 static Future<bool> deleteAvailability(int lawyerId) async {
   try {
     final response = await http.post(
@@ -343,7 +347,7 @@ static Future<User> updateProfile({
   required String userType,   // 'client' | 'lawyer'
   required String username,
   required String phoneNumber,
-  String? newPassword,        
+  String? newPassword,        // اختياري
 }) async {
   final res = await http.post(
     Uri.parse('$base/update_profile.php'),
@@ -373,7 +377,7 @@ static Future<Map<String, dynamic>> deleteAccount({
   required int userId,
   required String userType, // 'client' | 'lawyer'
   required String password,
-  bool force = false,         
+  bool force = false,       // عشان موضوع البوينتس
 }) async {
   final url = Uri.parse('$base/delete_account.php');
 
@@ -405,6 +409,7 @@ static Future<Map<String, dynamic>> deleteAccount({
     throw Exception('Unexpected response format');
   }
 
+  // ما نرمي Exception هنا، نخلي الـ UI يتعامل مع success/code/message
   return body;
 }
 
@@ -436,6 +441,7 @@ static Future<Map<String, dynamic>> deleteAccount({
       throw Exception(jsonBody['message'] ?? 'Upload failed');
     }
 
+    // نرجع اسم الملف اللي حفظناه في الداتابيس
     return jsonBody['fileName']?.toString() ?? '';
   }
 
@@ -468,6 +474,7 @@ static Future<Map<String, dynamic>> requestLicenseUpdate({
   try {
     decoded = jsonDecode(rawText);
   } catch (e) {
+    // هنا لو PHP لسه يرجّع HTML راح تشوفينه في الرسالة
     throw Exception('رد غير صالح من السيرفر: $rawText');
   }
 
@@ -551,37 +558,21 @@ static Future<void> uploadLicenseUpdateFile({
     body: jsonEncode({'clientId': clientId}),
   );
 
-  print('========== RAW RESPONSE START ==========');
-  print(res.body);
-  print('=========== RAW RESPONSE END ==========');
-
   if (res.statusCode < 200 || res.statusCode >= 300) {
-    throw Exception('HTTP ${res.statusCode}\n${res.body}');
+    throw Exception('HTTP ${res.statusCode}: ${res.body}');
   }
 
-  dynamic body;
-  try {
-    body = jsonDecode(res.body);
-  } catch (e) {
-    throw Exception('JSON DECODE ERROR:\n${res.body}');
-  }
-
+  final body = jsonDecode(res.body);
   if (body is! Map || body['success'] != true) {
-    throw Exception('API ERROR:\n${body['message'] ?? body}');
+    throw Exception(body['message'] ?? 'فشل تحميل المواعيد');
   }
 
   final List list = body['appointments'] ?? [];
-
-  return list.map((m) {
-    try {
-      return Appointment.fromJson(m);
-    } catch (e) {
-      throw Exception('PARSING ERROR:\n$m\n\n$e');
-    }
-  }).toList();
+  return list
+      .cast<Map<String, dynamic>>()
+      .map((m) => Appointment.fromJson(m))
+      .toList();
 }
-
-
 
 
  Future<void> cancelAppointment(int appointmentId) async {
@@ -646,10 +637,31 @@ static Future<User> refreshUserData(int userId, String userType) async {
 
   return User.fromJson(body['user']);
 }
-
-
-
-static Future<Map<String, dynamic>> checkBookedSlots(
+static Future<bool> deleteSelectedAvailability(
+  int lawyerId, 
+  List<Map<String, dynamic>> slotsToDelete
+) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$base/lawyer_availability.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'lawyer_id': lawyerId,
+        'slots_to_delete': slotsToDelete,
+        'action': 'delete_selected'
+      }),
+    );
+    
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['success'] == true;
+    }
+    return false;
+  } catch (e) {
+    print('Error deleting selected availability: $e');
+    return false;
+  }
+}static Future<Map<String, dynamic>> checkBookedSlots(
   int lawyerId, 
   List<Map<String, dynamic>> slots
 ) async {
@@ -688,32 +700,5 @@ static Future<Map<String, dynamic>> checkBookedSlots(
       'total_checked': 0
     };
   }
-}
-
-static Future<bool> deleteSelectedAvailability(
-  int lawyerId, 
-  List<Map<String, dynamic>> slotsToDelete
-) async {
-  try {
-    final response = await http.post(
-      Uri.parse('$base/lawyer_availability.php'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'lawyer_id': lawyerId,
-        'slots_to_delete': slotsToDelete,
-        'action': 'delete_selected'
-      }),
-    );
-    
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return data['success'] == true;
-    }
-    return false;
-  } catch (e) {
-    print('Error deleting selected availability: $e');
-    return false;
-  }
-}
-
+}////////////
 }

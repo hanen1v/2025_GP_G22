@@ -35,6 +35,7 @@ $sql = "
         a.DateTime,
         a.Status,
         c.FullName AS ClientName,
+		c.PhoneNumber,
 
         -- نوع الخدمة
         CASE

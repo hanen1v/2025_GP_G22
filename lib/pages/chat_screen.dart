@@ -14,7 +14,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final messageController = TextEditingController(); 
   String? appointmentDate;
   String? appointmentTime;
-  String? lawyerNumber;
+  String? PhoneNumber;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -49,7 +49,7 @@ class _ChatScreenState extends State<ChatScreen> {
         appointmentID = args['appointmentID'];
         appointmentDate = args['appointmentDate']?.toString().replaceAll(';', '');
         appointmentTime = args['appointmentTime']?.toString().replaceAll(';', '');
-        lawyerNumber = args['lawyerNumber'];
+        PhoneNumber = args['PhoneNumber'];
       });
       
       print(' Data received: $appointmentID');
@@ -209,13 +209,13 @@ void _showEndDialog() {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-       if (lawyerNumber != null && senderID != null && senderID!.startsWith('C'))
-        IconButton(
+       if (PhoneNumber != null && senderID != null)
+      IconButton(
         icon: const Icon(Icons.phone, color: Colors.white),
-        tooltip: 'اتصال بالمحامي',
-        onPressed: () => _makePhoneCall(lawyerNumber!),
-      ),
-       ],
+        tooltip: senderID!.startsWith('C') ? 'اتصال بالمحامي' : 'اتصال بالعميل',
+        onPressed: () => _makePhoneCall(PhoneNumber!),
+        ),
+      ],
         title: Column(
           children: [
             const Text('محادثة نشطة', style: TextStyle(color: Colors.white, fontSize: 18)),
