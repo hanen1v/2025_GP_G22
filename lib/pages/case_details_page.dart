@@ -104,56 +104,50 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
                       const SizedBox(height: 24),
 
                       Row(
-                        children: [
-                          Icon(Iconsax.attach_circle,
-                              color: Colors.grey[700]),
-                          const SizedBox(width: 8),
+  children: [
+    Icon(Iconsax.attach_circle, color: Colors.grey[700]),
+    const SizedBox(width: 8),
 
-                          
-                          Text(
-                            widget.requestType == RequestType.contractReview
-                                ? 'إرفاق ملف (إجباري)'
-                                : 'إرفاق ملف (اختياري)',
-                            style: const TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w500),
-                          ),
+    Expanded(
+      child: Text(
+        widget.requestType == RequestType.contractReview
+            ? 'إرفاق ملف (إجباري)'
+            : 'إرفاق ملف (اختياري)',
+        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+    ),
 
-                          const Spacer(),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey[300],
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                            ),
-                            onPressed: () async {
-                              final result =
-                                  await FilePicker.platform.pickFiles(
-                                type: FileType.custom,
-                                allowedExtensions: [
-                                  'pdf',
-                                  'jpg',
-                                  'png',
-                                  'doc',
-                                  'docx'
-                                ],
-                              );
+    const SizedBox(width: 10),
 
-                              if (result != null &&
-                                  result.files.isNotEmpty) {
-                                setState(() {
-                                  _attachedFile =
-                                      result.files.single.name;
-                                });
-                              }
-                            },
-                            child: const Text(
-                              'اختيار ملف',
-                              style: TextStyle(color: Colors.black87),
-                            ),
-                          ),
-                        ],
-                      ),
+    ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.grey[300],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25),
+        ),
+      ),
+      onPressed: () async {
+        final result = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['pdf', 'jpg', 'png', 'doc', 'docx'],
+        );
+
+        if (result != null && result.files.isNotEmpty) {
+          setState(() {
+            _attachedFile = result.files.single.name;
+          });
+        }
+      },
+      child: const Text(
+        'اختيار ملف',
+        style: TextStyle(color: Colors.black87),
+      ),
+    ),
+  ],
+),
+
 
                       if (_attachedFile != null) ...[
                         const SizedBox(height: 8),

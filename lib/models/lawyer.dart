@@ -19,7 +19,7 @@ factory Lawyer.fromJson(Map<String, dynamic> j) {
 
   
   //const baseUrl = 'http://10.0.2.2:8888/mujeer_api';
-    const baseUrl = 'http://10.71.214.246:8888/mujeer_api';
+    const baseUrl = 'http://10.164.73.246:8888/mujeer_api';
   
   final photoUrl = rawPhoto.isEmpty
       ? ''

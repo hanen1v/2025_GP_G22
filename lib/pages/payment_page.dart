@@ -118,7 +118,7 @@ final TextStyle checkboxTextStyle = const TextStyle(
     }
 
     final url =
-        Uri.parse('http://10.0.2.2:8888/mujeer_api/confirm_payment.php');
+        Uri.parse('http://10.164.73.246:8888/mujeer_api/confirm_payment.php');
 
     try {
       final response = await http.post(url, body: {

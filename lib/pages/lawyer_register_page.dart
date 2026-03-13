@@ -7,6 +7,7 @@ import 'otp_screen.dart';
 import '../services/session.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
+import 'package:flutter/gestures.dart';
 
 class LawyerRegisterPage extends StatefulWidget {
   const LawyerRegisterPage({super.key});
@@ -93,6 +94,151 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
     _phoneController.addListener(_checkPhoneAvailability);
     _licenseController.addListener(_checkLicenseAvailability);
   }
+final Color mainColor = const Color(0xFF0B5345);
+
+bool agreeTerms = false;
+bool agreeData = false;
+bool agreeService = false;
+
+bool get allAgreed => agreeTerms && agreeData && agreeService;
+
+String? _policiesError;
+
+final TextStyle checkboxTextStyle = const TextStyle(
+  fontSize: 13,
+  color: Color(0xFF0B5345),
+  fontWeight: FontWeight.w400,
+);
+
+void _showTermsPopup() {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.75,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 12, 10),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'الشروط والأحكام',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(Icons.close, color: mainColor),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: const Text(
+                    '''
+طبيعة الخدمات
+1. يقر المستخدم علمه وموافقته على أن الخدمات المقدمة عبر التطبيق:
+ • هي خدمات استشارية قانونية تهدف إلى التوجيه العام.
+ • تعتمد على المعلومات والمستندات المقدمة من المستخدم.
+2. لا تُعد الاستشارات أو الملاحظات:
+ • ضمانًا لتحقيق نتيجة قانونية أو قضائية معينة.
+ • ولا تشكل تعهدًا بسلامة أي إجراء قانوني أو تعاقدي.
+3. لا تغني هذه الخدمات عن:
+ • التمثيل النظامي أمام الجهات القضائية.
+ • أو الاستعانة بمحامٍ مرخص عند الحاجة لذلك.
+
+مسؤولية المستخدم
+1. يقر المستخدم ويضمن:
+ • صحة واكتمال البيانات والمعلومات المقدمة.
+ • نظامية المستندات والعقود المرفوعة.
+2. يتحمل المستخدم كامل المسؤولية عن:
+ • أي خطأ أو نقص في المعلومات.
+ • أي نتائج تترتب على الاعتماد على الاستشارة.
+
+حدود المسؤولية
+1. لا يتحمل التطبيق أو المستشار أي مسؤولية عن:
+ • أي خسائر غير مباشرة أو تبعية.
+ • فوات أرباح أو فرص تجارية.
+ • أي أضرار ناتجة عن تطبيق الاستشارة.
+2. يقتصر الحد الأعلى للمسؤولية على قيمة الرسوم المدفوعة فقط.
+
+السرية وحماية البيانات
+1. يلتزم التطبيق بالحفاظ على سرية:
+ • جميع بيانات المستخدم.
+ • العقود والمستندات القانونية.
+2. لا يتم الإفصاح عن أي بيانات إلا:
+ • بموافقة المستخدم.
+ • أو بموجب أمر نظامي.
+
+حقوق الملكية الفكرية
+1. جميع التقارير والملاحظات والآراء والاستشارات تعتبر ملكية فكرية للتطبيق أو لمقدّم الخدمة.
+2. يمنح المستخدم حق استعمالها لغرضه الشخصي أو التجاري الخاص فقط.
+3. يمنع نسخها أو إعادة بيعها أو نشرها دون موافقة خطية مسبقة.
+
+الرسوم وسياسة الإلغاء والاسترجاع
+1. تستحق الرسوم كاملة بمجرد بدء تقديم الخدمة.
+2. لا يحق للمستخدم طلب استرجاع المبلغ بعد بدء تنفيذ الخدمة.
+3. يحق للتطبيق رفض تقديم الخدمة إذا كانت مخالفة للأنظمة أو الآداب العامة.
+
+النظام الواجب التطبيق والاختصاص
+1. تخضع هذه الشروط لأنظمة ولوائح المملكة العربية السعودية.
+2. تختص محاكم المملكة بالفصل في أي نزاع ينشأ عن هذه الشروط.
+''',
+                    style: TextStyle(fontSize: 14, height: 1.6),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: mainColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        agreeTerms = true;
+                        _policiesError = null;
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      'أوافق',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
 
   @override
   void dispose() {
@@ -124,7 +270,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
 
     try {
       var response = await http.post(
-        Uri.parse('http://10.71.214.246:8888/mujeer_api/check_availability.php'),
+        Uri.parse('http://10.164.73.246:8888/mujeer_api/check_availability.php'),
         //Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
 
         headers: {'Content-Type': 'application/json'},
@@ -158,7 +304,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
 
     try {
       var response = await http.post(
-        Uri.parse('http://10.71.214.246:8888/mujeer_api/check_availability.php'),
+        Uri.parse('http://10.164.73.246:8888/mujeer_api/check_availability.php'),
         //Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'phoneNumber': phone, 'userType': 'lawyer'}),
@@ -191,7 +337,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
 
     try {
       var response = await http.post(
-        Uri.parse('http://10.71.214.246:8888/mujeer_api/check_availability.php'),
+        Uri.parse('http://10.164.73.246:8888/mujeer_api/check_availability.php'),
         //Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'licenseNumber': license, 'userType': 'lawyer'}),
@@ -235,6 +381,8 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
                     const SizedBox(height: 20),
                     _buildFilesSection(),
                     const SizedBox(height: 32),
+                    _buildPoliciesSection(),   
+const SizedBox(height: 32),
                     _buildRegisterButton(),
                     const SizedBox(height: 40),
                   ],
@@ -467,6 +615,102 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   }
 
   // ========== الدوال المساعدة ==========
+Widget _buildPoliciesSection() {
+  return Card(
+    elevation: 2,
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'الموافقات',
+            style: TextStyle(
+              fontFamily: 'Tajawal',
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0B5345),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          CheckboxListTile(
+            dense: true,
+            value: agreeTerms,
+            onChanged: (v) => setState(() {
+              agreeTerms = v ?? false;
+              _policiesError = null;
+            }),
+            activeColor: mainColor,
+            checkColor: Colors.white,
+            contentPadding: EdgeInsets.zero,
+            title: RichText(
+              text: TextSpan(
+                style: checkboxTextStyle,
+                children: [
+                  const TextSpan(text: 'قرأت وفهمت '),
+                  TextSpan(
+                    text: 'الشروط والأحكام',
+                    style: checkboxTextStyle.copyWith(
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()..onTap = _showTermsPopup,
+                  ),
+                  const TextSpan(text: ' وأوافق عليها'),
+                ],
+              ),
+            ),
+          ),
+
+          CheckboxListTile(
+            dense: true,
+            value: agreeData,
+            onChanged: (v) => setState(() {
+              agreeData = v ?? false;
+              _policiesError = null;
+            }),
+            activeColor: mainColor,
+            checkColor: Colors.white,
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              'أقر بصحة البيانات والمستندات المقدمة.',
+              style: checkboxTextStyle,
+            ),
+          ),
+
+          CheckboxListTile(
+            dense: true,
+            value: agreeService,
+            onChanged: (v) => setState(() {
+              agreeService = v ?? false;
+              _policiesError = null;
+            }),
+            activeColor: mainColor,
+            checkColor: Colors.white,
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              'أفهم أن الخدمة استشارية ولا تضمن نتيجة معينة.',
+              style: checkboxTextStyle,
+            ),
+          ),
+
+          if (_policiesError != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _policiesError!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+                fontFamily: 'Tajawal',
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
+}
 
   Widget _buildSectionTitle(String title) {
     return Text(
@@ -660,6 +904,13 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
 
   //تسجيل المحامي
   Future<void> _registerLawyer() async {
+    if (!allAgreed) {
+  setState(() {
+    _policiesError = 'يجب الموافقة على جميع السياسات للمتابعة';
+  });
+  return;
+}
+
     //التحقق من اليونيكية أولاً
     if (!_isUsernameAvailable || !_isPhoneAvailable || !_isLicenseAvailable) {
       _showError(
@@ -732,7 +983,7 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
 
       print('📤 إرسال بيانات المحامي بعد التحقق الناجح: $requestData');
 
-      const String baseUrl = 'http://10.71.214.246:8888/mujeer_api';
+      const String baseUrl = 'http://10.164.73.246:8888/mujeer_api';
       //const String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
 
       final response = await http

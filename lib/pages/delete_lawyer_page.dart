@@ -16,7 +16,7 @@ class DeleteLawyerPage extends StatefulWidget {
 
 class _DeleteLawyerPageState extends State<DeleteLawyerPage> {
 
-  static const String base = 'http://10.71.214.246:8888/mujeer_api';
+  static const String base = 'http://10.164.73.246:8888/mujeer_api';
   //static const String base = 'http://10.0.2.2:8888/mujeer_api';
   
   static const String getLawyersUrl = '$base/get_lawyers.php';
