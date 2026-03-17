@@ -91,7 +91,9 @@ class LegalConsultPage extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+  Navigator.pushNamed(context, '/ai_consultation');
+},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: mainColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),

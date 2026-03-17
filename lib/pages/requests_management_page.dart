@@ -63,10 +63,11 @@ class _RequestManagementPageState extends State<RequestManagementPage> {
     Navigator.of(context).pushReplacementNamed(splashPageRoute);
   }
 
+  @override//////////
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
       backgroundColor: const Color.fromARGB(255, 9, 44, 36),
       centerTitle: true,
       automaticallyImplyLeading: false,
@@ -74,7 +75,6 @@ class _RequestManagementPageState extends State<RequestManagementPage> {
         'الطلبات',
         style: TextStyle(color: Colors.white),
       ),
-
       actions: [
         TextButton.icon(
           onPressed: _onLogout,
@@ -89,21 +89,27 @@ class _RequestManagementPageState extends State<RequestManagementPage> {
         ),
       ],
     ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _requests.isEmpty
-              ? const Center(child: Text('لا يوجد طلبات'))
-              : ListView.builder(
-                  itemCount: _requests.length,
-                  itemBuilder: (_, i) => RequestCard(
-                    request: _requests[i],
-                    onApprove: _onApprove,
-                    onDecline: _onDecline,
-                  ),
+    body: _loading
+        ? const Center(child: CircularProgressIndicator())
+        : _requests.isEmpty
+            ? const Center(child: Text('لا يوجد طلبات'))
+            : ListView.builder(
+                padding: const EdgeInsets.only(top: 8, bottom: 16),
+                itemCount: _requests.length,
+                itemBuilder: (_, i) => RequestCard(
+                  request: _requests[i],
+                  onApprove: _onApprove,
+                  onDecline: _onDecline,
                 ),
-                bottomNavigationBar: const AdminBottomNav(currentRoute: '/requestsManagement'),
-              );
-             }
+              ),
+    bottomNavigationBar: SafeArea(
+      top: false,
+      child: const AdminBottomNav(
+        currentRoute: '/requestsManagement',
+      ),
+    ),
+  );
+}
           }
 
 class RequestCard extends StatelessWidget {
@@ -139,81 +145,170 @@ class RequestCard extends StatelessWidget {
           .showSnackBar(SnackBar(content: Text('تعذّر فتح الملف: $e')));
     }
   }
+  @override//////////////////
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      elevation: 2.0,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // التفاصيل
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+Widget build(BuildContext context) {
+  return Card(
+    margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+    elevation: 2.0,
+    child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isSmall = constraints.maxWidth < 360;
+
+          if (isSmall) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  request.lawyerName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'رقم الرخصة: ${request.licenseNumber}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF333333),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        _openPDFTemporary(context, request.LicenseFile),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 9, 44, 36),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text('عرض الرخصة'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => onApprove(request),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(
+                            color: Color.fromARGB(255, 9, 44, 36),
+                            width: 2.5,
+                          ),
+                          foregroundColor:
+                              const Color.fromARGB(255, 9, 44, 36),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: const Text('قبول'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => onDecline(request),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(
+                            color: Color.fromARGB(255, 160, 11, 0),
+                            width: 2.5,
+                          ),
+                          foregroundColor:
+                              const Color.fromARGB(255, 160, 11, 0),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: const Text('رفض'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      request.lawyerName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'رقم الرخصة: ${request.licenseNumber}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: 130,
+                      child: ElevatedButton(
+                        onPressed: () =>
+                            _openPDFTemporary(context, request.LicenseFile),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(255, 9, 44, 36),
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('عرض الرخصة'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
                 children: [
-                  Text(request.lawyerName,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text('رقم الرخصة: ${request.licenseNumber}',
-                      style: const TextStyle(
-                          fontSize: 14, color: Color(0xFF333333))),
+                  SizedBox(
+                    width: 100,
+                    child: OutlinedButton(
+                      onPressed: () => onApprove(request),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(
+                          color: Color.fromARGB(255, 9, 44, 36),
+                          width: 2.5,
+                        ),
+                        foregroundColor:
+                            const Color.fromARGB(255, 9, 44, 36),
+                      ),
+                      child: const Text('قبول'),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   SizedBox(
-                    width: 130,
-                    child: ElevatedButton(
-                     onPressed: () => _openPDFTemporary(context, request.LicenseFile),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 9, 44, 36),
-                        foregroundColor: Colors.white,
+                    width: 100,
+                    child: OutlinedButton(
+                      onPressed: () => onDecline(request),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(
+                          color: Color.fromARGB(255, 160, 11, 0),
+                          width: 2.5,
+                        ),
+                        foregroundColor:
+                            const Color.fromARGB(255, 160, 11, 0),
                       ),
-                      child: const Text('عرض الرخصة'),
+                      child: const Text('رفض'),
                     ),
                   ),
                 ],
               ),
-            ),
-
-            // الإجراءات
-            Column(
-              children: [
-                SizedBox(
-                  width: 100,
-                  child: OutlinedButton(
-                    onPressed: () => onApprove(request),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(
-                        color: Color.fromARGB(255, 9, 44, 36),
-                        width: 2.5,
-                      ),
-                      foregroundColor: const Color.fromARGB(255, 9, 44, 36),
-                    ),
-                    child: const Text('قبول'),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: 100,
-                  child: OutlinedButton(
-                    onPressed: () => onDecline(request),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(
-                        color: Color.fromARGB(255, 160, 11, 0),
-                        width: 2.5,
-                      ),
-                      foregroundColor: const Color.fromARGB(255, 160, 11, 0),
-                    ),
-                    child: const Text('رفض'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+            ],
+          );
+        },
       ),
-    );
-  }
+    ),
+  );
+}
 }

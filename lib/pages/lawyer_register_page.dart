@@ -26,8 +26,8 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _licenseController = TextEditingController();
-  final _experienceController = TextEditingController();
-
+  final _startMonthController = TextEditingController();
+  final _startYearController = TextEditingController();
   // للملفات
   String? _licenseFileName;
   String? _profileImageName;
@@ -251,7 +251,8 @@ void _showTermsPopup() {
     _confirmPasswordController.dispose();
     _phoneController.dispose();
     _licenseController.dispose();
-    _experienceController.dispose();
+    _startMonthController.dispose();
+    _startYearController.dispose();
     super.dispose();
   }
 
@@ -472,15 +473,39 @@ const SizedBox(height: 32),
             _buildLicenseField(),
             const SizedBox(height: 12),
             _buildTextFormField(
-              controller: _experienceController,
-              label: 'سنوات الخبرة *',
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value!.isEmpty) return 'سنوات الخبرة مطلوبة';
-                if (int.tryParse(value) == null) return 'يجب إدخال رقم صحيح';
-                return null;
-              },
-            ),
+  controller: _startMonthController,
+  label: 'شهر بداية الممارسة *',
+  keyboardType: TextInputType.number,
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'الرجاء إدخال شهر البداية';
+    }
+    final month = int.tryParse(value);
+    if (month == null || month < 1 || month > 12) {
+      return 'أدخل شهر صحيح من 1 إلى 12';
+    }
+    return null;
+  },
+),
+const SizedBox(height: 12),
+_buildTextFormField(
+  controller: _startYearController,
+  label: 'سنة بداية الممارسة *',
+  keyboardType: TextInputType.number,
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'الرجاء إدخال سنة البداية';
+    }
+    final year = int.tryParse(value);
+    final currentYear = DateTime.now().year;
+    if (year == null || year < 1900 || year > currentYear) {
+      return 'أدخل سنة صحيحة';
+    }
+    return null;
+  },
+),
+const SizedBox(height: 12),
+
             const SizedBox(height: 12),
             _buildDropdown(
               value: _selectedGender,
@@ -972,7 +997,8 @@ Widget _buildPoliciesSection() {
         'password': _passwordController.text,
         'phoneNumber': _phoneController.text.trim(),
         'licenseNumber': _licenseController.text.trim(),
-        'yearsOfExp': int.parse(_experienceController.text),
+        'startMonth': int.parse(_startMonthController.text),
+        'startYear': int.parse(_startYearController.text),
         'gender': _selectedGender,
         'mainSpecialization': _selectedMainSpecialization,
         'fSubSpecialization': _selectedSubSpecialization1 ?? '',
@@ -1185,7 +1211,6 @@ Widget _buildPoliciesSection() {
     );
   }
 
-  @override
   Widget _buildUsernameField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

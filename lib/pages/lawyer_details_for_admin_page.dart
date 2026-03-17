@@ -171,17 +171,37 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
                           ),
                         ),
                         const SizedBox(height: 30),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _roundedBox(Icons.work_outline, 'الخبرة',
-                                lawyer!['experience']),
-                            _roundedBox(Icons.school_outlined,
-                                'التخصص الأكاديمي', lawyer!['academic']),
-                            _roundedBox(Icons.workspace_premium_outlined,
-                                'الدرجة العلمية', lawyer!['degree']),
-                          ],
-                        ),
+                        LayoutBuilder(
+  builder: (context, constraints) {
+    final boxWidth = (constraints.maxWidth - 16) / 3;
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      alignment: WrapAlignment.center,
+      children: [
+        _roundedBox(
+          Icons.work_outline,
+          'الخبرة',
+          lawyer!['experience'],
+          width: boxWidth,
+        ),
+        _roundedBox(
+          Icons.school_outlined,
+          'التخصص الأكاديمي',
+          lawyer!['academic'],
+          width: boxWidth,
+        ),
+        _roundedBox(
+          Icons.workspace_premium_outlined,
+          'الدرجة العلمية',
+          lawyer!['degree'],
+          width: boxWidth,
+        ),
+      ],
+    );
+  },
+),
                         const SizedBox(height: 50),
                         Align(
                           alignment: Alignment.centerRight,
@@ -263,38 +283,46 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 
 
 
-  Widget _roundedBox(IconData icon, String title, String value) {
-    return Container(
-      width: 100,
-      height: 100,
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.grey[700], size: 22),
-          const SizedBox(height: 6),
-          Text(title,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center),
-          const SizedBox(height: 4),
-          Text(value,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center),
-        ],
-      ),
-    );
-  }
+  Widget _roundedBox(IconData icon, String title, String value, {double? width}) {
+  return Container(
+    width: width ?? 100,
+    constraints: const BoxConstraints(minHeight: 110),
+    padding: const EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: Colors.grey[200],
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: Colors.grey[700], size: 22),
+        const SizedBox(height: 6),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+            fontWeight: FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _smallTag(String text) {
     if (text.isEmpty) return const SizedBox.shrink();

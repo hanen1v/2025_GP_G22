@@ -28,6 +28,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'pages/chat_screen.dart';
 import 'pages/past_chat_screen.dart';
 import 'pages/ai_contract_drafting.dart';
+import 'pages/AIConsultationPage.dart';
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
@@ -107,6 +108,7 @@ class MyApp extends StatelessWidget {
         '/ChatScreen': (context) =>  ChatScreen(),
         '/PastChatScreen': (context) =>  PastChatScreen(),
         '/ai-contract': (context) => const AiContractDrafting(),
+        '/ai_consultation': (context) => AIConsultationPage(),
 
 
       },

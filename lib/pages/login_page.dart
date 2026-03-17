@@ -24,7 +24,8 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,15 +253,14 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     // 4. الانتقال لصفحة OTP مع الرقم المحول
-    bool? verified = true;
-    /* await Navigator.push(
+    bool? verified = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => OTPScreen(
           phoneNumber: formattedNumber,
         ),
       ),
-    );*/
+    );
 
     // 5. معالجة النتيجة
     if (verified == true) {
@@ -283,7 +283,7 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       print('⚠️ فشل تسجيل الجهاز: $e - إعادة المحاولة...');
       // إعادة المحاولة بعد ثانية
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       try {
         await ApiClient.registerAdminDevice(adminId);
         print('✅ تم تسجيل الجهاز في المحاولة الثانية');
@@ -342,58 +342,84 @@ class _LoginPageState extends State<LoginPage> {
 
     // عرض رسالة ترحيب أنيقة بعد الانتقال
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      showDialog(
-        context: context,
-        barrierDismissible: true,
-        builder: (context) => AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                user.isAdmin
-                    ? Icons.admin_panel_settings
-                    : user.isLawyer
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (dialogContext) => AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      title: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            user.isAdmin
+                ? Icons.admin_panel_settings
+                : user.isLawyer
                     ? Icons.gavel
                     : Icons.person,
-                color: user.isAdmin ? Color(0xFF8B0000) : Color(0xFF0B5345),
-              ),
-              SizedBox(width: 8),
-              Text(
-                user.isAdmin
-                    ? 'مرحباً أيها المشرف'
-                    : user.isLawyer
-                    ? 'مرحباً أيها المحامي'
-                    : 'مرحباً',
-                style: TextStyle(
-                  fontFamily: 'Tajawal',
-                  color: user.isAdmin ? Color(0xFF8B0000) : Color(0xFF0B5345),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+            color: user.isAdmin
+                ? const Color(0xFF8B0000)
+                : const Color(0xFF0B5345),
+            size: 26,
           ),
-          content: Text(
-            '${user.fullName} - ${_getUserTypeArabic(user.userType)}',
-            style: TextStyle(fontFamily: 'Tajawal', color: Colors.black87),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'حسناً',
-                style: TextStyle(
-                  fontFamily: 'Tajawal',
-                  color: user.isAdmin ? Color(0xFF8B0000) : Color(0xFF0B5345),
-                ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              user.isAdmin
+                  ? 'مرحباً أيها المشرف'
+                  : user.isLawyer
+                      ? 'مرحباً أيها المحامي'
+                      : 'مرحباً',
+              textAlign: TextAlign.right,
+              softWrap: true,
+              style: TextStyle(
+                fontFamily: 'Tajawal',
+                color: user.isAdmin
+                    ? const Color(0xFF8B0000)
+                    : const Color(0xFF0B5345),
+                fontWeight: FontWeight.bold,
+                fontSize: 17,
               ),
             ),
-          ],
+          ),
+        ],
+      ),
+      content: SingleChildScrollView(
+        child: Text(
+          '${user.fullName} - ${_getUserTypeArabic(user.userType)}',
+          textAlign: TextAlign.right,
+          softWrap: true,
+          style: const TextStyle(
+            fontFamily: 'Tajawal',
+            color: Colors.black87,
+            fontSize: 16,
+          ),
         ),
-      );
-    });
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: Text(
+            'حسناً',
+            style: TextStyle(
+              fontFamily: 'Tajawal',
+              color: user.isAdmin
+                  ? const Color(0xFF8B0000)
+                  : const Color(0xFF0B5345),
+              fontSize: 16,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+});
   }
 
   // دالة مساعدة لتحويل نوع المستخدم للعربية

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'recommended_lawyers_page.dart';
 class PreferencesPage extends StatefulWidget {
   final String category;
 
@@ -17,6 +19,8 @@ class _PreferencesPageState extends State<PreferencesPage> {
   String? selectedDegree;
   String? selectedMajor;
   double selectedExperience = 0;
+  bool _isLoading = false;
+
 
   @override
   Widget build(BuildContext context) {
@@ -124,10 +128,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
 
             // زر العرض النهائي
             ElevatedButton(
-              onPressed: () {
-                // هنا يتم الربط مع قاعدة البيانات مستقبلاً بناءً على الاختيارات
-                print("Category: ${widget.category}, Gender: $selectedGender, Degree: $selectedDegree, Experience: $selectedExperience");
-              },
+                onPressed: _isLoading ? null : _sendRecommendationRequest,
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -181,4 +182,57 @@ class _PreferencesPageState extends State<PreferencesPage> {
       child: Text(text, style: TextStyle(color: isActive ? Colors.white : Colors.black54, fontWeight: FontWeight.bold)),
     );
   }
+  Future<void> _sendRecommendationRequest() async {
+
+  if (selectedGender == null || selectedDegree == null || selectedMajor == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("يرجى تعبئة جميع التفضيلات أولاً")),
+    );
+    return;
+  }
+
+  setState(() => _isLoading = true);
+
+  try {
+
+    final url = Uri.parse('http://10.164.73.246:8000/recommend');
+
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "category": widget.category,
+        "preferred_gender": selectedGender,
+        "preferred_degree": selectedDegree,
+        "preferred_major": selectedMajor,
+        "min_experience": selectedExperience.toInt()
+      }),
+    );
+
+    if (response.statusCode == 200) {
+
+      final data = jsonDecode(response.body);
+
+      Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => RecommendedLawyersPage(
+      category: widget.category,
+      lawyers: List<Map<String, dynamic>>.from(data["recommendations"]),
+    ),
+  ),
+);
+
+
+    } else {
+      print("Server error");
+    }
+
+  } catch (e) {
+    print(e);
+  }
+
+  setState(() => _isLoading = false);
+}
+
 }

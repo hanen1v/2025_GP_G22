@@ -24,7 +24,20 @@ $username = $data["username"] ?? "";
 $password = $data["password"] ?? "";
 $phoneNumber = $data["phoneNumber"] ?? "";
 $licenseNumber = $data["licenseNumber"] ?? "";
-$yearsOfExp = $data["yearsOfExp"] ?? "";
+$startMonth = isset($data["startMonth"]) ? (int)$data["startMonth"] : 0;
+$startYear  = isset($data["startYear"]) ? (int)$data["startYear"] : 0;
+
+$currentYear  = (int) date("Y");
+$currentMonth = (int) date("n");
+
+$yearsOfExp = $currentYear - $startYear;
+if ($currentMonth < $startMonth) {
+    $yearsOfExp--;
+}
+
+if ($yearsOfExp < 0) {
+    $yearsOfExp = 0;
+}
 $gender = $data["gender"] ?? "";
 $mainSpecialization = $data["mainSpecialization"] ?? "";
 $educationQualification = $data["educationQualification"] ?? "";
@@ -43,12 +56,22 @@ $license_file_name = "license_" . $username . "_" . time() . ".pdf";
 $photo_file_name = "photo_" . $username . "_" . time() . ".jpg";
 
 // التحقق من الحقول المطلوبة
-$required_fields = ['fullName', 'username', 'password', 'phoneNumber', 'licenseNumber', 'yearsOfExp', 'gender', 'mainSpecialization', 'educationQualification', 'academicMajor'];
+$required_fields = ['fullName', 'username', 'password', 'phoneNumber', 'licenseNumber', 'startMonth', 'startYear', 'gender', 'mainSpecialization', 'educationQualification', 'academicMajor'];
 foreach($required_fields as $field) {
-    if(empty($data[$field])) {
+    if (!isset($data[$field]) || $data[$field] === "") {
         echo json_encode(["success" => false, "message" => "حقل {$field} مطلوب"]);
         exit;
     }
+}
+
+if ($startMonth < 1 || $startMonth > 12) {
+    echo json_encode(["success" => false, "message" => "شهر بداية الممارسة غير صحيح"]);
+    exit;
+}
+
+if ($startYear < 1900 || $startYear > (int)date("Y")) {
+    echo json_encode(["success" => false, "message" => "سنة بداية الممارسة غير صحيحة"]);
+    exit;
 }
 
 // تأكد من نجاح الاتصال بقاعدة البيانات
@@ -63,7 +86,9 @@ $sql = "INSERT INTO lawyer (
     Username, 
     Password, 
     PhoneNumber, 
-    LicenseNumber, 
+    LicenseNumber,
+    StartMonth,
+    StartYear,
     YearsOfExp, 
     Gender, 
     MainSpecialization, 
@@ -75,7 +100,7 @@ $sql = "INSERT INTO lawyer (
     LawyerPhoto, 
     Status, 
     Points
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', 0)";
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', 0)";
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
@@ -84,21 +109,23 @@ if (!$stmt) {
 }
 
 // ⭐ ربط المعاملات مع أنواع البيانات الصحيحة
-$stmt->bind_param("sssssissssssss", 
+$stmt->bind_param("sssssiiissssssss", 
     $fullName, 
     $username, 
-    $hashed_password,  // ⭐ استخدام كلمة المرور المشفرة
+    $hashed_password,
     $phoneNumber, 
-    $licenseNumber, 
+    $licenseNumber,
+    $startMonth,
+    $startYear,
     $yearsOfExp, 
-    $gender_english,  // ⭐ أرسل الجنس بالإنجليزية
+    $gender_english,
     $mainSpecialization, 
     $fSubSpecialization, 
     $sSubSpecialization, 
-    $license_file_name,  // ⭐ اسم ملف الرخصة
+    $license_file_name,
     $educationQualification, 
     $academicMajor, 
-    $photo_file_name   // ⭐ اسم ملف الصورة
+    $photo_file_name
 );
 
 
@@ -166,6 +193,8 @@ if ($stmt->execute()) {
             Username,
             PhoneNumber,
             Points,
+            StartMonth,
+            StartYear,
             YearsOfExp,
             MainSpecialization,
             FSubSpecialization,
@@ -173,7 +202,7 @@ if ($stmt->execute()) {
             EducationQualification,
             AcademicMajor,
             Status,
-            LawyerPhoto
+            LawyerPhoto,
             LicenseNumber
         FROM lawyer
         WHERE LawyerID = $lawyerId
