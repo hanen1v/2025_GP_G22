@@ -243,10 +243,10 @@ final TextStyle checkboxTextStyle = const TextStyle(
 
             
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: const Text(
-                    '''
+  child: SingleChildScrollView(
+    padding: const EdgeInsets.all(20),
+    child: const Text(
+      '''
 طبيعة الخدمات
 1. يقر المستخدم علمه وموافقته على أن الخدمات المقدمة عبر التطبيق:
  • هي خدمات استشارية قانونية تهدف إلى التوجيه العام.
@@ -265,6 +265,7 @@ final TextStyle checkboxTextStyle = const TextStyle(
 2. يتحمل المستخدم كامل المسؤولية عن:
  • أي خطأ أو نقص في المعلومات.
  • أي نتائج تترتب على الاعتماد على الاستشارة.
+3. يلتزم المستخدم بإرفاق العقد أو المستند المطلوب مراجعته وحجز الموعد قبل مدة كافية من تاريخ التوقيع، بما يتيح للمحامي الوقت المناسب لمراجعته.
 
 حدود المسؤولية
 1. لا يتحمل التطبيق أو المستشار أي مسؤولية عن:
@@ -295,10 +296,10 @@ final TextStyle checkboxTextStyle = const TextStyle(
 1. تخضع هذه الشروط لأنظمة ولوائح المملكة العربية السعودية.
 2. تختص محاكم المملكة بالفصل في أي نزاع ينشأ عن هذه الشروط.
 ''',
-                    style: TextStyle(fontSize: 14, height: 1.6),
-                  ),
-                ),
-              ),
+      style: TextStyle(fontSize: 14, height: 1.6),
+    ),
+  ),
+),
 
               
               Padding(
