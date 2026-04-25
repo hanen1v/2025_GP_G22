@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
-
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
+import 'package:file_picker/file_picker.dart';
+import '../pages/file_viewer_page.dart';
+import 'package:open_file/open_file.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 class ChatScreen extends StatefulWidget {
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -273,7 +280,57 @@ class _ChatScreenState extends State<ChatScreen> {
               if (isMe) return const SizedBox();
               return _incomingCallWidget(doc.id);
             }
-            return _bubble(msg['message'], isMe);
+          
+
+if (msg['fileUrl'] != null && msg['fileUrl'].toString().isNotEmpty) {
+  return Align(
+    alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+    child: GestureDetector(
+    onTap: () async {
+  try {
+    final url = msg['fileUrl'];
+    final fileName = msg['fileName'] ?? 'file';
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final bytes = response.bodyBytes;
+
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/$fileName');
+
+      await file.writeAsBytes(bytes);
+
+      await OpenFile.open(file.path);
+    } else {
+      print("Failed to download file");
+    }
+  } catch (e) {
+    print("Error opening file: $e");
+  }
+},
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isMe
+              ? const Color.fromARGB(255, 9, 44, 36)
+              : Colors.grey[300],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          "📎 ${msg['fileName'] ?? 'ملف'}",
+          style: TextStyle(
+            color: isMe ? Colors.white : Colors.black,
+            decoration: TextDecoration.underline,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+return _bubble(msg['message'], isMe);
           },
         );
       },
@@ -313,6 +370,59 @@ class _ChatScreenState extends State<ChatScreen> {
       padding: const EdgeInsets.all(10),
       child: Row(
         children: [
+        
+IconButton(
+  icon: const Icon(Icons.attach_file, color: Color.fromARGB(255, 9, 44, 36)),
+onPressed: () async {
+
+  FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+  if (result != null) {
+    var file = result.files.single;
+
+    print("FILE PICKED: ${file.path}");
+
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('http://10.0.2.2:8888/mujeer_api/upload_file.php'),
+    );
+
+    request.files.add(
+      await http.MultipartFile.fromPath('file', file.path!),
+    );
+
+    var response = await request.send();
+
+    print("STATUS: ${response.statusCode}");
+
+    var resBody = await response.stream.bytesToString();
+    print("RESPONSE: $resBody");
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(resBody);
+
+      if (data['success']) {
+
+        print("UPLOAD SUCCESS");
+
+        _firestore.collection('chats').add({
+          'senderID': senderID,
+          'receiverID': receiverID,
+          'appointmentID': appointmentID,
+          'fileUrl': data['file_url'],
+          'fileName': file.name,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+
+      } else {
+        print("UPLOAD FAILED FROM SERVER");
+      }
+    } else {
+      print("HTTP ERROR");
+    }
+  }
+},
+),
           Expanded(child: TextField(controller: messageController, decoration: InputDecoration(hintText: 'أدخل رسالتك', border: const OutlineInputBorder()))),
           IconButton(icon: const Icon(Icons.send, color: Color.fromARGB(255, 9, 44, 36)), onPressed: () {
             if (messageController.text.trim().isNotEmpty) {
