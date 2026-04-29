@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'pages/home_page.dart';
 import 'pages/search_page.dart';
+import 'pages/plus_page.dart';
 import 'pages/status_page.dart';
 import 'pages/more_page.dart';
 import 'pages/consultation_page.dart';
@@ -20,15 +21,14 @@ import 'pages/identity_verification_page.dart';
 import 'pages/reset_password_page.dart';
 import 'pages/feedback_page.dart';
 import 'pages/thank_you_page.dart';
-//import 'pages/lawyer_profile_page.dart';
-//import 'pages/lawyer_update_license_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'pages/chat_screen.dart';
 import 'pages/past_chat_screen.dart';
-import 'pages/ai_contract_drafting.dart';
 import 'pages/AIConsultationPage.dart';
+import 'pages/call_manager.dart';
+
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
@@ -50,6 +50,7 @@ void main() async {
 OneSignal.Debug.setLogLevel(OSLogLevel.verbose); 
 OneSignal.initialize('52e7af05-5276-4ccd-9715-1cb9820f4361');
 OneSignal.Notifications.requestPermission(true);
+await CallManager().initAgora('0f4c50df40744feebfded2d3a3208c61');
 runApp(const MyApp());
 
   }
@@ -92,6 +93,7 @@ class MyApp extends StatelessWidget {
         '/lawyer_register': (context) => const LawyerRegisterPage(),
         '/client_register': (context) => const ClientRegisterPage(),
         '/search': (context) => const SearchPage(),
+        '/plus': (context) => const PlusPage(),
         '/status': (context) => const StatusPage(),
         '/more': (context) => const MorePage(),
         '/consultation': (context) => const ConsultationPage(),
@@ -107,8 +109,7 @@ class MyApp extends StatelessWidget {
         '/thankYouPage': (context) => const ThankYouPage(),
         '/ChatScreen': (context) =>  ChatScreen(),
         '/PastChatScreen': (context) =>  PastChatScreen(),
-        '/ai-contract': (context) => const AiContractDrafting(),
-        '/ai_consultation': (context) => AIConsultationPage(),
+        '/AIConsultationPage': (context) =>  AIConsultationPage(),
 
 
       },
