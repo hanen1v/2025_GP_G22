@@ -502,7 +502,7 @@ void _openFinishedChat(LawyerAppointment ap) async {
 
   Navigator.pushNamed(
     context,
-    '/PastChatScreen',         
+    '/ChatScreen',         
     arguments: {
       'senderID': 'L${user.id}',    
       'receiverID': 'C${ap.clientId}',
