@@ -153,9 +153,6 @@ class _StatusPageState extends State<StatusPage> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'clientId': user.id}),
       );
-      debugPrint('========== RAW RESPONSE ==========');
-      debugPrint(res.body);
-      debugPrint('=================================');
 
       if (res.statusCode < 200 || res.statusCode >= 300) {
         throw Exception('HTTP ${res.statusCode}: ${res.body}');
@@ -165,12 +162,7 @@ class _StatusPageState extends State<StatusPage> {
 
       if (body is! Map || body['success'] != true) {
         throw Exception(
-  'RAW RESPONSE:\n${res.body}\n\n'
-  'Parsed:\n'
-  'success: ${body['success']}\n'
-  'message: ${body['message']}',
-);
-
+            'شكل الرد غير متوقع: success: ${body['success']}, message: ${body['message']}');
       }
 
       final list = (body['appointments'] as List? ?? [])
@@ -192,7 +184,7 @@ class _StatusPageState extends State<StatusPage> {
         });
       }
     }
-  }/////////////////////////////////////////////////////////////////////
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -240,22 +232,18 @@ if (_notClientOrGuest) {
     );
   }
     if (_error != null) {
-  return Padding(
-    padding: const EdgeInsets.all(16),
-    child: SingleChildScrollView(
-      child: SelectableText(
-        'حدث خطأ أثناء جلب الطلبات\n\n$_error',
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          fontFamily: 'Tajawal',
-          fontSize: 14,
-          color: Colors.red,
+      return Center(
+        child: Text(
+          'حدث خطأ أثناء جلب الطلبات\n$_error',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontFamily: 'Tajawal',
+            fontSize: 14,
+            color: Colors.red,
+          ),
         ),
-      ),
-    ),
-  );
-}
-
+      );
+    }
 
     if (_filteredAppointments.isEmpty) {
       return const Center(
@@ -639,9 +627,7 @@ Widget _pillButton({
         ],
       ),
       child: FloatingActionButton(
-        onPressed: () {
-  Navigator.pushNamed(context, '/ai-contract');
-},
+        onPressed: () => Navigator.pushReplacementNamed(context, '/plus'),
         backgroundColor: Colors.transparent,
         elevation: 0,
         child: const Icon(Icons.add, color: Colors.white, size: 28),
@@ -839,7 +825,7 @@ void _openFinishedChat(Appointment ap) async {
 
   Navigator.pushNamed(
     context,
-    '/PastChatScreen',         
+    '/ChatScreen',         
     arguments: {
       'senderID': 'C${user.id}',    
       'receiverID': 'L${ap.lawyerId}',
