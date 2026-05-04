@@ -29,7 +29,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CallManager _callManager = CallManager();
-  final String tempToken = "007eJxTYMjW4vke22/Y/p3r0vbv/5fKXxXlLMi467i9r/cCa5/eRmsFBoM0k2RTg5Q0EwNzE5O01NSktJTUFKMU40RjIwOLZDPDZotPmQ2BjAyxBquYGRkgEMTnZsgtzUpNLYpPTszJYWAAAGCOIsQ="; 
+  final String tempToken = "007eJxTYNCrXLGXKd2Rn2kSw7tXDNwSc9YduFwyMShTbGbqPBFNm78KDAZpJsmmBilpJgbmJiZpqalJaSmpKUYpxonGRgYWyWaGEWe/ZTYEMjLEsl5gZmSAQBCfmyG3NCs1tSg+OTEnh4EBAHkHII4="; 
   
   bool _isMuted = false;
   bool _isSpeakerOn = false; 
@@ -83,7 +83,7 @@ class _ChatScreenState extends State<ChatScreen> {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       var file = result.files.single;
-      var request = http.MultipartRequest('POST', Uri.parse('http://10.0.2.2:8888/mujeer_api/upload_file.php'));
+      var request = http.MultipartRequest('POST', Uri.parse('http://10.164.73.246:8888/mujeer_api/upload_file.php'));
       request.files.add(await http.MultipartFile.fromPath('file', file.path!));
       var response = await request.send();
       var resBody = await response.stream.bytesToString();

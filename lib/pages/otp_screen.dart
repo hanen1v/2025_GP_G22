@@ -54,7 +54,7 @@ void initState() {
         },
         verificationFailed: (error) {
           setState(() => _isLoading = false);
-          _showError('فشل الإرسال: ${error.message}');
+           _showError('فشل الإرسال: ${error.message}');
         },
         codeSent: (verificationId, resendToken) {
           setState(() {
@@ -86,7 +86,7 @@ void initState() {
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      _showError('فشل التحقق: $e');
+      // _showError('فشل التحقق: $e');
     }
   }
   void _handleVerificationSuccess() {

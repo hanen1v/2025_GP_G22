@@ -92,7 +92,7 @@ class LegalConsultPage extends StatelessWidget {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-  Navigator.pushNamed(context, '/ai_consultation');
+  Navigator.pushNamed(context, '/AIConsultationPage');
 },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: mainColor,

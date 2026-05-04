@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'pages/home_page.dart';
 import 'pages/search_page.dart';
-import 'pages/plus_page.dart';
+// import 'pages/plus_page.dart';
 import 'pages/status_page.dart';
 import 'pages/more_page.dart';
 import 'pages/consultation_page.dart';
@@ -93,7 +93,7 @@ class MyApp extends StatelessWidget {
         '/lawyer_register': (context) => const LawyerRegisterPage(),
         '/client_register': (context) => const ClientRegisterPage(),
         '/search': (context) => const SearchPage(),
-        '/plus': (context) => const PlusPage(),
+        // '/plus': (context) => const PlusPage(),
         '/status': (context) => const StatusPage(),
         '/more': (context) => const MorePage(),
         '/consultation': (context) => const ConsultationPage(),
