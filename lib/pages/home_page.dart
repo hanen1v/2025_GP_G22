@@ -3,7 +3,7 @@ import '../widgets/app_bottom_nav.dart';
 import '../widgets/services_section.dart';
 import '../widgets/lawyers_strip_simple.dart';
 import 'ai_contract_drafting.dart';
-
+import 'ai_page.dart';
 class HomePage extends StatelessWidget {
   final String? userName;
   final String? userType;
@@ -115,14 +115,14 @@ class HomePage extends StatelessWidget {
       ),
       child: FloatingActionButton(
        onPressed: () {
-  Navigator.pushNamed(context, '/ai-contract');
+  Navigator.pushNamed(context, '/ai_page');
 },
 
 
         backgroundColor: Colors.transparent,
         elevation: 0,
         child: Icon(
-          Icons.add,
+          Icons.auto_awesome,
           color: Colors.white,
           size: screenWidth * 0.07,
         ),

@@ -15,17 +15,76 @@ class _AiContractDraftingState extends State<AiContractDrafting> {
   final ScrollController _scrollController = ScrollController();
 
   bool _isSending = false;
-
   final List<_ChatMessage> _messages = [];
 
-  static const Color _bg = Color(0xFFF8F9FA);
-  static const Color _primary = Color(0xFF0B5345);
-  static const Color _bubbleBot = Color(0xFFE9F2F0);
+  // ✅ الإجابات المقبولة فقط — هي اللي تُرسل للسيرفر
+  final List<_ChatMessage> _validUserMessages = [];
+
+  static const Color _bg        = Color(0xFFF8F9FA);
+  static const Color _primary   = Color(0xFF0B5345);
+  static const Color _bubbleBot  = Color(0xFFE9F2F0);
   static const Color _bubbleUser = Color(0xFF0B5345);
   static const Color _textOnUser = Colors.white;
 
   static const String _endpoint =
       "http://10.164.73.246:8888/mujeer_api/ai_contract.php";
+
+  // ✅ تحليل JSON آمن — لو السيرفر أرجع HTML أو نص غير متوقع ما ينكسر
+  Map<String, dynamic>? _safeJsonDecode(http.Response res) {
+    final body = res.body.trim();
+
+    // لو الرد فارغ
+    if (body.isEmpty) {
+      _addBotMessage("الخادم أرجع ردًّا فارغًا (${res.statusCode}).");
+      return null;
+    }
+
+    // لو بدأ بـ HTML < — يعني PHP طبع error/notice قبل الـ JSON
+    if (body.startsWith('<') || body.contains('</br>') || body.contains('<br')) {
+      // حاول تستخرج JSON من آخر سطر (أحيانًا PHP يطبع notice ثم JSON)
+      final lines = body.split('\n');
+      for (final line in lines.reversed) {
+        final trimmed = line.trim();
+        if (trimmed.startsWith('{')) {
+          try {
+            return jsonDecode(trimmed) as Map<String, dynamic>;
+          } catch (_) {}
+        }
+      }
+      _addBotMessage(
+        "خطأ في الخادم: يبدو أن PHP يطبع تحذيرات قبل JSON.\n"
+        "تفعيل: error_reporting(0) في بداية الملف.\n\n"
+        "رد الخادم:\n${body.length > 300 ? body.substring(0, 300) : body}",
+      );
+      return null;
+    }
+
+    // رد عادي — حاول decode
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) return decoded;
+      _addBotMessage("رد غير متوقع من الخادم (ليس JSON object).");
+      return null;
+    } on FormatException catch (e) {
+      _addBotMessage(
+        "تعذّر قراءة رد الخادم.\nالسبب: $e\n\n"
+        "أول 200 حرف:\n${body.length > 200 ? body.substring(0, 200) : body}",
+      );
+      return null;
+    }
+  }
+
+  void _addBotMessage(String text, {List<String>? options, String? pdfUrl, bool isDownloadCard = false}) {
+    setState(() {
+      _messages.add(_ChatMessage(
+        role: _Role.assistant,
+        text: text,
+        options: options,
+        pdfUrl: pdfUrl,
+        isDownloadCard: isDownloadCard,
+      ));
+    });
+  }
 
   @override
   void initState() {
@@ -35,7 +94,6 @@ class _AiContractDraftingState extends State<AiContractDrafting> {
 
   Future<void> _startChat() async {
     if (_isSending) return;
-
     setState(() => _isSending = true);
 
     try {
@@ -45,77 +103,51 @@ class _AiContractDraftingState extends State<AiContractDrafting> {
         body: jsonEncode({"conversation": []}),
       );
 
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        setState(() {
-          _messages.add(_ChatMessage(
-            role: _Role.assistant,
-            text:
-                "تعذر بدء المحادثة (${res.statusCode}).\n${res.body.isNotEmpty ? res.body : ""}",
-          ));
-        });
-        return;
-      }
+      final data = _safeJsonDecode(res);
+      if (data == null) return;
 
-      final data = jsonDecode(res.body);
-
-      if (data is Map && data["type"] == "question") {
-        final q = (data["question"] ?? "").toString().trim();
-
-        final optsRaw = data["options"];
-        final options = (optsRaw is List)
-            ? optsRaw.map((e) {
-                if (e is Map) {
-                  return (e["label"] ?? "").toString();
-                }
-                return e.toString();
-              }).where((e) => e.trim().isNotEmpty).toList()
-            : null;
-
-        setState(() {
-          _messages.add(_ChatMessage(
-            role: _Role.assistant,
-            text: q.isEmpty ? "ما نوع العقد الذي ترغب بصياغته؟" : q,
-            options: options,
-          ));
-        });
+      if (data["type"] == "question") {
+        _addBotMessage(
+          (data["question"] ?? "ما نوع العقد الذي ترغب بصياغته؟").toString().trim(),
+          options: _extractOptions(data["options"]),
+        );
       } else {
-        setState(() {
-          _messages.add(const _ChatMessage(
-            role: _Role.assistant,
-            text: "تعذر فهم رد السيرفر عند بدء المحادثة.",
-          ));
-        });
+        _addBotMessage("تعذّر فهم رد الخادم عند بدء المحادثة.");
       }
     } catch (e) {
-      setState(() {
-        _messages.add(_ChatMessage(
-          role: _Role.assistant,
-          text: "تعذر بدء المحادثة الآن.\n$e",
-        ));
-      });
+      _addBotMessage("تعذّر الاتصال بالخادم.\n$e");
     } finally {
       setState(() => _isSending = false);
       _scrollToBottom();
     }
   }
 
+  List<String>? _extractOptions(dynamic raw) {
+    if (raw is! List) return null;
+    final opts = raw.map((e) {
+      if (e is Map) return (e["label"] ?? "").toString();
+      return e.toString();
+    }).where((e) => e.trim().isNotEmpty).toList();
+    return opts.isEmpty ? null : opts;
+  }
+
   Future<void> _send() async {
     final text = _controller.text.trim();
     if (text.isEmpty || _isSending) return;
 
+    final newMsg = _ChatMessage(role: _Role.user, text: text);
     setState(() {
-      _messages.add(_ChatMessage(role: _Role.user, text: text));
+      _messages.add(newMsg);
+      _validUserMessages.add(newMsg); // ✅ أضفها مبدئياً — نحذفها لو retry
       _isSending = true;
       _controller.clear();
     });
     _scrollToBottom();
 
-    final conversation = _messages
-        .where((m) => m.role == _Role.user)
-        .map((m) => {
-              "role": "user",
-              "content": m.text,
-            })
+    // نرسل رسائل المستخدم فقط — بالترتيب
+    // _validUserMessages تحتوي فقط الإجابات المقبولة (بعد حذف retry)
+    final conversation = _validUserMessages
+        .map((m) => {"role": "user", "content": m.text})
         .toList();
 
     try {
@@ -125,115 +157,64 @@ class _AiContractDraftingState extends State<AiContractDrafting> {
         body: jsonEncode({"conversation": conversation}),
       );
 
+      // ✅ خطأ HTTP
       if (res.statusCode < 200 || res.statusCode >= 300) {
-        setState(() {
-          _messages.add(_ChatMessage(
-            role: _Role.assistant,
-            text:
-                "صار خطأ في الاتصال (${res.statusCode}).\n${res.body.isNotEmpty ? res.body : ""}",
-          ));
-          _isSending = false;
-        });
-        _scrollToBottom();
+        _addBotMessage("خطأ في الاتصال (${res.statusCode}).");
         return;
       }
 
-      final data = jsonDecode(res.body);
-      if (data is! Map) {
-        setState(() {
-          _messages.add(const _ChatMessage(
-            role: _Role.assistant,
-            text: "رد غير متوقع من السيرفر.",
-          ));
-          _isSending = false;
-        });
-        _scrollToBottom();
-        return;
-      }
+      final data = _safeJsonDecode(res);
+      if (data == null) return;
 
       final type = (data["type"] ?? "").toString();
 
       if (type == "question") {
-        final q = (data["question"] ?? "").toString().trim();
+        final isRetry = data["retry"] == true;
 
-        final optsRaw = data["options"];
-        final options = (optsRaw is List)
-            ? optsRaw.map((e) {
-                if (e is Map) {
-                  return (e["label"] ?? "").toString();
-                }
-                return e.toString();
-              }).where((e) => e.trim().isNotEmpty).toList()
-            : null;
+        if (isRetry) {
+          // ✅ احذف آخر رسالة مستخدم من كلا القائمتين
+          setState(() {
+            final lastUserIdx = _messages.lastIndexWhere((m) => m.role == _Role.user);
+            if (lastUserIdx != -1) _messages.removeAt(lastUserIdx);
+            if (_validUserMessages.isNotEmpty) _validUserMessages.removeLast();
+          });
+        }
 
-        setState(() {
-          _messages.add(_ChatMessage(
-            role: _Role.assistant,
-            text: q.isEmpty ? "ممكن توضح أكثر؟" : q,
-            options: options,
-          ));
-          _isSending = false;
-        });
-        _scrollToBottom();
+        _addBotMessage(
+          (data["question"] ?? "ممكن توضح أكثر؟").toString().trim(),
+          options: _extractOptions(data["options"]),
+        );
         return;
       }
 
       if (type == "contract") {
-        final contractText = (data["text"] ?? "").toString().trim();
         final pdfUrl = (data["pdf_url"] ?? "").toString().trim();
 
-        setState(() {
-          _messages.add(_ChatMessage(
-            role: _Role.assistant,
-            text: "تم إنشاء العقد بنجاح.",
-          ));
+        _addBotMessage("✅ تم إنشاء العقد بنجاح!");
+        _addBotMessage(
+          "تنبيه: هذه مسودة أولية تحتاج إلى مراجعة محامٍ مرخّص قبل التوقيع.",
+        );
 
-          _messages.add(_ChatMessage(
-            role: _Role.assistant,
-            text:
-                "تنويه: هذه مسودة أولية للعقد وتحتاج إلى مراجعة من محامٍ مرخّص قبل الاعتماد أو التوقيع.",
-          ));
-
-          // if (contractText.isNotEmpty) {
-          //   _messages.add(_ChatMessage(
-          //     role: _Role.assistant,
-          //     text: contractText,
-          //     isContractPreview: true,
-          //   ));
-          // }
-
-          if (pdfUrl.isNotEmpty) {
-            _messages.add(_ChatMessage(
-              role: _Role.assistant,
-              text: "يمكنك تحميل نسخة PDF من الزر التالي:",
-              pdfUrl: pdfUrl,
-              isDownloadCard: true,
-            ));
-          }
-
-          _isSending = false;
-        });
-
-        _scrollToBottom();
+        if (pdfUrl.isNotEmpty) {
+          _addBotMessage(
+            "اضغط الزر أدناه لتحميل العقد بصيغة PDF:",
+            pdfUrl: pdfUrl,
+            isDownloadCard: true,
+          );
+        }
         return;
       }
 
-      setState(() {
-        _messages.add(const _ChatMessage(
-          role: _Role.assistant,
-          text: "حصل خطأ غير متوقع في صيغة الرد.",
-        ));
-        _isSending = false;
-      });
-      _scrollToBottom();
+      if (type == "error") {
+        _addBotMessage("خطأ: ${data["message"] ?? "حدث خطأ غير متوقع."}");
+        return;
+      }
+
+      _addBotMessage("رد غير معروف من الخادم (type: $type).");
     } catch (e) {
-      setState(() {
-        _messages.add(_ChatMessage(
-          role: _Role.assistant,
-          text: "صار خطأ غير متوقع.\n$e",
-        ));
-        _isSending = false;
-      });
+      _addBotMessage("حدث خطأ غير متوقع.\n$e");
+    } finally {
+      setState(() => _isSending = false);
       _scrollToBottom();
     }
   }
@@ -242,16 +223,15 @@ class _AiContractDraftingState extends State<AiContractDrafting> {
     try {
       final uri = Uri.parse(url);
       final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-
       if (!ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("تعذر فتح رابط ملف PDF")),
+          const SnackBar(content: Text("تعذّر فتح رابط PDF")),
         );
       }
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("رابط ملف PDF غير صالح")),
+        const SnackBar(content: Text("رابط PDF غير صالح")),
       );
     }
   }
@@ -286,10 +266,7 @@ class _AiContractDraftingState extends State<AiContractDrafting> {
         centerTitle: true,
         title: const Text(
           "مساعد صياغة العقود",
-          style: TextStyle(
-            fontFamily: 'Tajawal',
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700),
         ),
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
@@ -304,19 +281,16 @@ class _AiContractDraftingState extends State<AiContractDrafting> {
                 if (_isSending && index == _messages.length) {
                   return const _TypingBubble();
                 }
-
-                final m = _messages[index];
+                final m      = _messages[index];
                 final isUser = m.role == _Role.user;
-
                 return _ChatBubble(
                   text: m.text,
                   isUser: isUser,
                   maxWidth: w * 0.78,
                   bubbleColor: isUser ? _bubbleUser : _bubbleBot,
-                  textColor: isUser ? _textOnUser : Colors.black87,
+                  textColor:   isUser ? _textOnUser : Colors.black87,
                   options: m.options,
                   isDownloadCard: m.isDownloadCard,
-                  isContractPreview: m.isContractPreview,
                   onDownloadTap: m.pdfUrl == null ? null : () => _openPdf(m.pdfUrl!),
                   onOptionTap: (opt) {
                     _controller.text = opt;
@@ -351,10 +325,7 @@ class _AiContractDraftingState extends State<AiContractDrafting> {
                           hintText: "اكتب رسالتك…",
                           hintStyle: TextStyle(fontFamily: 'Tajawal'),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         ),
                       ),
                     ),
@@ -373,15 +344,10 @@ class _AiContractDraftingState extends State<AiContractDrafting> {
                       ),
                       child: _isSending
                           ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
+                              width: 18, height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
-                          : const Icon(Icons.send,
-                              color: Colors.white, size: 20),
+                          : const Icon(Icons.send, color: Colors.white, size: 20),
                     ),
                   ),
                 ],
@@ -394,6 +360,8 @@ class _AiContractDraftingState extends State<AiContractDrafting> {
   }
 }
 
+/* ======================= Models ======================= */
+
 enum _Role { user, assistant }
 
 class _ChatMessage {
@@ -402,7 +370,6 @@ class _ChatMessage {
   final List<String>? options;
   final String? pdfUrl;
   final bool isDownloadCard;
-  final bool isContractPreview;
 
   const _ChatMessage({
     required this.role,
@@ -410,9 +377,10 @@ class _ChatMessage {
     this.options,
     this.pdfUrl,
     this.isDownloadCard = false,
-    this.isContractPreview = false,
   });
 }
+
+/* ======================= Widgets ======================= */
 
 class _ChatBubble extends StatelessWidget {
   final String text;
@@ -422,9 +390,8 @@ class _ChatBubble extends StatelessWidget {
   final Color textColor;
   final List<String>? options;
   final bool isDownloadCard;
-  final bool isContractPreview;
   final VoidCallback? onDownloadTap;
-  final void Function(String option)? onOptionTap;
+  final void Function(String)? onOptionTap;
 
   const _ChatBubble({
     required this.text,
@@ -434,7 +401,6 @@ class _ChatBubble extends StatelessWidget {
     required this.textColor,
     this.options,
     this.isDownloadCard = false,
-    this.isContractPreview = false,
     this.onDownloadTap,
     this.onOptionTap,
   });
@@ -442,9 +408,9 @@ class _ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.only(
-      topLeft: const Radius.circular(16),
-      topRight: const Radius.circular(16),
-      bottomLeft: Radius.circular(isUser ? 16 : 4),
+      topLeft:     const Radius.circular(16),
+      topRight:    const Radius.circular(16),
+      bottomLeft:  Radius.circular(isUser ? 16 : 4),
       bottomRight: Radius.circular(isUser ? 4 : 16),
     );
 
@@ -453,19 +419,12 @@ class _ChatBubble extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
         child: Column(
-          crossAxisAlignment:
-              isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             Container(
-              margin: const EdgeInsets.symmetric(vertical: 6),
+              margin:  const EdgeInsets.symmetric(vertical: 6),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: bubbleColor,
-                borderRadius: radius,
-                border: isContractPreview
-                    ? Border.all(color: const Color(0xFFB7D7CF))
-                    : null,
-              ),
+              decoration: BoxDecoration(color: bubbleColor, borderRadius: radius),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -475,7 +434,7 @@ class _ChatBubble extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'Tajawal',
                       fontSize: 15,
-                      height: 1.5,
+                      height: 1.55,
                       color: textColor,
                     ),
                   ),
@@ -493,13 +452,10 @@ class _ChatBubble extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        icon: const Icon(Icons.picture_as_pdf),
+                        icon:  const Icon(Icons.picture_as_pdf),
                         label: const Text(
                           "تحميل PDF",
-                          style: TextStyle(
-                            fontFamily: 'Tajawal',
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),
@@ -508,19 +464,20 @@ class _ChatBubble extends StatelessWidget {
               ),
             ),
             if (!isUser && options != null && options!.isNotEmpty)
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: options!.map((opt) {
-                  return ActionChip(
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: options!.map((opt) => ActionChip(
                     label: Text(
                       opt,
                       textDirection: TextDirection.rtl,
                       style: const TextStyle(fontFamily: 'Tajawal'),
                     ),
                     onPressed: onOptionTap == null ? null : () => onOptionTap!(opt),
-                  );
-                }).toList(),
+                  )).toList(),
+                ),
               ),
           ],
         ),
@@ -537,23 +494,20 @@ class _TypingBubble extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6),
+        margin:  const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: const BoxDecoration(
           color: Color(0xFFE9F2F0),
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-            bottomLeft: Radius.circular(4),
+            topLeft:     Radius.circular(16),
+            topRight:    Radius.circular(16),
+            bottomLeft:  Radius.circular(4),
             bottomRight: Radius.circular(16),
           ),
         ),
         child: const Text(
           "يكتب الآن…",
-          style: TextStyle(
-            fontFamily: 'Tajawal',
-            color: Colors.black87,
-          ),
+          style: TextStyle(fontFamily: 'Tajawal', color: Colors.black54),
         ),
       ),
     );

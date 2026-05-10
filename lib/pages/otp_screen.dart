@@ -86,6 +86,7 @@ void initState() {
       }
     } catch (e) {
       setState(() => _isLoading = false);
+      rethrow;
       // _showError('فشل التحقق: $e');
     }
   }

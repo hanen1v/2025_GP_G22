@@ -366,10 +366,10 @@ final TextStyle checkboxTextStyle = const TextStyle(
           ),
         ),
         child: FloatingActionButton(
-          onPressed: () => Navigator.pushReplacementNamed(context, '/plus'),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/ai_page'),
           backgroundColor: Colors.transparent,
           elevation: 0,
-          child: const Icon(Icons.add, color: Colors.white, size: 28),
+          child: const Icon(Icons.auto_awesome, color: Colors.white, size: 28),
         ),
       );
 

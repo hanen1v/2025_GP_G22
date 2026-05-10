@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'pages/home_page.dart';
 import 'pages/search_page.dart';
-// import 'pages/plus_page.dart';
+import 'pages/ai_contract_drafting.dart';
 import 'pages/status_page.dart';
 import 'pages/more_page.dart';
 import 'pages/consultation_page.dart';
@@ -28,6 +28,7 @@ import 'pages/chat_screen.dart';
 import 'pages/past_chat_screen.dart';
 import 'pages/AIConsultationPage.dart';
 import 'pages/call_manager.dart';
+import 'pages/ai_page.dart';
 
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -93,7 +94,7 @@ class MyApp extends StatelessWidget {
         '/lawyer_register': (context) => const LawyerRegisterPage(),
         '/client_register': (context) => const ClientRegisterPage(),
         '/search': (context) => const SearchPage(),
-        // '/plus': (context) => const PlusPage(),
+        '/ai_contract_drafting': (context) => const AiContractDrafting(),
         '/status': (context) => const StatusPage(),
         '/more': (context) => const MorePage(),
         '/consultation': (context) => const ConsultationPage(),
@@ -110,6 +111,8 @@ class MyApp extends StatelessWidget {
         '/ChatScreen': (context) =>  ChatScreen(),
         '/PastChatScreen': (context) =>  PastChatScreen(),
         '/AIConsultationPage': (context) =>  AIConsultationPage(),
+        '/ai_page': (context) => const AIPage(),
+
 
 
       },

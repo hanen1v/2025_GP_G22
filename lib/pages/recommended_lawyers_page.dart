@@ -44,18 +44,51 @@ class RecommendedLawyersPage extends StatelessWidget {
                 ),
               ),
             )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: lawyers.length,
-              itemBuilder: (context, index) {
-                final lawyer = lawyers[index];
-                return _buildLawyerCard(context, lawyer);
+          :  ListView.builder(
+    padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+    itemCount: lawyers.length + 1,
+    itemBuilder: (context, index) {
+      if (index == lawyers.length) {
+        return Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 16),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/home',
+                  (route) => false,
+                );
               },
+              icon: const Icon(Icons.home, color: Colors.white),
+              label: const Text(
+                'العودة للرئيسية',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 9, 44, 36),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
+          ),
+        );
+      }
+      final lawyer = lawyers[index];
+      return _buildLawyerCard(context, lawyer, index);
+    },
+  ),
     );
   }
 
-  Widget _buildLawyerCard(BuildContext context, Map<String, dynamic> lawyer) {
+  Widget _buildLawyerCard(BuildContext context, Map<String, dynamic> lawyer, int index) {
     final imageUrl = _getImageUrl(lawyer);
 
     return Container(
@@ -75,11 +108,47 @@ class RecommendedLawyersPage extends StatelessWidget {
       child: Directionality(
         textDirection: TextDirection.rtl,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ClipOval(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    if (index < 3) ...[
+  Align(
+    alignment: Alignment.centerRight,
+    child: Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: [
+            const Color(0xFFFFD700),
+            const Color(0xFFAAAAAA),
+            const Color(0xFFCD7F32),
+            const Color(0xFF4CAF50),
+            const Color(0xFF2196F3),
+          ][index],
+          width: 1.5,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        ['🥇 الأفضل', '🥈 الثاني', '🥉 الثالث', '4️⃣ الرابع', '5️⃣ الخامس'][index],
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 13,
+          color: [
+            const Color(0xFFFFD700),
+            const Color(0xFFAAAAAA),
+            const Color(0xFFCD7F32),
+            const Color(0xFF4CAF50),
+            const Color(0xFF2196F3),
+          ][index],
+        ),
+      ),
+    ),
+  ),
+],
+    Row(
+      children: [
+        ClipOval(
                   child: imageUrl.isNotEmpty
                       ? Image.network(
                           imageUrl,
