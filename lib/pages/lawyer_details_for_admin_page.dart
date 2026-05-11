@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/app_bottom_nav.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -25,8 +24,7 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 
   Future<void> _fetchLawyerDetails() async {
     final url = Uri.parse(
-        //'http://10.0.2.2:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
-        'http://10.164.73.246:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
+        'http://10.0.2.2:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -44,8 +42,7 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 
   Future<void> _fetchRatings() async {
     final url = Uri.parse(
-        //'http://10.0.2.2:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
-        'http://10.164.73.246:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
+        'http://10.0.2.2:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
     try {
       final response = await http.get(url);
 
@@ -64,8 +61,7 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 
   Future<void> _fetchComments() async {
     final url = Uri.parse(
-        //'http://10.0.2.2:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
-        'http://10.164.73.246:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
+        'http://10.0.2.2:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
     try {
       final res = await http.get(url);
       if (res.statusCode == 200) {
@@ -94,10 +90,8 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
 
-      floatingActionButton: _buildFab(context),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-      bottomNavigationBar: const AppBottomNav(currentRoute: '/search'),
+
 
       body: isLoading
           ? const Center(
@@ -171,37 +165,17 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
                           ),
                         ),
                         const SizedBox(height: 30),
-                        LayoutBuilder(
-  builder: (context, constraints) {
-    final boxWidth = (constraints.maxWidth - 16) / 3;
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      alignment: WrapAlignment.center,
-      children: [
-        _roundedBox(
-          Icons.work_outline,
-          'الخبرة',
-          lawyer!['experience'],
-          width: boxWidth,
-        ),
-        _roundedBox(
-          Icons.school_outlined,
-          'التخصص الأكاديمي',
-          lawyer!['academic'],
-          width: boxWidth,
-        ),
-        _roundedBox(
-          Icons.workspace_premium_outlined,
-          'الدرجة العلمية',
-          lawyer!['degree'],
-          width: boxWidth,
-        ),
-      ],
-    );
-  },
-),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _roundedBox(Icons.work_outline, 'الخبرة',
+                                lawyer!['experience']),
+                            _roundedBox(Icons.school_outlined,
+                                'التخصص الأكاديمي', lawyer!['academic']),
+                            _roundedBox(Icons.workspace_premium_outlined,
+                                'الدرجة العلمية', lawyer!['degree']),
+                          ],
+                        ),
                         const SizedBox(height: 50),
                         Align(
                           alignment: Alignment.centerRight,
@@ -257,72 +231,42 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
     );
   }
 
-  Widget _buildFab(BuildContext context) => Container(
-        width: 65,
-        height: 65,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-              colors: [Color.fromARGB(255, 6, 61, 65), Color.fromARGB(255, 8, 65, 69)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight),
-          boxShadow: const [
-            BoxShadow(
-                color: Color.fromARGB(255, 31, 79, 83),
-                blurRadius: 10,
-                offset: Offset(0, 4))
-          ],
-        ),
-        child: FloatingActionButton(
-          onPressed: () => Navigator.pushReplacementNamed(context, '/ai_page'),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: const Icon(Icons.auto_awesome, color: Colors.white, size: 28),
-        ),
-      );
 
 
 
-  Widget _roundedBox(IconData icon, String title, String value, {double? width}) {
-  return Container(
-    width: width ?? 100,
-    constraints: const BoxConstraints(minHeight: 110),
-    padding: const EdgeInsets.all(8),
-    decoration: BoxDecoration(
-      color: Colors.grey[200],
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: Colors.grey[700], size: 22),
-        const SizedBox(height: 6),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.grey,
-            fontWeight: FontWeight.w500,
-          ),
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    ),
-  );
-}
+
+  Widget _roundedBox(IconData icon, String title, String value) {
+    return Container(
+      width: 100,
+      height: 100,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.grey[700], size: 22),
+          const SizedBox(height: 6),
+          Text(title,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center),
+          const SizedBox(height: 4),
+          Text(value,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
 
   Widget _smallTag(String text) {
     if (text.isEmpty) return const SizedBox.shrink();
