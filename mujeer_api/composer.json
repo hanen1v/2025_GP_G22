@@ -1,0 +1,10 @@
+{
+    "require": {
+        "mpdf/mpdf": "^8.3"
+    },
+    "config": {
+        "platform": {
+            "ext-gd": "1.0"
+        }
+    }
+}
