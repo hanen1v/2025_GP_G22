@@ -24,7 +24,7 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 
   Future<void> _fetchLawyerDetails() async {
     final url = Uri.parse(
-        'http://10.0.2.2:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
+        'http://10.164.73.246:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -40,28 +40,39 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
     }
   }
 
-  Future<void> _fetchRatings() async {
-    final url = Uri.parse(
-        'http://10.0.2.2:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
-    try {
-      final response = await http.get(url);
+ Future<void> _fetchRatings() async {
+  final url = Uri.parse(
+      'http://10.164.73.246:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
 
-      if (response.statusCode == 200) {
-        setState(() {
-          ratings = jsonDecode(response.body);
-          loadingRatings = false;
-        });
-      } else {
-        setState(() => loadingRatings = false);
-      }
-    } catch (e) {
-      setState(() => loadingRatings = false);
+  try {
+    final response = await http.get(url);
+
+    if (!mounted) return;
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+
+      setState(() {
+        ratings = decoded;
+        loadingRatings = false;
+      });
+    } else {
+      setState(() {
+        loadingRatings = false;
+      });
     }
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      loadingRatings = false;
+    });
   }
+}
 
   Future<void> _fetchComments() async {
     final url = Uri.parse(
-        'http://10.0.2.2:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
+        'http://10.164.73.246:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
     try {
       final res = await http.get(url);
       if (res.statusCode == 200) {
@@ -165,18 +176,74 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
                           ),
                         ),
                         const SizedBox(height: 30),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _roundedBox(Icons.work_outline, 'الخبرة',
-                                lawyer!['experience']),
-                            _roundedBox(Icons.school_outlined,
-                                'التخصص الأكاديمي', lawyer!['academic']),
-                            _roundedBox(Icons.workspace_premium_outlined,
-                                'الدرجة العلمية', lawyer!['degree']),
-                          ],
-                        ),
-                        const SizedBox(height: 50),
+                        LayoutBuilder(
+  builder: (context, constraints) {
+    if (constraints.maxWidth < 600) {
+      // mobile
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _roundedBox(
+                  Icons.work_outline,
+                  'الخبرة',
+                  lawyer?['experience']?.toString() ?? '',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _roundedBox(
+                  Icons.school_outlined,
+                  'التخصص الأكاديمي',
+                  lawyer?['academic']?.toString() ?? '',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: _roundedBox(
+              Icons.workspace_premium_outlined,
+              'الدرجة العلمية',
+              lawyer?['degree']?.toString() ?? '',
+            ),
+          ),
+        ],
+      );
+    }
+
+    // tablet / large screens
+    return Row(
+      children: [
+        Expanded(
+          child: _roundedBox(
+            Icons.work_outline,
+            'الخبرة',
+            lawyer?['experience']?.toString() ?? '',
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _roundedBox(
+            Icons.school_outlined,
+            'التخصص الأكاديمي',
+            lawyer?['academic']?.toString() ?? '',
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _roundedBox(
+            Icons.workspace_premium_outlined,
+            'الدرجة العلمية',
+            lawyer?['degree']?.toString() ?? '',
+          ),
+        ),
+      ],
+    );
+  },
+),
                         Align(
                           alignment: Alignment.centerRight,
                           child: Text(
@@ -236,37 +303,42 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 
 
   Widget _roundedBox(IconData icon, String title, String value) {
-    return Container(
-      width: 100,
-      height: 100,
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.grey[700], size: 22),
-          const SizedBox(height: 6),
-          Text(title,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center),
-          const SizedBox(height: 4),
-          Text(value,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center),
-        ],
-      ),
-    );
-  }
+  return Container(
+    constraints: const BoxConstraints(
+      minHeight: 100,
+    ),
+    padding: const EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: Colors.grey[200],
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: Colors.grey[700], size: 22),
+        const SizedBox(height: 6),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+            fontWeight: FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _smallTag(String text) {
     if (text.isEmpty) return const SizedBox.shrink();

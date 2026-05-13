@@ -216,32 +216,27 @@ class RecommendedLawyersPage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                if (lawyer['YearsOfExp'] != null)
-                  _infoChip(
-                    Icons.work_outline,
-                    '${lawyer['YearsOfExp']} سنوات خبرة',
-                  ),
-                if ((lawyer['EducationQualification'] ?? '')
-                    .toString()
-                    .trim()
-                    .isNotEmpty)
-                  _infoChip(
-                    Icons.school_outlined,
-                    lawyer['EducationQualification'].toString(),
-                  ),
-                if ((lawyer['MainSpecialization'] ?? '')
-                    .toString()
-                    .trim()
-                    .isNotEmpty)
-                  _infoChip(
-                    Icons.balance,
-                    lawyer['MainSpecialization'].toString(),
-                  ),
-              ],
-            ),
+  spacing: 8,
+  runSpacing: 8,
+  children: [
+    if (lawyer['YearsOfExp'] != null)
+      _infoChip(Icons.work_outline, '${lawyer['YearsOfExp']} سنوات خبرة'),
+    if ((lawyer['EducationQualification'] ?? '').toString().trim().isNotEmpty)
+      _infoChip(Icons.school_outlined, lawyer['EducationQualification'].toString()),
+
+    // التخصص الأساسي
+    if ((lawyer['MainSpecialization'] ?? '').toString().trim().isNotEmpty)
+      _infoChipHighlighted(Icons.balance, lawyer['MainSpecialization'].toString(), 'أساسي'),
+
+    // التخصص الفرعي الأول
+    if ((lawyer['FSubSpecialization'] ?? '').toString().trim().isNotEmpty)
+      _infoChipHighlighted(Icons.balance_outlined, lawyer['FSubSpecialization'].toString(), 'فرعي'),
+
+    // التخصص الفرعي الثاني
+    if ((lawyer['SSubSpecialization'] ?? '').toString().trim().isNotEmpty)
+      _infoChipHighlighted(Icons.balance_outlined, lawyer['SSubSpecialization'].toString(), 'فرعي'),
+  ],
+),
             const SizedBox(height: 12),
             const Divider(color: Colors.grey, thickness: 0.5),
             Row(
@@ -331,4 +326,56 @@ class RecommendedLawyersPage extends StatelessWidget {
       ),
     );
   }
+  Widget _infoChipHighlighted(IconData icon, String label, String badge) {
+  final isMain = badge == 'أساسي';
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    decoration: BoxDecoration(
+      color: isMain
+          ? const Color.fromARGB(255, 6, 61, 65).withOpacity(0.08)
+          : Colors.grey[200],
+      borderRadius: BorderRadius.circular(10),
+      border: isMain
+          ? Border.all(color: const Color.fromARGB(255, 6, 61, 65), width: 1)
+          : null,
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 18,
+            color: isMain
+                ? const Color.fromARGB(255, 6, 61, 65)
+                : const Color(0xFF374151)),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyle(
+            color: isMain
+                ? const Color.fromARGB(255, 6, 61, 65)
+                : const Color(0xFF374151),
+            fontSize: 14,
+            fontWeight: isMain ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: isMain
+                ? const Color.fromARGB(255, 6, 61, 65)
+                : Colors.grey[400],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            badge,
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 }

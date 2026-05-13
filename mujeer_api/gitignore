@@ -1,0 +1,17 @@
+# منع رفع الملفات الحساسة
+.env
+.env.local
+config_local.php
+
+# Cache & logs
+__pycache__/
+*.pyc
+*.pyo
+*.log
+
+# Vendor (يتولد تلقائياً من composer)
+vendor/
+
+# OS files
+.DS_Store
+Thumbs.db

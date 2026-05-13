@@ -10,6 +10,7 @@ class LegalConsultPage extends StatelessWidget {
     const Color mainColor = Color.fromARGB(255, 6, 61, 65);
 
     return Scaffold(
+       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey[100],
       body: Stack(
         children: [

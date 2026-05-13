@@ -24,7 +24,6 @@ $username = $data["username"] ?? "";
 $password = $data["password"] ?? "";
 $phoneNumber = $data["phoneNumber"] ?? "";
 $licenseNumber = $data["licenseNumber"] ?? "";
-$yearsOfExp = $data["yearsOfExp"] ?? "";
 $gender = $data["gender"] ?? "";
 $mainSpecialization = $data["mainSpecialization"] ?? "";
 $educationQualification = $data["educationQualification"] ?? "";
@@ -32,8 +31,19 @@ $academicMajor = $data["academicMajor"] ?? "";
 $fSubSpecialization = $data["fSubSpecialization"] ?? "";
 $sSubSpecialization = $data["sSubSpecialization"] ?? "";
 
-// التحقق من الحقول المطلوبة
-$required_fields = ['fullName', 'username', 'password', 'phoneNumber', 'licenseNumber', 'yearsOfExp', 'gender', 'mainSpecialization', 'educationQualification', 'academicMajor'];
+// ✅ احسب yearsOfExp من startMonth و startYear
+$startMonth = isset($data["startMonth"]) ? (int)$data["startMonth"] : 0;
+$startYear  = isset($data["startYear"])  ? (int)$data["startYear"]  : 0;
+
+$currentYear  = (int) date("Y");
+$currentMonth = (int) date("n");
+$yearsOfExp = $currentYear - $startYear;
+if ($currentMonth < $startMonth) $yearsOfExp--;
+if ($yearsOfExp < 0) $yearsOfExp = 0;
+
+$required_fields = ['fullName', 'username', 'password', 'phoneNumber', 
+                    'licenseNumber', 'gender', 'mainSpecialization', 
+                    'educationQualification', 'academicMajor', 'startMonth', 'startYear'];
 foreach($required_fields as $field) {
     if(empty($data[$field])) {
         echo json_encode(["success" => false, "message" => "حقل {$field} مطلوب"]);
@@ -55,19 +65,26 @@ if ($conn->connect_error) {
 }
 
 // 1️⃣ استعلام إدخال المحامي
+// ✅ غيّر الـ SQL
 $sql = "INSERT INTO lawyer (
     FullName, Username, Password, PhoneNumber, LicenseNumber, 
-    YearsOfExp, Gender, MainSpecialization, FSubSpecialization, 
+    StartMonth, StartYear, YearsOfExp, Gender, MainSpecialization, FSubSpecialization, 
     SSubSpecialization, LicenseFile, EducationQualification, 
     AcademicMajor, LawyerPhoto, Status, Points
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', 0)";
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', 0)";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("sssssissssssss", 
-    $fullName, $username, $hashed_password, $phoneNumber, $licenseNumber, 
-    $yearsOfExp, $gender_english, $mainSpecialization, $fSubSpecialization, 
-    $sSubSpecialization, $license_file_name, $educationQualification, 
-    $academicMajor, $photo_file_name
+if (!$stmt) {
+    echo json_encode(["success" => false, "message" => "خطأ في الاستعلام: " . $conn->error]);
+    exit;
+}
+
+// ✅ أضف ii لـ StartMonth و StartYear
+$stmt->bind_param("sssssiiissssssss", 
+    $fullName, $username, $hashed_password, $phoneNumber, $licenseNumber,
+    $startMonth, $startYear, $yearsOfExp, $gender_english, $mainSpecialization, 
+    $fSubSpecialization, $sSubSpecialization, $license_file_name, 
+    $educationQualification, $academicMajor, $photo_file_name
 );
 
 if ($stmt->execute()) {

@@ -157,8 +157,8 @@ try {
     echo json_encode([
         "success" => false,
         "message" => $e->getMessage(),
-        "clientPoints" => $newClientPoints,
-        "lawyerPoints" => $newLawyerPoints
+        // "clientPoints" => $newClientPoints,
+        // "lawyerPoints" => $newLawyerPoints
     ], JSON_UNESCAPED_UNICODE);
 }
 

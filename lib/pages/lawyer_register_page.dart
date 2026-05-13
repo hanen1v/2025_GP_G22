@@ -971,7 +971,8 @@ Widget _buildPoliciesSection() {
 
     // انتظار نتيجة التحقق من OTP
     bool? verified = true;
-    /*  await Navigator.push(
+
+      await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => OTPScreen(
@@ -979,7 +980,7 @@ Widget _buildPoliciesSection() {
           registrationType: 'lawyer',
           ),
       ),
-    ); */
+    ); 
 
     print('✅ نتيجة OTP: $verified');
 

@@ -338,7 +338,7 @@ Future<void> _savePriceOnly() async {
     
     if (priceUpdated) {
       setState(() {
-        _priceMessage = '✅ تم حفظ السعر بنجاح';
+        _priceMessage = 'تم حفظ السعر بنجاح';
         _priceSaved = true;
       });
       

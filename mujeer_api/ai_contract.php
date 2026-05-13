@@ -95,7 +95,7 @@ function call_openai(array $data): array {
 
 /* =========================
    التحقق الذكي بـ GPT
-   يُرسل السؤال + الإجابة لـ gpt-4o-mini
+   يُرسل السؤال + الإجابة لـ gpt-4o
    يرجع "" إذا صح، أو رسالة خطأ عربية
 ========================= */
 function validate_answer_with_gpt(string $fieldLabel, string $question, string $answer): string {
@@ -127,7 +127,7 @@ function validate_answer_with_gpt(string $fieldLabel, string $question, string $
     . "إذا مرفوضة أجب برسالة قصيرة بالعربية (جملة واحدة فقط) توضح ما ينقص.";
 
   $data = [
-    "model"    => "gpt-4o-mini",
+    "model"    => "gpt-4o",
     "messages" => [["role" => "user", "content" => $prompt]],
     "max_tokens" => 150,
   ];
@@ -254,7 +254,7 @@ if (!is_array($conversation)) $conversation = [];
 $contractTypeOptions = [
   ["id" => "employment",  "label" => "عقد عمل"],
   ["id" => "lease",       "label" => "عقد إيجار"],
-  ["id" => "services",    "label" => "عقد خدمات / مقاولات"],
+  ["id" => "services",    "label" => "عقد خدمات"],
   ["id" => "partnership", "label" => "عقد شراكة"],
   ["id" => "nda",         "label" => "اتفاقية عدم إفشاء (NDA)"],
 ];

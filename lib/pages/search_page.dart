@@ -167,6 +167,7 @@ void initState() {
   
 
     return Scaffold(
+       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey[100],
       body: Column(
         children: [
