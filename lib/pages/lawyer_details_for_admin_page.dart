@@ -24,7 +24,7 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 
   Future<void> _fetchLawyerDetails() async {
     final url = Uri.parse(
-        'http://10.164.73.246:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
+        'http://10.0.2.2:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -42,7 +42,7 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 
  Future<void> _fetchRatings() async {
   final url = Uri.parse(
-      'http://10.164.73.246:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
+      'http://10.0.2.2:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
 
   try {
     final response = await http.get(url);
@@ -72,7 +72,7 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 
   Future<void> _fetchComments() async {
     final url = Uri.parse(
-        'http://10.164.73.246:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
+        'http://10.0.2.2:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
     try {
       final res = await http.get(url);
       if (res.statusCode == 200) {
@@ -256,15 +256,19 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            _smallTag(lawyer!['speciality']),
-                            _smallTag(lawyer!['subSpeciality']),
-                            _smallTag(lawyer!['ssubSpeciality']),
-                          ],
-                        ),
+                      Wrap(
+  spacing: 6,
+  runSpacing: 6,
+  children: [
+
+    // ⭐ التخصص الرئيسي
+    _smallTag("⭐ ${lawyer!['speciality']}"),
+
+    // التخصصات الفرعية
+    _smallTag(lawyer!['subSpeciality']),
+    _smallTag(lawyer!['ssubSpeciality']),
+  ],
+),
                         const SizedBox(height: 30),
 
                         loadingRatings
@@ -341,19 +345,27 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 }
 
   Widget _smallTag(String text) {
-    if (text.isEmpty) return const SizedBox.shrink();
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
+  if (text.isEmpty) return const SizedBox.shrink();
+
+  return Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 8,
+      vertical: 5,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.grey[200],
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: Colors.black87,
+        fontSize: 12,
       ),
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.black87, fontSize: 13),
-      ),
-    );
-  }
+      overflow: TextOverflow.ellipsis,
+    ),
+  );
+}
 
   Widget _buildRatingsSection() {
     final avg = ratings!['average'];
