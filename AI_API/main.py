@@ -21,12 +21,19 @@ recommendation_model = joblib.load("recommendation_model_svm.pkl")
 #     "port": 8889,
 #     "database": "mujeer"
 # }
+# DB_CONFIG = {
+#     "host": os.environ.get("MYSQLHOST", "localhost"),
+#     "user": os.environ.get("MYSQLUSER", "root"),
+#     "password": os.environ.get("MYSQLPASSWORD", "root"),
+#     "port": int(os.environ.get("MYSQLPORT", 8889)),
+#     "database": os.environ.get("MYSQLDATABASE", "mujeer")
+# }
 DB_CONFIG = {
-    "host": os.environ.get("MYSQLHOST", "localhost"),
-    "user": os.environ.get("MYSQLUSER", "root"),
-    "password": os.environ.get("MYSQLPASSWORD", "root"),
-    "port": int(os.environ.get("MYSQLPORT", 8889)),
-    "database": os.environ.get("MYSQLDATABASE", "mujeer")
+    "host": os.environ.get("DB_HOST", "localhost"),
+    "user": os.environ.get("DB_USER", "root"),
+    "password": os.environ.get("DB_PASS", ""),
+    "port": int(os.environ.get("DB_PORT", 3306)),
+    "database": os.environ.get("DB_NAME", "mujeer")
 }
 # ===== Request Models =====
 class Consultation(BaseModel):
