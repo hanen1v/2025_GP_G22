@@ -256,15 +256,19 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            _smallTag(lawyer!['speciality']),
-                            _smallTag(lawyer!['subSpeciality']),
-                            _smallTag(lawyer!['ssubSpeciality']),
-                          ],
-                        ),
+                      Wrap(
+  spacing: 6,
+  runSpacing: 6,
+  children: [
+
+    // ⭐ التخصص الرئيسي
+    _smallTag("⭐ ${lawyer!['speciality']}"),
+
+    // التخصصات الفرعية
+    _smallTag(lawyer!['subSpeciality']),
+    _smallTag(lawyer!['ssubSpeciality']),
+  ],
+),
                         const SizedBox(height: 30),
 
                         loadingRatings
@@ -341,19 +345,27 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
 }
 
   Widget _smallTag(String text) {
-    if (text.isEmpty) return const SizedBox.shrink();
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
+  if (text.isEmpty) return const SizedBox.shrink();
+
+  return Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 8,
+      vertical: 5,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.grey[200],
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: Colors.black87,
+        fontSize: 12,
       ),
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.black87, fontSize: 13),
-      ),
-    );
-  }
+      overflow: TextOverflow.ellipsis,
+    ),
+  );
+}
 
   Widget _buildRatingsSection() {
     final avg = ratings!['average'];

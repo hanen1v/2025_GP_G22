@@ -227,14 +227,18 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                         ),
                         const SizedBox(height: 10),
                         Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            _smallTag(lawyer!['speciality']),
-                            _smallTag(lawyer!['subSpeciality']),
-                            _smallTag(lawyer!['ssubSpeciality']),
-                          ],
-                        ),
+  spacing: 6,
+  runSpacing: 6,
+  children: [
+
+    // ⭐ التخصص الرئيسي
+    _smallTag("⭐ ${lawyer!['speciality']}"),
+
+    // التخصصات الفرعية
+    _smallTag(lawyer!['subSpeciality']),
+    _smallTag(lawyer!['ssubSpeciality']),
+  ],
+),
                         const SizedBox(height: 30),
 
                         loadingRatings
@@ -318,10 +322,10 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
           ],
         ),
         child: FloatingActionButton(
-          onPressed: () => Navigator.pushReplacementNamed(context, '/ai_page'),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/plus'),
           backgroundColor: Colors.transparent,
           elevation: 0,
-          child: const Icon(Icons.auto_awesome, color: Colors.white, size: 28),
+          child: const Icon(Icons.add, color: Colors.white, size: 28),
         ),
       );
 
@@ -360,21 +364,29 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
     );
   }
 
-  Widget _smallTag(String text) {
-    if (text.isEmpty) return const SizedBox.shrink();
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.black87, fontSize: 13),
-      ),
-    );
-  }
 
+Widget _smallTag(String text) {
+  if (text.isEmpty) return const SizedBox.shrink();
+
+  return Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 8,
+      vertical: 5,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.grey[200],
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: Colors.black87,
+        fontSize: 12,
+      ),
+      overflow: TextOverflow.ellipsis,
+    ),
+  );
+}
   Widget _buildRatingsSection() {
     final avg = ratings!['average'];
     final count = ratings!['count'];
