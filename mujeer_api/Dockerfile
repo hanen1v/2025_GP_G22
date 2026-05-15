@@ -37,4 +37,4 @@ RUN chown -R www-data:www-data /var/www/html \
 
 EXPOSE 80
 
-CMD ["apache2ctl", "-D", "FOREGROUND"]
+CMD ["/bin/bash", "-c", "source /etc/apache2/envvars && apache2 -D FOREGROUND"]
