@@ -6,7 +6,6 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 // مهم: لا نطبع أخطاء HTML للعميل (Flutter)
 error_reporting(E_ALL);
-ini_set('display_errors', 0);      // ⛔ لا تطبعي الأخطاء على الشاشة
 ini_set('log_errors', 1);          // ✅ سجّليها في اللوق
 ini_set('error_log', __DIR__ . '/php_errors.log');
 
