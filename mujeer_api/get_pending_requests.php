@@ -4,7 +4,7 @@ require_once __DIR__ . '/config.php';
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json; charset=utf-8');
 
-$sql = "SELECT * FROM `Request` WHERE `Status` = 'Pending'";
+$sql = "SELECT * FROM `request` WHERE `Status` = 'Pending'";
 
 try {
     // تنفيذ الاستعلام بـ MySQLi (باستخدام $conn القادم من config.php)
