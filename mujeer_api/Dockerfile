@@ -8,6 +8,10 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install mysqli pdo pdo_mysql zip \
     && rm -rf /var/lib/apt/lists/*
 
+# إصلاح مشكلة MPM
+RUN a2dismod mpm_event mpm_worker 2>/dev/null || true && \
+    a2enmod mpm_prefork
+
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
