@@ -1,12 +1,20 @@
-FROM php:8.2-apache
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
-    git unzip libzip-dev \
-    && docker-php-ext-install mysqli pdo pdo_mysql zip \
-    && rm -rf /var/lib/apt/lists/*
+    apache2 \
+    php8.1 \
+    php8.1-mysql \
+    php8.1-zip \
+    php8.1-curl \
+    libapache2-mod-php8.1 \
+    git \
+    unzip \
+    curl \
+    && apt-get clean
 
-RUN a2dismod mpm_event mpm_worker 2>/dev/null || true \
-    && a2enmod mpm_prefork
+RUN a2enmod php8.1 rewrite
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -21,4 +29,4 @@ RUN chown -R www-data:www-data /var/www/html \
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+CMD ["apache2ctl", "-D", "FOREGROUND"]
