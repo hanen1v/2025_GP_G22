@@ -20,4 +20,4 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80
 
-CMD sh -c "php-fpm -D && nginx -g 'daemon off;'"
+CMD sh -c "php-fpm && nginx -g 'daemon off;'"
