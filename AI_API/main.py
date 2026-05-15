@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import pandas as pd
 import joblib
 import mysql.connector
+import os
 from contextlib import contextmanager
 
 app = FastAPI()
@@ -13,14 +14,20 @@ classification_model = joblib.load("mujeer_svm_model.pkl")
 # موديل التوصية الخاص باقتراح المحامي
 recommendation_model = joblib.load("recommendation_model_svm.pkl")
 
+# DB_CONFIG = {
+#     "host": "localhost",
+#     "user": "root",
+#     "password": "root",
+#     "port": 8889,
+#     "database": "mujeer"
+# }
 DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "root",
-    "port": 8889,
-    "database": "mujeer"
+    "host": os.environ.get("MYSQLHOST", "localhost"),
+    "user": os.environ.get("MYSQLUSER", "root"),
+    "password": os.environ.get("MYSQLPASSWORD", "root"),
+    "port": int(os.environ.get("MYSQLPORT", 8889)),
+    "database": os.environ.get("MYSQLDATABASE", "mujeer")
 }
-
 # ===== Request Models =====
 class Consultation(BaseModel):
     text: str
