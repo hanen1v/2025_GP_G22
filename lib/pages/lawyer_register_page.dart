@@ -80,9 +80,11 @@ class _LawyerRegisterPageState extends State<LawyerRegisterPage> {
   bool _isCheckingUsername = false;
   bool _isCheckingPhone = false;
   bool _isCheckingLicense = false;
-  bool _isUsernameAvailable = false;
-  bool _isPhoneAvailable = false;
   bool _isLicenseAvailable = false;
+bool _isUsernameAvailable = false;
+bool _isPhoneAvailable = false;
+
+
   String? _usernameMessage;
   String? _phoneMessage;
   String? _licenseMessage;
@@ -258,100 +260,130 @@ void _showTermsPopup() {
 
   // التحقق الفوري من اسم المستخدم
   void _checkUsernameAvailability() async {
-    String username = _usernameController.text.trim();
-    if (username.length < 3) {
-      setState(() {
-        _usernameMessage = null;
-        _isUsernameAvailable = false;
-      });
-      return;
-    }
-
-    setState(() => _isCheckingUsername = true);
-
-    try {
-      var response = await http.post(
-        Uri.parse('https://2025gpg22-production.up.railway.app/check_availability.php'),
-
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'username': username, 'userType': 'lawyer'}),
-      );
-
-      var result = json.decode(response.body);
-      setState(() {
-        _isUsernameAvailable = result['available'];
-        _usernameMessage = result['message'];
-      });
-    } catch (e) {
-      print('خطأ في التحقق من اسم المستخدم: $e');
-    } finally {
-      setState(() => _isCheckingUsername = false);
-    }
+  String username = _usernameController.text.trim();
+  if (username.length < 3) {
+    setState(() {
+      _usernameMessage = null;
+      _isUsernameAvailable = false;
+    });
+    return;
   }
+
+  setState(() => _isCheckingUsername = true);
+
+  try {
+    var response = await http.post(
+      Uri.parse('https://2025gpg22-production.up.railway.app/check_availability.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'username': username, 'userType': 'lawyer'}),
+    );
+
+    var result = json.decode(response.body);
+    print('📥 استجابة التحقق من اسم المستخدم: $result'); // للتصحيح
+    
+    setState(() {
+      // التحقق من وجود الحقل available وليس null
+      if (result.containsKey('available') && result['available'] != null) {
+        _isUsernameAvailable = result['available'] == true || result['available'] == 1;
+      } else {
+        _isUsernameAvailable = false;
+      }
+      _usernameMessage = result['message']?.toString() ?? 'حدث خطأ في التحقق';
+    });
+  } catch (e) {
+    print('خطأ في التحقق من اسم المستخدم: $e');
+    setState(() {
+      _isUsernameAvailable = false;
+      _usernameMessage = 'خطأ في الاتصال بالخادم';
+    });
+  } finally {
+    setState(() => _isCheckingUsername = false);
+  }
+}
 
   // التحقق الفوري من رقم الجوال
   void _checkPhoneAvailability() async {
-    String phone = _phoneController.text.trim();
-    if (phone.length < 10 || !RegExp(r'^05\d{8}$').hasMatch(phone)) {
-      setState(() {
-        _phoneMessage = null;
-        _isPhoneAvailable = false;
-      });
-      return;
-    }
-
-    setState(() => _isCheckingPhone = true);
-
-    try {
-      var response = await http.post(
-        Uri.parse('https://2025gpg22-production.up.railway.app/check_availability.php'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'phoneNumber': phone, 'userType': 'lawyer'}),
-      );
-
-      var result = json.decode(response.body);
-      setState(() {
-        _isPhoneAvailable = result['available'];
-        _phoneMessage = result['message'];
-      });
-    } catch (e) {
-      print('خطأ في التحقق من رقم الجوال: $e');
-    } finally {
-      setState(() => _isCheckingPhone = false);
-    }
+  String phone = _phoneController.text.trim();
+  if (phone.length < 10 || !RegExp(r'^05\d{8}$').hasMatch(phone)) {
+    setState(() {
+      _phoneMessage = null;
+      _isPhoneAvailable = false;
+    });
+    return;
   }
+
+  setState(() => _isCheckingPhone = true);
+
+  try {
+    var response = await http.post(
+      Uri.parse('https://2025gpg22-production.up.railway.app/check_availability.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'phoneNumber': phone, 'userType': 'lawyer'}),
+    );
+
+    var result = json.decode(response.body);
+    print('📥 استجابة التحقق من رقم الجوال: $result'); // للتصحيح
+    
+    setState(() {
+      if (result.containsKey('available') && result['available'] != null) {
+        _isPhoneAvailable = result['available'] == true || result['available'] == 1;
+      } else {
+        _isPhoneAvailable = false;
+      }
+      _phoneMessage = result['message']?.toString() ?? 'حدث خطأ في التحقق';
+    });
+  } catch (e) {
+    print('خطأ في التحقق من رقم الجوال: $e');
+    setState(() {
+      _isPhoneAvailable = false;
+      _phoneMessage = 'خطأ في الاتصال بالخادم';
+    });
+  } finally {
+    setState(() => _isCheckingPhone = false);
+  }
+}
 
   // التحقق الفوري من رقم الرخصة
   void _checkLicenseAvailability() async {
-    String license = _licenseController.text.trim();
-    if (license.isEmpty) {
-      setState(() {
-        _licenseMessage = null;
-        _isLicenseAvailable = false;
-      });
-      return;
-    }
-
-    setState(() => _isCheckingLicense = true);
-
-    try {
-      var response = await http.post(
-        Uri.parse('https://2025gpg22-production.up.railway.app/check_availability.php'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'licenseNumber': license, 'userType': 'lawyer'}),
-      );
-
-      var result = json.decode(response.body);
-      setState(() {
-        _isLicenseAvailable = result['available'];
-        _licenseMessage = result['message'];
-      });
-    } catch (e) {
-      print('خطأ في التحقق من رقم الرخصة: $e');
-    } finally {
-      setState(() => _isCheckingLicense = false);
-    }
+  String license = _licenseController.text.trim();
+  if (license.isEmpty) {
+    setState(() {
+      _licenseMessage = null;
+      _isLicenseAvailable = false;
+    });
+    return;
   }
+
+  setState(() => _isCheckingLicense = true);
+
+  try {
+    var response = await http.post(
+      Uri.parse('https://2025gpg22-production.up.railway.app/check_availability.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'licenseNumber': license, 'userType': 'lawyer'}),
+    );
+
+    var result = json.decode(response.body);
+    print('📥 استجابة التحقق من رقم الرخصة: $result'); // للتصحيح
+    
+    setState(() {
+      if (result.containsKey('available') && result['available'] != null) {
+        _isLicenseAvailable = result['available'] == true || result['available'] == 1;
+      } else {
+        _isLicenseAvailable = false;
+      }
+      _licenseMessage = result['message']?.toString() ?? 'حدث خطأ في التحقق';
+    });
+  } catch (e) {
+    print('خطأ في التحقق من رقم الرخصة: $e');
+    setState(() {
+      _isLicenseAvailable = false;
+      _licenseMessage = 'خطأ في الاتصال بالخادم';
+    });
+  } finally {
+    setState(() => _isCheckingLicense = false);
+  }
+}
 
   @override
   Widget build(BuildContext context) {

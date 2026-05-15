@@ -1,4 +1,4 @@
-FROM php:8.2-cli
+FROM php:8.2-apache
 
 # Install system dependencies + PHP extensions
 RUN apt-get update && apt-get install -y \
@@ -11,13 +11,15 @@ RUN apt-get update && apt-get install -y \
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /app
+# نسخ الملفات إلى مجلد Apache
+COPY . /var/www/html/
 
-COPY . .
+WORKDIR /var/www/html
 
 # Install PHP dependencies
 RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-gd
 
-EXPOSE 80
+# صلاحيات
+RUN chown -R www-data:www-data /var/www/html
 
-CMD ["php", "-S", "0.0.0.0:80", "-t", "/app"]
+EXPOSE 80

@@ -1,9 +1,9 @@
 <?php
-$DB_HOST = getenv('DB_HOST') ?: 'localhost';
-$DB_PORT = getenv('DB_PORT') ?: '3306';
-$DB_NAME = getenv('DB_NAME') ?: 'railway';
-$DB_USER = getenv('DB_USER') ?: 'root';
-$DB_PASS = getenv('DB_PASS') ?: '';
+$DB_HOST = getenv('MYSQLHOST') ?: getenv('DB_HOST') ?: 'localhost';
+$DB_PORT = getenv('MYSQLPORT') ?: getenv('DB_PORT') ?: '3306';
+$DB_NAME = getenv('MYSQLDATABASE') ?: getenv('DB_NAME') ?: 'railway';
+$DB_USER = getenv('MYSQLUSER') ?: getenv('DB_USER') ?: 'root';
+$DB_PASS = getenv('MYSQLPASSWORD') ?: getenv('DB_PASS') ?: '';
 
 define('ONESIGNAL_APP_ID',       getenv('ONESIGNAL_APP_ID')       ?: '');
 define('ONESIGNAL_REST_API_KEY', getenv('ONESIGNAL_REST_API_KEY') ?: '');
