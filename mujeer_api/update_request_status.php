@@ -52,7 +52,7 @@ try {
     $stmt->execute();
 
     if ($lawyerID > 0) {
-        $stmt = $conn->prepare("UPDATE Lawyer SET Status = ? WHERE LawyerID = ?");
+        $stmt = $conn->prepare("UPDATE lawyer SET Status = ? WHERE LawyerID = ?");
         $stmt->bind_param("si", $newStatus, $lawyerID);
         $stmt->execute();
     }
