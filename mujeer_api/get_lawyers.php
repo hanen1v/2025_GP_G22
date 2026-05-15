@@ -41,7 +41,7 @@ if ($result && $result->num_rows > 0) {
 
      $imagePath = "";
         if (!empty($row['LawyerPhoto'])) {
-            $imagePath = "http://" . $_SERVER['HTTP_HOST'] . "/mujeer_api/uploads/" . $row['LawyerPhoto'];
+            $imagePath = $row['LawyerPhoto'];
         }
         $lawyers[] = [
             "id" => $row['LawyerID'],

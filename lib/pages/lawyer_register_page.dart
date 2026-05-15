@@ -271,8 +271,7 @@ void _showTermsPopup() {
 
     try {
       var response = await http.post(
-        Uri.parse('http://10.164.73.246:8888/mujeer_api/check_availability.php'),
-        //Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+        Uri.parse('https://2025gpg22-production.up.railway.app/check_availability.php'),
 
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'username': username, 'userType': 'lawyer'}),
@@ -305,8 +304,7 @@ void _showTermsPopup() {
 
     try {
       var response = await http.post(
-        Uri.parse('http://10.164.73.246:8888/mujeer_api/check_availability.php'),
-        //Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+        Uri.parse('https://2025gpg22-production.up.railway.app/check_availability.php'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'phoneNumber': phone, 'userType': 'lawyer'}),
       );
@@ -338,8 +336,7 @@ void _showTermsPopup() {
 
     try {
       var response = await http.post(
-        Uri.parse('http://10.164.73.246:8888/mujeer_api/check_availability.php'),
-        //Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+        Uri.parse('https://2025gpg22-production.up.railway.app/check_availability.php'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'licenseNumber': license, 'userType': 'lawyer'}),
       );
@@ -1010,8 +1007,7 @@ Widget _buildPoliciesSection() {
 
       print('📤 إرسال بيانات المحامي بعد التحقق الناجح: $requestData');
 
-      const String baseUrl = 'http://10.164.73.246:8888/mujeer_api';
-      //const String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
+      const String baseUrl = 'https://2025gpg22-production.up.railway.app';
 
       final response = await http
           .post(

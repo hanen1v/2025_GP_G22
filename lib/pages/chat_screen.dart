@@ -648,7 +648,7 @@ Future<void> _uploadSelectedFile() async {
 
   var request = http.MultipartRequest(
     'POST',
-    Uri.parse('http://10.0.2.2:8888/mujeer_api/upload_file.php'),
+    Uri.parse('https://2025gpg22-production.up.railway.app/upload_file.php'),
   );
 
   request.files.add(

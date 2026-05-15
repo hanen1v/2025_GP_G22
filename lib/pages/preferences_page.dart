@@ -195,7 +195,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
 
   try {
 
-    final url = Uri.parse('http://10.164.73.246:8000/recommend');
+    final url = Uri.parse('https://ai-production-b7fa.up.railway.app/recommend');
 
     final response = await http.post(
       url,
