@@ -136,20 +136,14 @@ Widget _buildLawyerCard(Lawyer lw) {
       child: Row(
         children: [
           CircleAvatar(
-            radius: 28,
-            backgroundColor: Colors.grey.shade200,
-            child: ClipOval(
-              child: lw.photoUrl.isEmpty
-                  ? const Icon(Icons.person)
-                  : Image.network(
-                      lw.photoUrl,
-                      width: 56,
-                      height: 56,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.person),
-                    ),
-            ),
-          ),
+  radius: 28,
+  backgroundImage: lw.photoUrl.isNotEmpty
+    ? NetworkImage(lw.photoUrl)
+    : null,
+child: lw.photoUrl.isEmpty
+    ? const Icon(Icons.person, color: Colors.grey)
+    : null,
+),
           const SizedBox(width: 12),
           Expanded(
             child: Text(

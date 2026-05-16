@@ -1040,6 +1040,7 @@ Widget _buildPoliciesSection() {
       print('📤 إرسال بيانات المحامي بعد التحقق الناجح: $requestData');
 
       const String baseUrl = 'https://2025gpg22-production.up.railway.app';
+print('📤 JSON المرسل: ${json.encode(requestData)}');
 
       final response = await http
           .post(
@@ -1093,20 +1094,42 @@ Widget _buildPoliciesSection() {
         }
 
         // ثانياً: لو فيه صورة شخصية، نرفعها بالـ API الشغال
-        if (_profileImage != null && _profileImage!.path != null) {
-          try {
-            final newFileName = await ApiClient.uploadLawyerPhoto(
-              userId: lawyerId,
-              imagePath: _profileImage!.path!,
-            );
+        // قبل
+if (_profileImage != null && _profileImage!.path != null) {
+  try {
+    final newFileName = await ApiClient.uploadLawyerPhoto(
+      userId: lawyerId,
+      imagePath: _profileImage!.path!,
+    );
+    if (user != null && newFileName.isNotEmpty) {
+      user = user.copyWith(profileImage: newFileName);
+    }
+  } catch (e) {
+    print('⚠️ فشل رفع الصورة عند التسجيل: $e');
+  }
+}
 
-            if (user != null && newFileName.isNotEmpty) {
-              user = user.copyWith(profileImage: newFileName);
-            }
-          } catch (e) {
-            print('⚠️ فشل رفع الصورة عند التسجيل: $e');
-          }
-        }
+// بعد — أضيفي _showSuccessAndNavigate() داخل try بعد رفع الصورة مباشرة
+if (_profileImage != null && _profileImage!.path != null) {
+  try {
+    final newFileName = await ApiClient.uploadLawyerPhoto(
+      userId: lawyerId,
+      imagePath: _profileImage!.path!,
+    );
+    if (user != null && newFileName.isNotEmpty) {
+      user = user.copyWith(profileImage: newFileName);
+    }
+  } catch (e) {
+    print('⚠️ فشل رفع الصورة، نكمل بدونها: $e');
+    // نكمل حتى لو فشل رفع الصورة
+  }
+}
+
+// تأكدي إن هذا الجزء موجود بعد الـ if مباشرة
+if (user != null) {
+  await Session.saveUser(user);
+}
+_showSuccessAndNavigate();
 
         // أخيراً: نخزن اليوزر في السيشن ونروح لصفحة المزيد
         if (user != null) {

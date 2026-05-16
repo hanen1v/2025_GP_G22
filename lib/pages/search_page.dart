@@ -3,8 +3,10 @@ import '../widgets/app_bottom_nav.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
- import 'lawyer_details_page.dart';
+import 'lawyer_details_page.dart';
 import '../models/request_type.dart';
+import '../services/api_client.dart';
+import '../models/lawyer.dart';
 
 
 class SearchPage extends StatefulWidget {
@@ -316,7 +318,15 @@ onTap: () {
         children: [
           Row(
             children: [
-              CircleAvatar(radius: 28, backgroundImage: NetworkImage(lawyer['image'])),
+              CircleAvatar(
+  radius: 28,
+  backgroundImage: lawyer['image'] != null && lawyer['image'].toString().isNotEmpty
+    ? NetworkImage('${ApiClient.profileImageBase}/${lawyer['image']}')
+    : null,
+child: lawyer['image'] == null || lawyer['image'].toString().isEmpty
+    ? const Icon(Icons.person, color: Colors.grey)
+    : null,
+),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

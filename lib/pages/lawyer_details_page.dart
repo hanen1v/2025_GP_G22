@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'case_details_page.dart';
 import 'select_time_page.dart';
 import '../models/request_type.dart';
+import '../services/api_client.dart';
+import '../models/lawyer.dart';
 
 class LawyerDetailsPage extends StatefulWidget {
   final int lawyerId;
@@ -129,9 +131,14 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         CircleAvatar(
-                          radius: 45,
-                          backgroundImage: NetworkImage(lawyer!['image']),
-                        ),
+  radius: 42,
+  backgroundImage: lawyer?['image'] != null && lawyer!['image'].toString().isNotEmpty
+    ? NetworkImage('${ApiClient.profileImageBase}/${lawyer!['image']}')
+    : null,
+child: lawyer?['image'] == null || lawyer!['image'].toString().isEmpty
+    ? const Icon(Icons.person, color: Colors.grey)
+    : null,
+),
                         const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,

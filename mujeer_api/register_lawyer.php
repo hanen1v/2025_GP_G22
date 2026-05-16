@@ -131,7 +131,7 @@ if ($stmt->execute()) {
         LIMIT 1
     ");
 
-    if ($uRes && $uRes->num_rows === 1) {
+    if ($uRes && $uRes->num_rows > 1) {
         $user = $uRes->fetch_assoc();
         $user['UserType'] = 'lawyer';
     }

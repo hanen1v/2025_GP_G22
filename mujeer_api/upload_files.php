@@ -19,7 +19,7 @@ if (
         ?? $_FILES['license_file']
         ?? $_FILES['profile_image'];
 
-    $fileName  = pathinfo($_POST['fileName'], PATHINFO_FILENAME); // بدون الامتداد
+    $fileName = $_POST['fileName'];
     $tmpPath   = $uploadedFile['tmp_name'];
 
     // رفع على Cloudinary

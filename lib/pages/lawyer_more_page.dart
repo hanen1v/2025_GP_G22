@@ -8,6 +8,7 @@ import 'lawyer_profile_page.dart';
 import 'dart:async'; //(Timer)
 import '../services/api_client.dart';
 import 'lawyer_update_license_page.dart';
+import '../models/lawyer.dart';
 
 
 class LawyerMorePage extends StatefulWidget {
@@ -173,21 +174,14 @@ Future<void> _loadStatus() async {
                 alignment: Alignment.bottomRight,
                 children: [
                   CircleAvatar(
-                    radius: 48,
-                    backgroundColor: Colors.grey[300],
-                    backgroundImage: (_user != null &&
-                            _user!.profileImageUrl.isNotEmpty)
-                        ? NetworkImage(_user!.profileImageUrl)
-                        : null,
-                    child: (_user == null ||
-                            _user!.profileImageUrl.isEmpty)
-                        ? const Icon(
-                            Icons.person,
-                            size: 48,
-                            color: Colors.grey,
-                          )
-                        : null,
-                  ),
+  radius: 42,
+  backgroundImage: (_user?.profileImageUrl.isNotEmpty ?? false)
+    ? NetworkImage(_user!.profileImageUrl)
+    : null,
+  child: (_user?.profileImageUrl.isEmpty ?? true)
+    ? const Icon(Icons.person, color: Colors.grey)
+    : null,
+),
                   Positioned(
                     bottom: 2,
                     right: 2,

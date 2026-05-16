@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../services/api_client.dart';
+import '../models/lawyer.dart';
 
 
 class AdminLawyerDetailsPage extends StatefulWidget {
@@ -129,9 +131,14 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         CircleAvatar(
-                          radius: 45,
-                          backgroundImage: NetworkImage(lawyer!['image']),
-                        ),
+  radius: 42,
+  backgroundImage: lawyer?['image'] != null && lawyer!['image'].toString().isNotEmpty
+    ? NetworkImage('${ApiClient.profileImageBase}/${lawyer!['image']}')
+    : null,
+child: lawyer?['image'] == null || lawyer!['image'].toString().isEmpty
+    ? const Icon(Icons.person, color: Colors.grey)
+    : null,
+),
                         const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
