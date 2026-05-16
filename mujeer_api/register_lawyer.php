@@ -160,8 +160,8 @@ echo json_encode([
     "debug" => "5 - user fetched",
     "rows" => $uRes ? $uRes->num_rows : "query failed"
 ]);
-// exit;
-    if ($uRes && $uRes->num_rows > 1) {
+exit;
+    if ($uRes && $uRes->num_rows >= 1) {
         $user = $uRes->fetch_assoc();
         $user['UserType'] = 'lawyer';
     }
