@@ -115,10 +115,10 @@ $request_stmt->bind_param("isss", $lawyerId, $license_file_name, $fullName, $lic
 
 $request_stmt->execute();
 
-echo json_encode([
-    "debug" => "execute success"
-]);
-exit;
+// echo json_encode([
+//     "debug" => "execute success"
+// ]);
+// exit;
 
     // 3️⃣ جلب الـ Player IDs للمشرفين (مرة واحدة فقط هنا)
     $q = $conn->prepare("SELECT player_id FROM admin_devices");
@@ -131,11 +131,11 @@ exit;
         }
     }
     $q->close();
-// echo json_encode([
-//     "debug" => "3 - players fetched",
-//     "players_count" => count($players)
-// ]);
-// exit;
+echo json_encode([
+    "debug" => "3 - players fetched",
+    "players_count" => count($players)
+]);
+exit;
     // 4️⃣ إرسال الإشعار (سيتم إرسال إشعار واحد فقط الآن)
     if (!empty($players)) {
         $title = 'طلب تسجيل جديد';
