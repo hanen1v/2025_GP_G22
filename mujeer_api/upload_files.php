@@ -43,7 +43,6 @@ function cloudinary_upload($tmpPath, $fileType, $fileName, $resourceType = 'raw'
 // ── رفع ملف الرخصة (PDF) ──
 if (isset($_FILES['license_file']) && $_FILES['license_file']['error'] === UPLOAD_ERR_OK) {
     $fileName = $_POST['fileName'] ?? ('license_' . time());
-    // أزل .pdf من الاسم لأن Cloudinary يضيفه تلقائياً
     $fileName = $fileName;
 
     $result = cloudinary_upload(

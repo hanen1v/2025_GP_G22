@@ -2,7 +2,7 @@
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
-function cloudinary_upload($tmpPath, $fileType, $fileName) {
+function cloudinary_upload($tmpPath, $fileType, $fileName, $resourceType = 'image') { // ← أضف $resourceType
     $CLOUD_NAME = getenv("CLOUDINARY_CLOUD_NAME") ?: "dmhrba99m";
     $API_KEY    = getenv("CLOUDINARY_API_KEY")    ?: "696554864561483";
     $API_SECRET = getenv("CLOUDINARY_API_SECRET") ?: "";
@@ -10,7 +10,7 @@ function cloudinary_upload($tmpPath, $fileType, $fileName) {
     $signature  = sha1("public_id=$fileName&timestamp=$timestamp" . $API_SECRET);
     $ch = curl_init();
     curl_setopt_array($ch, [
-        CURLOPT_URL            => "https://api.cloudinary.com/v1_1/$CLOUD_NAME/auto/upload",
+        CURLOPT_URL            => "https://api.cloudinary.com/v1_1/$CLOUD_NAME/$resourceType/upload", // ← استخدمه هنا
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => [
@@ -32,8 +32,10 @@ function cloudinary_upload($tmpPath, $fileType, $fileName) {
 }
 
 if (isset($_FILES["file"])) {
-    $fileName = time() . "_" . pathinfo($_FILES["file"]["name"], PATHINFO_FILENAME);
-    $result   = cloudinary_upload($_FILES["file"]["tmp_name"], $_FILES["file"]["type"], $fileName);
+    $ext          = strtolower(pathinfo($_FILES["file"]["name"], PATHINFO_EXTENSION));
+    $fileName     = time() . "_" . pathinfo($_FILES["file"]["name"], PATHINFO_FILENAME) . "." . $ext;
+    $resourceType = ($ext === 'pdf') ? 'raw' : 'image';
+    $result       = cloudinary_upload($_FILES["file"]["tmp_name"], $_FILES["file"]["type"], $fileName, $resourceType); // ← مرره هنا
 
     if ($result["success"]) {
         echo json_encode([

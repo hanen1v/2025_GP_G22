@@ -5,7 +5,9 @@ import 'package:file_picker/file_picker.dart';
 import 'select_time_page.dart';
 import 'payment_page.dart';
 import '../models/request_type.dart'; 
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io';
 class CaseDetailsPage extends StatefulWidget {
   final int lawyerId;
   final double price;
@@ -28,6 +30,8 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
   final TextEditingController _detailsController = TextEditingController();
   bool _detailsError = false;
   String? _attachedFile;
+  String? _attachedFileUrl;
+  bool _isUploadingFile = false; 
 
   @override
   Widget build(BuildContext context) {
@@ -123,29 +127,61 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
     const SizedBox(width: 10),
 
     ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.grey[300],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(25),
-        ),
-      ),
-      onPressed: () async {
-        final result = await FilePicker.platform.pickFiles(
-          type: FileType.custom,
-          allowedExtensions: ['pdf', 'jpg', 'png', 'doc', 'docx'],
-        );
-
-        if (result != null && result.files.isNotEmpty) {
-          setState(() {
-            _attachedFile = result.files.single.name;
-          });
-        }
-      },
-      child: const Text(
-        'اختيار ملف',
-        style: TextStyle(color: Colors.black87),
-      ),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.grey[300],
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(25),
     ),
+  ),
+  onPressed: _isUploadingFile ? null : () async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'jpg', 'png', 'doc', 'docx'],
+    );
+
+    if (result != null && result.files.isNotEmpty) {
+      final file = result.files.single;
+      setState(() {
+        _attachedFile = file.name;
+        _isUploadingFile = true;
+      });
+
+      try {
+        var request = http.MultipartRequest(
+          'POST',
+          Uri.parse('https://2025gpg22-production.up.railway.app/upload_file.php'),
+        );
+        request.files.add(await http.MultipartFile.fromPath('file', file.path!));
+        
+        var response = await request.send();
+        var body = await response.stream.bytesToString();
+        final data = jsonDecode(body);
+
+        if (data['success'] == true) {
+          setState(() => _attachedFileUrl = data['file_url']);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('فشل رفع الملف: ${data['error'] ?? ''}')),
+          );
+          setState(() => _attachedFile = null);
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطأ في رفع الملف: $e')),
+        );
+        setState(() => _attachedFile = null);
+      } finally {
+        setState(() => _isUploadingFile = false);
+      }
+    }
+  },
+  child: _isUploadingFile
+      ? const SizedBox(
+          width: 20, height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black54),
+        )
+      : const Text('اختيار ملف', style: TextStyle(color: Colors.black87)),
+),
   ],
 ),
 
@@ -197,19 +233,18 @@ class _CaseDetailsPageState extends State<CaseDetailsPage> {
                             setState(() => _detailsError = false);
 
                             Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PaymentPage(
-                                  lawyerId: widget.lawyerId,
-                                  timeslotId: widget.timeslotId,
-                                  price: widget.price,
-                                  caseDetails:
-                                      _detailsController.text,
-                                  attachedFileName: _attachedFile,
-                                   requestType: widget.requestType,
-                                ),
-                              ),
-                            );
+  context,
+  MaterialPageRoute(
+    builder: (context) => PaymentPage(
+      lawyerId: widget.lawyerId,
+      timeslotId: widget.timeslotId,
+      price: widget.price,
+      caseDetails: _detailsController.text,
+      attachedFileName: _attachedFileUrl,
+      requestType: widget.requestType,
+    ),
+  ),
+);
                           },
                           child: const Text(
                             'الانتقال إلى الدفع',
