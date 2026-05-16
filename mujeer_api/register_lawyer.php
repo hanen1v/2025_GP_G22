@@ -131,18 +131,18 @@ $request_stmt->execute();
         }
     }
     $q->close();
-echo json_encode([
-    "debug" => "3 - players fetched",
-    "players_count" => count($players)
-]);
-exit;
+// echo json_encode([
+//     "debug" => "3 - players fetched",
+//     "players_count" => count($players)
+// ]);
+// exit;
     // 4️⃣ إرسال الإشعار (سيتم إرسال إشعار واحد فقط الآن)
     if (!empty($players)) {
         $title = 'طلب تسجيل جديد';
         $body  = "المحامي $fullName سجل في النظام وينتظر الموافقة";
         send_push($players, $title, $body, ['type' => 'new_lawyer', 'id' => $lawyerId]); 
-//         echo json_encode(["debug" => "4 - push sent"]);
-// exit;
+        echo json_encode(["debug" => "4 - push sent"]);
+exit;
     }
 
     // 5️⃣ جلب بيانات المحامي للرد على التطبيق (تم إصلاح الفاصلة هنا)
