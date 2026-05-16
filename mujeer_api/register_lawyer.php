@@ -110,8 +110,8 @@ if (!$request_stmt) {
 
 $request_stmt->bind_param("isss", $lawyerId, $license_file_name, $fullName, $licenseNumber);
 
-echo json_encode(["debug" => "bind success"]);
-exit;
+// echo json_encode(["debug" => "bind success"]);
+// exit;
 
 $request_stmt->execute();
 
