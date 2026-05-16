@@ -150,14 +150,14 @@ class _LawyerChip extends StatelessWidget {
               clipBehavior: Clip.none,
               children: [
                 CircleAvatar(
-                  radius: 50,
-                  backgroundColor: const Color(0xFFE8F3F2),
-                  backgroundImage: photo.isNotEmpty ? NetworkImage(photo) : null,
-                  child: photo.isNotEmpty
-                      ? null
-                      : const Icon(Icons.person, color: Color(0xFF0B5345), size: 28),
-                ),
-
+  radius: 42,
+  backgroundImage: lawyer.photoUrl.isNotEmpty
+    ? NetworkImage(lawyer.photoUrl)
+    : null,
+  child: lawyer.photoUrl.isEmpty
+    ? const Icon(Icons.person, color: Colors.grey)
+    : null,
+),
                 
                 Positioned(
                   top: -8,

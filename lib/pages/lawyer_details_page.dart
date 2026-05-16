@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'case_details_page.dart';
 import 'select_time_page.dart';
 import '../models/request_type.dart';
+import '../services/api_client.dart';
+import '../models/lawyer.dart';
 
 class LawyerDetailsPage extends StatefulWidget {
   final int lawyerId;
@@ -33,7 +35,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
 
   Future<void> _fetchLawyerDetails() async {
     final url = Uri.parse(
-        'http://10.0.2.2:8888/mujeer_api/get_lawyer_details.php?id=${widget.lawyerId}');
+        'https://2025gpg22-production.up.railway.app/get_lawyer_details.php?id=${widget.lawyerId}');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -51,7 +53,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
 
   Future<void> _fetchRatings() async {
     final url = Uri.parse(
-        'http://10.0.2.2:8888/mujeer_api/get_lawyer_ratings.php?id=${widget.lawyerId}');
+        'https://2025gpg22-production.up.railway.app/get_lawyer_ratings.php?id=${widget.lawyerId}');
     try {
       final response = await http.get(url);
 
@@ -70,7 +72,7 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
 
   Future<void> _fetchComments() async {
     final url = Uri.parse(
-        'http://10.0.2.2:8888/mujeer_api/get_lawyer_comments.php?id=${widget.lawyerId}');
+        'https://2025gpg22-production.up.railway.app/get_lawyer_comments.php?id=${widget.lawyerId}');
     try {
       final res = await http.get(url);
       if (res.statusCode == 200) {
@@ -129,9 +131,14 @@ class _LawyerDetailsPageState extends State<LawyerDetailsPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         CircleAvatar(
-                          radius: 45,
-                          backgroundImage: NetworkImage(lawyer!['image']),
-                        ),
+  radius: 42,
+  backgroundImage: lawyer?['image'] != null && lawyer!['image'].toString().isNotEmpty
+    ? NetworkImage('${ApiClient.profileImageBase}/${lawyer!['image']}')
+    : null,
+child: lawyer?['image'] == null || lawyer!['image'].toString().isEmpty
+    ? const Icon(Icons.person, color: Colors.grey)
+    : null,
+),
                         const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,

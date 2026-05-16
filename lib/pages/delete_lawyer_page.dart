@@ -16,8 +16,7 @@ class DeleteLawyerPage extends StatefulWidget {
 
 class _DeleteLawyerPageState extends State<DeleteLawyerPage> {
 
-  static const String base = 'http://10.164.73.246:8888/mujeer_api';
-  //static const String base = 'http://10.0.2.2:8888/mujeer_api';
+  static const String base = 'https://2025gpg22-production.up.railway.app';
   
   static const String getLawyersUrl = '$base/get_lawyers.php';
 
@@ -137,20 +136,14 @@ Widget _buildLawyerCard(Lawyer lw) {
       child: Row(
         children: [
           CircleAvatar(
-            radius: 28,
-            backgroundColor: Colors.grey.shade200,
-            child: ClipOval(
-              child: lw.photoUrl.isEmpty
-                  ? const Icon(Icons.person)
-                  : Image.network(
-                      lw.photoUrl,
-                      width: 56,
-                      height: 56,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.person),
-                    ),
-            ),
-          ),
+  radius: 28,
+  backgroundImage: lw.photoUrl.isNotEmpty
+    ? NetworkImage(lw.photoUrl)
+    : null,
+child: lw.photoUrl.isEmpty
+    ? const Icon(Icons.person, color: Colors.grey)
+    : null,
+),
           const SizedBox(width: 12),
           Expanded(
             child: Text(

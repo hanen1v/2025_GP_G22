@@ -27,7 +27,7 @@ class _AiContractDraftingState extends State<AiContractDrafting> {
   static const Color _textOnUser = Colors.white;
 
   static const String _endpoint =
-      "http://10.164.73.246:8888/mujeer_api/ai_contract.php";
+      "https://2025gpg22-production.up.railway.app/ai_contract.php";
 
   // ✅ تحليل JSON آمن — لو السيرفر أرجع HTML أو نص غير متوقع ما ينكسر
   Map<String, dynamic>? _safeJsonDecode(http.Response res) {

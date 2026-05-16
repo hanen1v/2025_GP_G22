@@ -148,13 +148,11 @@ class User {
 
   // دالة للحصول على الصورة (مع صورة افتراضية)
   String get profileImageUrl {
-    if (profileImage == null || profileImage!.isEmpty) {
-      return '';
-    }
-    //const baseUrl = 'http://10.0.2.2:8888/mujeer_api';
-    const baseUrl = 'http://10.164.73.246:8888/mujeer_api';
-    return '$baseUrl/uploads/$profileImage';
-  }
+  if (profileImage == null || profileImage!.isEmpty) return '';
+  if (profileImage!.startsWith('http')) return profileImage!;
+  const baseUrl = 'https://2025gpg22-production.up.railway.app';
+  return '$baseUrl/uploads/$profileImage';
+}
 
   String get displayInfo {
     return '$fullName ($username) - ${_getUserTypeArabic()}';

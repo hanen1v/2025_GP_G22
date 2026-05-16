@@ -3,8 +3,10 @@ import '../widgets/app_bottom_nav.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
- import 'lawyer_details_page.dart';
+import 'lawyer_details_page.dart';
 import '../models/request_type.dart';
+import '../services/api_client.dart';
+import '../models/lawyer.dart';
 
 
 class SearchPage extends StatefulWidget {
@@ -30,7 +32,7 @@ class _SearchPageState extends State<SearchPage> {
 
 
 Future<void> _fetchLawyers() async {
-  final url = Uri.parse('http://10.164.73.246:8888/mujeer_api/get_lawyers.php');
+  final url = Uri.parse('https://2025gpg22-production.up.railway.app/get_lawyers.php');
   try {
     final response = await http.get(url);
     if (response.statusCode == 200) {
@@ -316,7 +318,15 @@ onTap: () {
         children: [
           Row(
             children: [
-              CircleAvatar(radius: 28, backgroundImage: NetworkImage(lawyer['image'])),
+              CircleAvatar(
+  radius: 28,
+  backgroundImage: lawyer['image'] != null && lawyer['image'].toString().isNotEmpty
+    ? NetworkImage('${ApiClient.profileImageBase}/${lawyer['image']}')
+    : null,
+child: lawyer['image'] == null || lawyer['image'].toString().isEmpty
+    ? const Icon(Icons.person, color: Colors.grey)
+    : null,
+),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

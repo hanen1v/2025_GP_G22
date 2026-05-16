@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/config.php';
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 
 
 header("Access-Control-Allow-Origin: *");
@@ -41,7 +41,7 @@ if ($result && $result->num_rows > 0) {
 
      $imagePath = "";
         if (!empty($row['LawyerPhoto'])) {
-            $imagePath = "http://" . $_SERVER['HTTP_HOST'] . "/mujeer_api/uploads/" . $row['LawyerPhoto'];
+            $imagePath = $row['LawyerPhoto'];
         }
         $lawyers[] = [
             "id" => $row['LawyerID'],

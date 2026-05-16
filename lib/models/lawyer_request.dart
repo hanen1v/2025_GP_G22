@@ -14,16 +14,20 @@ class LawyerRequest {
   });
 
   factory LawyerRequest.fromJson(Map<String, dynamic> j) {
-        final fileName = (j['LawyerLicense'] ?? '').toString().trim();
-        //const baseUrl = 'http://10.0.2.2:8888/mujeer_api';
-        const baseUrl = 'http://10.164.73.246:8888/mujeer_api';
-        final fullFileUrl = fileName.isEmpty ? '' : '$baseUrl/uploads/$fileName';
-    return LawyerRequest(
-      id: int.parse(j['RequestID'].toString()),
-      lawyerName: (j['LawyerName'] ?? '').toString(),
-      licenseNumber: (j['LicenseNumber'] ?? '').toString(),
-      LicenseFile:fullFileUrl,
-      status: (j['Status'] ?? 'Pending').toString(),
-    );
-  }
+  final fileName = (j['LawyerLicense'] ?? '').toString().trim();
+  const baseUrl = 'https://2025gpg22-production.up.railway.app';
+  final fullFileUrl = fileName.isEmpty
+      ? ''
+      : fileName.startsWith('http')
+          ? fileName
+          : '$baseUrl/uploads/$fileName';
+
+  return LawyerRequest(
+    id: int.parse(j['RequestID'].toString()),
+    lawyerName: (j['LawyerName'] ?? '').toString(),
+    licenseNumber: (j['LicenseNumber'] ?? '').toString(),
+    LicenseFile: fullFileUrl,
+    status: (j['Status'] ?? 'Pending').toString(),
+  );
+}
 }

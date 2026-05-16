@@ -41,8 +41,6 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isAppointmentActive = false;
   // الحالة الافتراضية "منتهية" لضمان عدم ظهور الأزرار في المواعيد القديمة
   bool _isAppointmentFinished = true; 
-  File? _selectedFile;
-String? _selectedFileName;
 
   @override
   void initState() {
@@ -243,108 +241,37 @@ String? _selectedFileName;
   Widget _buildInputArea() {
     if (_isAppointmentFinished) return const SizedBox();
     return Container(
-  padding: const EdgeInsets.all(10),
-  child: Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-
-      // معاينة الملف
-      if (_selectedFile != null)
-        Container(
-          width: double.infinity,
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 8,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-
-              Expanded(
-                child: Text(
-                  _selectedFileName ?? "ملف",
-                  style: TextStyle(
-                    color: Colors.grey[700],
-                    fontSize: 13,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedFile = null;
-                    _selectedFileName = null;
-                  });
-                },
-                child: Icon(
-                  Icons.close,
-                  color: Colors.grey[700],
-                  size: 20,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-      Row(
+      padding: const EdgeInsets.all(10),
+      child: Row(
         children: [
-
           IconButton(
-            icon: const Icon(
-              Icons.attach_file,
-              color: Color.fromARGB(255, 9, 44, 36),
-            ),
-            onPressed: _pickAndUploadFile,
+            icon: const Icon(Icons.attach_file, color: Color.fromARGB(255, 9, 44, 36)), 
+            onPressed: _pickAndUploadFile
           ),
-
           Expanded(
             child: TextField(
-              controller: messageController,
-              decoration: const InputDecoration(
-                hintText: 'أدخل رسالتك',
-                border: OutlineInputBorder(),
-              ),
-            ),
+              controller: messageController, 
+              decoration: const InputDecoration(hintText: 'أدخل رسالتك', border: OutlineInputBorder())
+            )
           ),
-
           IconButton(
-            icon: const Icon(
-              Icons.send,
-              color: Color.fromARGB(255, 9, 44, 36),
-            ),
-            onPressed: () async {
-
-              // إرسال الرسالة
+            icon: const Icon(Icons.send, color: Color.fromARGB(255, 9, 44, 36)), 
+            onPressed: () {
               if (messageController.text.trim().isNotEmpty) {
-
                 _firestore.collection('chats').add({
-                  'senderID': senderID,
-                  'receiverID': receiverID,
-                  'appointmentID': appointmentID,
-                  'message': messageController.text.trim(),
+                  'senderID': senderID, 
+                  'receiverID': receiverID, 
+                  'appointmentID': appointmentID, 
+                  'message': messageController.text.trim(), 
                   'timestamp': FieldValue.serverTimestamp()
                 });
-
                 messageController.clear();
               }
-
-              // إرسال الملف
-              if (_selectedFile != null) {
-                await _uploadSelectedFile();
-              }
-            },
+            }
           ),
         ],
       ),
-    ],
-  ),
-);
+    );
   }
 
   void _getArguments() {
@@ -631,56 +558,29 @@ String? _selectedFileName;
   }
 
   Future<void> _pickAndUploadFile() async {
-  if (_isAppointmentFinished) return;
-
-  FilePickerResult? result = await FilePicker.platform.pickFiles();
-
-  if (result != null) {
-    setState(() {
-      _selectedFile = File(result.files.single.path!);
-      _selectedFileName = result.files.single.name;
-    });
-  }
-}
-
-Future<void> _uploadSelectedFile() async {
-  if (_selectedFile == null) return;
-
-  var request = http.MultipartRequest(
-    'POST',
-    Uri.parse('http://10.0.2.2:8888/mujeer_api/upload_file.php'),
-  );
-
-  request.files.add(
-    await http.MultipartFile.fromPath(
-      'file',
-      _selectedFile!.path,
-    ),
-  );
-
-  var response = await request.send();
-  var resBody = await response.stream.bytesToString();
-
-  if (response.statusCode == 200) {
-    final data = jsonDecode(resBody);
-
-    if (data['success']) {
-      _firestore.collection('chats').add({
-        'senderID': senderID,
-        'receiverID': receiverID,
-        'appointmentID': appointmentID,
-        'fileUrl': data['file_url'],
-        'fileName': _selectedFileName,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-
-      setState(() {
-        _selectedFile = null;
-        _selectedFileName = null;
-      });
+    if (_isAppointmentFinished) return;
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      var file = result.files.single;
+      var request = http.MultipartRequest('POST', Uri.parse('https://2025gpg22-production.up.railway.app/upload_file.php'));
+      request.files.add(await http.MultipartFile.fromPath('file', file.path!));
+      var response = await request.send();
+      var resBody = await response.stream.bytesToString();
+      if (response.statusCode == 200) {
+        final data = jsonDecode(resBody);
+        if (data['success']) {
+          _firestore.collection('chats').add({
+            'senderID': senderID, 
+            'receiverID': receiverID, 
+            'appointmentID': appointmentID,
+            'fileUrl': data['file_url'], 
+            'fileName': file.name, 
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
+      }
     }
   }
-}
 
   Future<void> _openDownloadedFile(String url, String fileName) async {
     try {

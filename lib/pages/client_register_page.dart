@@ -220,8 +220,7 @@ void _showTermsPopup() {
 
     try {
       var response = await http.post(
-        Uri.parse('http://10.164.73.246:8888/mujeer_api/check_availability.php'),
-        //Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+        Uri.parse('https://2025gpg22-production.up.railway.app/check_availability.php'),
 
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'username': username, 'userType': 'client'}),
@@ -254,8 +253,7 @@ void _showTermsPopup() {
 
     try {
       var response = await http.post(
-        Uri.parse('http://10.164.73.246:8888/mujeer_api/check_availability.php'),
-        //Uri.parse('http://10.0.2.2:8888/mujeer_api/check_availability.php'),
+        Uri.parse('https://2025gpg22-production.up.railway.app/check_availability.php'),
 
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'phoneNumber': phone, 'userType': 'client'}),
@@ -736,8 +734,7 @@ Widget _buildPoliciesSection() {
 
       print('📤 إرسال بيانات العميل بعد التحقق: $requestData');
 
-      //String baseUrl = 'http://10.0.2.2:8888/mujeer_api';
-      String baseUrl = 'http://10.164.73.246:8888/mujeer_api';
+      String baseUrl = 'https://2025gpg22-production.up.railway.app';
 
       var response = await http
           .post(

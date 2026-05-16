@@ -28,7 +28,7 @@ class _AIConsultationPageState extends State<AIConsultationPage> {
 
     try {
       // رابط السيرفر (FastAPI)
-      final url = Uri.parse('http://10.164.73.246:8000/predict');
+      final url = Uri.parse('https://ai-production-b7fa.up.railway.app/predict');
       
       final response = await http.post(
         url,

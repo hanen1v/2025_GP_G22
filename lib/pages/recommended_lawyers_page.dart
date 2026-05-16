@@ -294,7 +294,7 @@ class RecommendedLawyersPage extends StatelessWidget {
 
     final photoName = (lawyer['LawyerPhoto'] ?? '').toString().trim();
     if (photoName.isNotEmpty) {
-      return 'http://10.164.73.246:8888/mujeer_api/uploads/$photoName';
+      return 'https://res.cloudinary.com/dmhrba99m/image/upload/$photoName';
     }
 
     return '';

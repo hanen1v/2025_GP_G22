@@ -5,7 +5,7 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 
 include 'config.php';
 
@@ -88,17 +88,37 @@ $stmt->bind_param("sssssiiissssssss",
 );
 
 if ($stmt->execute()) {
+    // echo json_encode(["debug" => "1 - insert success"]);
+    // exit;
     $lawyerId = $conn->insert_id;
     
     // 2️⃣ إضافة طلب للمشرفين في جدول request
-    $request_sql = "INSERT INTO request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status)
+    $request_sql = "INSERT INTO Request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status)
                     VALUES (1, ?, ?, ?, ?, 'Pending')";
     $request_stmt = $conn->prepare($request_sql);
-    if ($request_stmt) {
-        $request_stmt->bind_param("isss", $lawyerId, $license_file_name, $fullName, $licenseNumber);
-        $request_stmt->execute();
-        $request_stmt->close();
-    }
+
+if (!$request_stmt) {
+    echo json_encode([
+        "debug" => "prepare failed",
+        "error" => $conn->error
+    ]);
+    exit;
+}
+
+// echo json_encode(["debug" => "prepare success"]);
+// exit;
+
+$request_stmt->bind_param("isss", $lawyerId, $license_file_name, $fullName, $licenseNumber);
+
+// echo json_encode(["debug" => "bind success"]);
+// exit;
+
+$request_stmt->execute();
+
+// echo json_encode([
+//     "debug" => "execute success"
+// ]);
+// exit;
 
     // 3️⃣ جلب الـ Player IDs للمشرفين (مرة واحدة فقط هنا)
     $q = $conn->prepare("SELECT player_id FROM admin_devices");
@@ -111,12 +131,18 @@ if ($stmt->execute()) {
         }
     }
     $q->close();
-
+// echo json_encode([
+//     "debug" => "3 - players fetched",
+//     "players_count" => count($players)
+// ]);
+// exit;
     // 4️⃣ إرسال الإشعار (سيتم إرسال إشعار واحد فقط الآن)
     if (!empty($players)) {
         $title = 'طلب تسجيل جديد';
         $body  = "المحامي $fullName سجل في النظام وينتظر الموافقة";
         send_push($players, $title, $body, ['type' => 'new_lawyer', 'id' => $lawyerId]); 
+//         echo json_encode(["debug" => "4 - push sent"]);
+// exit;
     }
 
     // 5️⃣ جلب بيانات المحامي للرد على التطبيق (تم إصلاح الفاصلة هنا)
@@ -130,12 +156,20 @@ if ($stmt->execute()) {
         WHERE LawyerID = $lawyerId
         LIMIT 1
     ");
-
-    if ($uRes && $uRes->num_rows === 1) {
+// echo json_encode([
+//     "debug" => "5 - user fetched",
+//     "rows" => $uRes ? $uRes->num_rows : "query failed"
+// ]);
+// exit;
+    if ($uRes && $uRes->num_rows >= 1) {
         $user = $uRes->fetch_assoc();
         $user['UserType'] = 'lawyer';
     }
-
+// echo json_encode([
+//     "debug" => "6 - user fetched",
+//     "rows" => $uRes ? $uRes->num_rows : "query failed"
+// ]);
+// exit;
     echo json_encode([
         "success"         => true,
         "message"         => "تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك",

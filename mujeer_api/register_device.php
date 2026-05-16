@@ -2,7 +2,7 @@
 require_once __DIR__ . '/config.php';
 header('Content-Type: application/json; charset=utf-8');
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
 $admin_id  = isset($input['admin_id']) ? (int)$input['admin_id'] : 0;
 $player_id = isset($input['player_id']) ? trim($input['player_id']) : '';
