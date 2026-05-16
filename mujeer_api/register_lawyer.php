@@ -156,17 +156,17 @@ $request_stmt->execute();
         WHERE LawyerID = $lawyerId
         LIMIT 1
     ");
-echo json_encode([
-    "debug" => "5 - user fetched",
-    "rows" => $uRes ? $uRes->num_rows : "query failed"
-]);
-exit;
+// echo json_encode([
+//     "debug" => "5 - user fetched",
+//     "rows" => $uRes ? $uRes->num_rows : "query failed"
+// ]);
+// exit;
     if ($uRes && $uRes->num_rows >= 1) {
         $user = $uRes->fetch_assoc();
         $user['UserType'] = 'lawyer';
     }
 // echo json_encode([
-//     "debug" => "5 - user fetched",
+//     "debug" => "6 - user fetched",
 //     "rows" => $uRes ? $uRes->num_rows : "query failed"
 // ]);
 // exit;
