@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: 15 نوفمبر 2025 الساعة 23:29
+-- Generation Time: 15 مايو 2026 الساعة 08:45
 -- إصدار الخادم: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -39,7 +39,7 @@ CREATE TABLE `admin` (
 --
 
 INSERT INTO `admin` (`AdminID`, `Username`, `Password`, `PhoneNumber`) VALUES
-(1, 'adminformujeer', '$2y$10$hBulRI6OzxHyJ7LhlQgEleGq5o3HeXsIKIJbArCGvuMPAth.r7o2y', '0554441199');
+(1, 'adminformujeer', '$2y$10$vT.TlBdkdU.qnYmqYd/TROYPXpY/4R2F5U4BT4Y3J5OKNxRvb0fqi', '0500795351');
 
 -- --------------------------------------------------------
 
@@ -58,7 +58,8 @@ CREATE TABLE `admin_devices` (
 --
 
 INSERT INTO `admin_devices` (`id`, `admin_id`, `player_id`) VALUES
-(1, 1, '9662263a-73db-4ffb-9d65-e3c9be9353be');
+(1, 1, '9662263a-73db-4ffb-9d65-e3c9be9353be'),
+(2, 1, '89932c4d-5b90-4e7d-b6c3-5f87e66e21dc');
 
 -- --------------------------------------------------------
 
@@ -81,11 +82,11 @@ CREATE TABLE `appointment` (
 --
 
 INSERT INTO `appointment` (`AppointmentID`, `LawyerID`, `ClientID`, `DateTime`, `Status`, `Price`, `timeslot_id`) VALUES
-(1, 7, 5, '2025-11-03 09:41:14', 'Active', NULL, 1),
-(2, 1, 1, '2025-11-16 01:33:54', 'Upcoming', '200.00', 2),
-(3, 2, 1, '2025-11-16 01:37:51', 'Upcoming', '350.00', 6),
-(4, 4, 1, '2025-11-16 01:38:31', 'Upcoming', '200.00', 12),
-(7, 3, 1, '2025-11-16 01:55:31', 'Upcoming', '1000.00', 10);
+(1, 8, 10, '2026-02-16 06:00:00', 'Past', '60.00', 403),
+(6, 2, 13, '2026-05-11 12:00:31', 'Past', NULL, NULL),
+(34, 8, 8, '2026-02-16 14:55:44', 'Past', '50.00', 403),
+(35, 17, 13, '2026-05-12 07:40:00', 'Past', '120.00', 443),
+(36, 17, 13, '2026-05-12 08:00:00', 'Upcoming', '120.00', 444);
 
 -- --------------------------------------------------------
 
@@ -111,9 +112,13 @@ INSERT INTO `client` (`ClientID`, `Username`, `PhoneNumber`, `FullName`, `Passwo
 (2, 'user_lama', '0502222222', 'لمى العبدالله', '12345', 0),
 (3, 'user_fatima', '0503333333', 'فاطمة العنزي', '12345', 2),
 (4, 'user_reem', '0504444444', 'ريم الحربي', '12345', 3),
-(5, 'danoo', '0512345676', 'dana yahya', '$2y$10$hBulRI6OzxHyJ7LhlQgEleGq5o3HeXsIKIJbArCGvuMPAth.r7o2y', 0),
 (6, 'looloo', '0513246354', 'lolo naser', '$2y$10$KmL/syqtGZhYzFKK7ETZy.XXGoIN8ezrJJ4RM5pwCALPjaGbcNcTq', 0),
-(7, 'lamia', '0546576546', 'lamia', '$2y$10$B4pFACrdnCABVYmLRFl7Zui/zOlBzaDrOY2Dy/ptxkSEmfCY0R8lO', 0);
+(7, 'lamia', '0546576546', 'lamia', '$2y$10$B4pFACrdnCABVYmLRFl7Zui/zOlBzaDrOY2Dy/ptxkSEmfCY0R8lO', 0),
+(8, 'rana', '0500795358', 'rana', '$2y$10$6Fsu06RHqhuc0UuVccPbPOMG2DNPtnIQxW6mcBwZ1Wu5z7buTIHF.', 0),
+(9, 'hessah', '0564499946', 'hessah', '$2y$10$f5OGl5tnpVxwHHe.tza4Ge.I3eoxjkNqHJYGkMopFBW0W6Qd3bB.6', 0),
+(10, 'abdulilah', '0505518604', 'عبدالاله القحطاني', '$2y$10$R.MspP1FOXR9Op1qbt3HTu15XwZryXTFtZUpkyWLJ.2IGvuTynF/.', 0),
+(11, 'rEf', '0555847034', 'gwe', '$2y$10$K0yQEZbCzZkmonhZOS4iXO3OG/UAUg6Qsev2.Hde3lGEOjly3seae', 0),
+(13, 'meme', '0500795351', 'منى العنقري', '$2y$10$8bBSxXPu3BCAHr1Jf4fhH.vEE8n7nUkW/p8P5eQpb6UDu4QxDvsAS', 600);
 
 -- --------------------------------------------------------
 
@@ -132,10 +137,9 @@ CREATE TABLE `consultation` (
 --
 
 INSERT INTO `consultation` (`AppointmentID`, `Details`, `File`) VALUES
-(2, 'القضية', ''),
-(3, 'case', ''),
-(4, 'case2', ''),
-(7, 'case1', '');
+(6, 'hgff', NULL),
+(34, 'yuth', NULL),
+(35, 'أحتاج استشارة في قضية تجارية: تعاملت مع تاجر معين، وفيه خلاف بيننا على بضاعة، وأبي أعرف إذا أرفع عليه قضية ولا في حل ثاني، وش أقدم من مستندات، وهل القضية بتطول ولا لا؟', '');
 
 -- --------------------------------------------------------
 
@@ -149,6 +153,13 @@ CREATE TABLE `contractreview` (
   `Details` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- إرجاع أو استيراد بيانات الجدول `contractreview`
+--
+
+INSERT INTO `contractreview` (`AppointmentID`, `File`, `Details`) VALUES
+(36, 'عقد شراكه.pdf', '');
+
 -- --------------------------------------------------------
 
 --
@@ -161,18 +172,19 @@ CREATE TABLE `feedback` (
   `ClientID` int(11) NOT NULL,
   `Rate` tinyint(4) NOT NULL,
   `Review` text NOT NULL,
-  `DateGiven` datetime DEFAULT CURRENT_TIMESTAMP
+  `DateGiven` datetime DEFAULT CURRENT_TIMESTAMP,
+  `AppointmentID` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- إرجاع أو استيراد بيانات الجدول `feedback`
 --
 
-INSERT INTO `feedback` (`FeedbackID`, `LawyerID`, `ClientID`, `Rate`, `Review`, `DateGiven`) VALUES
-(5, 1, 1, 5, 'خدمة ممتازة وسريعة جداً', '2025-10-15 11:20:31'),
-(6, 1, 2, 4, 'تجربة رائعة لكن التأخير بسيط بالرد', '2025-10-15 11:20:31'),
-(7, 2, 3, 5, 'كانت متعاونة ومتفهمة جداً', '2025-10-15 11:20:31'),
-(8, 3, 4, 5, 'شرح واضح ومساعدة قانونية ممتازة', '2025-10-15 11:20:31');
+INSERT INTO `feedback` (`FeedbackID`, `LawyerID`, `ClientID`, `Rate`, `Review`, `DateGiven`, `AppointmentID`) VALUES
+(5, 1, 1, 5, 'خدمة ممتازة وسريعة جداً', '2025-10-15 11:20:31', NULL),
+(6, 1, 2, 4, 'تجربة رائعة لكن التأخير بسيط بالرد', '2025-10-15 11:20:31', NULL),
+(7, 2, 3, 5, 'كانت متعاونة ومتفهمة جداً', '2025-10-15 11:20:31', NULL),
+(8, 3, 4, 5, 'شرح واضح ومساعدة قانونية ممتازة', '2025-10-15 11:20:31', NULL);
 
 -- --------------------------------------------------------
 
@@ -187,6 +199,8 @@ CREATE TABLE `lawyer` (
   `PhoneNumber` varchar(20) NOT NULL,
   `Password` varchar(100) NOT NULL,
   `LicenseNumber` varchar(50) NOT NULL,
+  `StartMonth` tinyint(4) NOT NULL,
+  `StartYear` year(4) NOT NULL,
   `YearsOfExp` int(11) NOT NULL,
   `Gender` enum('Male','Female') NOT NULL,
   `MainSpecialization` varchar(100) NOT NULL,
@@ -205,12 +219,15 @@ CREATE TABLE `lawyer` (
 -- إرجاع أو استيراد بيانات الجدول `lawyer`
 --
 
-INSERT INTO `lawyer` (`LawyerID`, `Username`, `FullName`, `PhoneNumber`, `Password`, `LicenseNumber`, `YearsOfExp`, `Gender`, `MainSpecialization`, `FSubSpecialization`, `SSubSpecialization`, `LicenseFile`, `EducationQualification`, `AcademicMajor`, `LawyerPhoto`, `Status`, `Points`, `price`) VALUES
-(1, 'hanenLaw', 'حنين الفصيلي', '0551112233', 'Hanen@123', 'L-2025-001', 6, 'Female', 'القانون التجاري', 'العقود', 'التحكيم التجاري', 'license_hanen.pdf', 'بكالوريوس ', 'القانون ', 'lawyer1.jpg', 'Approved', 205, '200.00'),
-(2, 'munirahLaw', 'منيره السليم', '0552223344', 'Munirah@123', 'L-2025-002', 4, 'Female', 'القانون المدني', 'الأحوال الشخصية', 'القضايا العقارية', 'license_munirah.pdf', 'بكالوريوس ', 'القانون ', 'lawyer1.jpg', 'Approved', 355, '350.00'),
-(3, 'lamaLaw', 'لمى الخثلان', '0553334455', 'Lama@123', 'L-2025-003', 5, 'Female', 'القانون الجنائي', 'الجرائم الإلكترونية', 'القضايا العمالية', 'license_lama.pdf', 'ماجستير', 'القانون ', 'lawyer1.jpg', 'Approved', 1005, '1000.00'),
-(4, 'layanLaw', 'ليان الماضي', '0554445566', 'Layan@123', 'L-2025-004', 3, 'Female', 'القانون الإداري', 'الأنظمة الحكومية', 'العقود الإدارية', 'license_layan.pdf', 'بكالوريوس ', 'القانون ', 'lawyer1.jpg', 'Approved', 205, '200.00'),
-(7, 'fahadyah', 'فهد المطلق', '0564614253', '$2y$10$8TdCZyVBaVZwat3C.m4o1enWG01j1haylmDhL5RDiu1Y.9nC.Sdg.', '1166554', 4, 'Male', 'ملكية فكرية', 'القضايا الجنائية', 'القضايا التجارية', 'license_fahadyah_1761246600.pdf', 'دكتوراه', 'الشريعة', 'lawyer1.jpg', 'Approved', 0, '120.00');
+INSERT INTO `lawyer` (`LawyerID`, `Username`, `FullName`, `PhoneNumber`, `Password`, `LicenseNumber`, `StartMonth`, `StartYear`, `YearsOfExp`, `Gender`, `MainSpecialization`, `FSubSpecialization`, `SSubSpecialization`, `LicenseFile`, `EducationQualification`, `AcademicMajor`, `LawyerPhoto`, `Status`, `Points`, `price`) VALUES
+(1, 'hanenLaw', 'حنين الفصيلي', '0551112233', 'Hanen@123', 'L-2025-001', 0, 0000, 6, 'Female', 'القضايا التجارية', 'القضايا العقارية', 'التحكيم التجاري', 'license_hanen.pdf', 'بكالوريوس ', 'القانون ', 'pic3.jpg', 'Approved', 205, '200.00'),
+(2, 'munirahLaw', 'منيره السليم', '0500795395', '$2y$10$vT.TlBdkdU.qnYmqYd/TROYPXpY/4R2F5U4BT4Y3J5OKNxRvb0fqi', 'L-2025-002', 0, 0000, 4, 'Female', 'القضايا العقارية', 'القضايا التجارية', 'العقود', 'license_munirah.pdf', 'بكالوريوس ', 'القانون ', 'pic5.jpg', 'Approved', 355, '350.00'),
+(3, 'lamaLaw', 'لمى الخثلان', '0553334455', 'Lama@123', 'L-2025-003', 0, 0000, 5, 'Female', 'العقود', 'القضايا التجارية', 'القضايا العقارية', 'license_lama.pdf', 'ماجستير', 'القانون ', 'pic6.jpg', 'Approved', 1005, '1000.00'),
+(4, 'layanLaw', 'ليان الماضي', '0554445566', 'Layan@123', 'L-2025-004', 0, 0000, 3, 'Female', 'العقود', 'الأنظمة الحكومية', 'القضايا التجارية', 'license_layan.pdf', 'بكالوريوس ', 'القانون ', 'pic7.jpg', 'Approved', 205, '200.00'),
+(7, 'fahadyah', 'فهد المطلق', '0564614253', '$2y$10$8TdCZyVBaVZwat3C.m4o1enWG01j1haylmDhL5RDiu1Y.9nC.Sdg.', '1166554', 0, 0000, 4, 'Male', 'ملكية فكرية', 'القضايا العقارية', 'العقود', 'license_fahadyah_1761246600.pdf', 'دكتوراه', 'الشريعة', 'pic1.jpg', 'Approved', 0, '120.00'),
+(8, 'abdullah', 'عبدالله الراشد', '0500795356', '$2y$10$vT.TlBdkdU.qnYmqYd/TROYPXpY/4R2F5U4BT4Y3J5OKNxRvb0fqi', 'L-2026-005', 0, 0000, 8, 'Male', 'القضايا الأسرية', 'العقود', 'القضايا العمالية', 'license_abdullah_1770053494.pdf', 'ماجستير', 'القانون', 'pic2.jpg', 'Approved', 60, '60.00'),
+(13, 'moha', 'مهند الغامدي', '0500795357', '$2y$10$a0aF75D.Lsu77zI3cqa1S.csqE5Eop/uvclvY.rgO5pR0yE91nSUm', 'L-2026', 8, 2020, 5, 'Male', 'القضايا الأسرية', 'القضايا التجارية', 'القضايا العمالية', 'license_moha_1778476464.pdf', 'ماجستير', 'القانون', 'lawyer_13_1778476464.jpg', 'Approved', 1850, '600.00'),
+(17, 'bader', 'بدر المنيع', '0500795359', '$2y$10$DtZZ8lKG9zg9.oTfI1HlQOLUuKo9OxSPhR8R3msyOv6UwvyaMSFsq', 'L-2020', 8, 2020, 5, 'Male', 'القضايا التجارية', 'القضايا العمالية', 'القضايا الإدارية', 'license_bader_1778559865.pdf', 'ماجستير', 'الشريعة', 'lawyer_17_1778559866.png', 'Approved', 240, '120.00');
 
 -- --------------------------------------------------------
 
@@ -236,7 +253,11 @@ CREATE TABLE `request` (
 INSERT INTO `request` (`RequestID`, `AdminID`, `LawyerID`, `LawyerLicense`, `LawyerName`, `LicenseNumber`, `Status`, `RequestDate`) VALUES
 (1, 1, 1, 'license1.pdf\n', 'حنين الفصيلي', '123456', 'Approved', '2025-10-17 18:27:14'),
 (2, 1, 2, 'license2.pdf', 'منيره السليم', '678900', 'Approved', '2025-10-17 18:27:14'),
-(5, 1, 7, 'license_fahadyah_1761246600.pdf', 'fahad yahya', '1166554', 'Approved', '2025-10-23 22:10:01');
+(5, 1, 7, 'license_fahadyah_1761246600.pdf', 'fahad yahya', '1166554', 'Approved', '2025-10-23 22:10:01'),
+(6, 1, 8, 'license_abdullah_1770053494.pdf', 'عبدالله الراشد', 'L-2026-005', 'Approved', '2026-02-02 20:31:35'),
+(12, 1, 13, 'license_moha_1778476464.pdf', 'مهند الغامدي', 'L-2026', 'Approved', '2026-05-11 08:14:24'),
+(14, 1, 13, 'license_update_13_1778485922.pdf', 'مهند الغامدي', 'L-2026', 'Approved', '2026-05-11 10:52:02'),
+(17, 1, 17, 'license_bader_1778559865.pdf', 'بدر المنيع', 'L-2020', 'Approved', '2026-05-12 07:24:25');
 
 -- --------------------------------------------------------
 
@@ -247,8 +268,7 @@ INSERT INTO `request` (`RequestID`, `AdminID`, `LawyerID`, `LawyerLicense`, `Law
 CREATE TABLE `timeslot` (
   `id` int(11) NOT NULL,
   `lawyer_id` int(11) NOT NULL,
-  `day` varchar(20) NOT NULL,
-  `time` time NOT NULL,
+  `time` datetime NOT NULL,
   `is_booked` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -256,23 +276,35 @@ CREATE TABLE `timeslot` (
 -- إرجاع أو استيراد بيانات الجدول `timeslot`
 --
 
-INSERT INTO `timeslot` (`id`, `lawyer_id`, `day`, `time`, `is_booked`) VALUES
-(1, 7, 'monday', '07:00:00', 1),
-(2, 1, 'monday', '09:00:00', 1),
-(3, 1, 'wednesday', '14:00:00', 0),
-(4, 1, 'thursday', '18:00:00', 0),
-(5, 2, 'monday', '10:00:00', 0),
-(6, 2, 'tuesday', '12:00:00', 1),
-(7, 2, 'thursday', '17:00:00', 0),
-(8, 3, 'sunday', '08:30:00', 0),
-(9, 3, 'tuesday', '15:00:00', 0),
-(10, 3, 'friday', '19:00:00', 1),
-(11, 4, 'wednesday', '11:00:00', 0),
-(12, 4, 'thursday', '13:30:00', 1),
-(13, 4, 'saturday', '16:00:00', 0),
-(14, 7, 'monday', '07:00:00', 0),
-(15, 7, 'tuesday', '09:30:00', 0),
-(16, 7, 'friday', '20:00:00', 0);
+INSERT INTO `timeslot` (`id`, `lawyer_id`, `time`, `is_booked`) VALUES
+(403, 8, '2026-02-16 06:00:00', 1),
+(404, 8, '2026-02-16 06:20:00', 0),
+(405, 8, '2026-02-17 06:00:00', 0),
+(406, 8, '2026-02-17 06:20:00', 0),
+(420, 13, '2026-05-11 08:40:00', 1),
+(422, 13, '2026-05-12 08:20:00', 0),
+(423, 13, '2026-05-12 08:40:00', 1),
+(424, 13, '2026-05-12 09:00:00', 1),
+(425, 13, '2026-05-12 12:20:00', 0),
+(426, 13, '2026-05-11 08:20:00', 0),
+(427, 13, '2026-05-11 09:00:00', 0),
+(428, 13, '2026-05-11 12:20:00', 1),
+(429, 13, '2026-05-13 08:20:00', 0),
+(430, 13, '2026-05-13 08:40:00', 0),
+(431, 13, '2026-05-13 09:00:00', 0),
+(433, 13, '2026-05-21 08:20:00', 0),
+(434, 13, '2026-05-21 08:40:00', 0),
+(435, 13, '2026-05-21 09:00:00', 0),
+(436, 13, '2026-05-21 12:20:00', 0),
+(443, 17, '2026-05-12 07:40:00', 1),
+(444, 17, '2026-05-12 08:00:00', 1),
+(445, 17, '2026-05-12 17:00:00', 0),
+(446, 17, '2026-05-13 07:40:00', 0),
+(447, 17, '2026-05-13 08:00:00', 0),
+(448, 17, '2026-05-13 17:00:00', 0),
+(449, 17, '2026-05-14 07:40:00', 0),
+(450, 17, '2026-05-14 08:00:00', 0),
+(451, 17, '2026-05-14 17:00:00', 0);
 
 --
 -- Indexes for dumped tables
@@ -329,7 +361,8 @@ ALTER TABLE `contractreview`
 ALTER TABLE `feedback`
   ADD PRIMARY KEY (`FeedbackID`),
   ADD KEY `LawyerID` (`LawyerID`),
-  ADD KEY `ClientID` (`ClientID`);
+  ADD KEY `ClientID` (`ClientID`),
+  ADD KEY `fk_feedback_appointment` (`AppointmentID`);
 
 --
 -- Indexes for table `lawyer`
@@ -369,19 +402,19 @@ ALTER TABLE `admin`
 -- AUTO_INCREMENT for table `admin_devices`
 --
 ALTER TABLE `admin_devices`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `appointment`
 --
 ALTER TABLE `appointment`
-  MODIFY `AppointmentID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `AppointmentID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `client`
 --
 ALTER TABLE `client`
-  MODIFY `ClientID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `ClientID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `feedback`
@@ -393,19 +426,19 @@ ALTER TABLE `feedback`
 -- AUTO_INCREMENT for table `lawyer`
 --
 ALTER TABLE `lawyer`
-  MODIFY `LawyerID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `LawyerID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `request`
 --
 ALTER TABLE `request`
-  MODIFY `RequestID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `RequestID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `timeslot`
 --
 ALTER TABLE `timeslot`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=452;
 
 --
 -- قيود الجداول المحفوظة
@@ -429,20 +462,21 @@ ALTER TABLE `appointment`
 -- القيود للجدول `consultation`
 --
 ALTER TABLE `consultation`
-  ADD CONSTRAINT `consultation_ibfk_1` FOREIGN KEY (`AppointmentID`) REFERENCES `appointment` (`AppointmentID`);
+  ADD CONSTRAINT `consultation_ibfk_1` FOREIGN KEY (`AppointmentID`) REFERENCES `appointment` (`AppointmentID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- القيود للجدول `contractreview`
 --
 ALTER TABLE `contractreview`
-  ADD CONSTRAINT `contractreview_ibfk_1` FOREIGN KEY (`AppointmentID`) REFERENCES `appointment` (`AppointmentID`);
+  ADD CONSTRAINT `contractreview_ibfk_1` FOREIGN KEY (`AppointmentID`) REFERENCES `appointment` (`AppointmentID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- القيود للجدول `feedback`
 --
 ALTER TABLE `feedback`
   ADD CONSTRAINT `feedback_ibfk_1` FOREIGN KEY (`LawyerID`) REFERENCES `lawyer` (`LawyerID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `feedback_ibfk_2` FOREIGN KEY (`ClientID`) REFERENCES `client` (`ClientID`);
+  ADD CONSTRAINT `feedback_ibfk_2` FOREIGN KEY (`ClientID`) REFERENCES `client` (`ClientID`),
+  ADD CONSTRAINT `fk_feedback_appointment` FOREIGN KEY (`AppointmentID`) REFERENCES `appointment` (`AppointmentID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- القيود للجدول `request`
