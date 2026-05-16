@@ -23,6 +23,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _phoneCtrl = TextEditingController();
   final TextEditingController _passCtrl = TextEditingController();
   final TextEditingController _confirmPassCtrl = TextEditingController();
+  final TextEditingController _currentPassCtrl = TextEditingController();
 
   bool _obscurePassword = true;
   User? _user;
@@ -51,6 +52,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _phoneCtrl.dispose();
     _passCtrl.dispose();
     _confirmPassCtrl.dispose();
+    _currentPassCtrl.dispose();
     super.dispose();
   }
 
@@ -74,6 +76,13 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
 
+    // إذا المستخدم كتب كلمة مرور جديدة
+   if (newPass.isNotEmpty) {
+    final confirmed = await _confirmPasswordChange();
+
+    if (!confirmed) return;
+   }
+
     try {
       final updated = await ApiClient.updateProfile(
         userId: current.id,
@@ -81,6 +90,7 @@ class _ProfilePageState extends State<ProfilePage> {
         username: newUsername,
         phoneNumber: newPhone,
         newPassword: newPass.isNotEmpty ? newPass : null,
+        currentPassword:newPass.isNotEmpty ? _currentPassCtrl.text : null,
       );
 
       await Session.saveUser(updated);
@@ -359,7 +369,86 @@ class _ProfilePageState extends State<ProfilePage> {
 
 
 
+Future<bool> _confirmPasswordChange() async {
+  _currentPassCtrl.clear();
 
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (_) {
+      return Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text(
+            'تأكيد تغيير كلمة المرور',
+            style: TextStyle(fontFamily: 'Tajawal'),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'أدخل كلمة المرور الحالية لتأكيد التغيير',
+                style: TextStyle(fontFamily: 'Tajawal'),
+              ),
+              const SizedBox(height: 12),
+
+              TextField(
+                controller: _currentPassCtrl,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'كلمة المرور الحالية',
+                  labelStyle: TextStyle(fontFamily: 'Tajawal'),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text(
+                'إلغاء',
+                style: TextStyle(
+                  fontFamily: 'Tajawal',
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+
+            ElevatedButton(
+              onPressed: () {
+                if (_currentPassCtrl.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'يجب إدخال كلمة المرور الحالية',
+                        style: TextStyle(fontFamily: 'Tajawal'),
+                      ),
+                    ),
+                  );
+                  return;
+                }
+
+                Navigator.pop(context, true);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0B5345),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text(
+                'تأكيد',
+                style: TextStyle(
+                  fontFamily: 'Tajawal',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+
+  return result == true;
+}
 
   @override
   Widget build(BuildContext context) {

@@ -348,6 +348,7 @@ static Future<User> updateProfile({
   required String username,
   required String phoneNumber,
   String? newPassword,        // اختياري
+  String? currentPassword,
 }) async {
   final res = await http.post(
     Uri.parse('$base/update_profile.php'),
@@ -358,6 +359,7 @@ static Future<User> updateProfile({
       'username': username,
       'phoneNumber': phoneNumber,
       if ((newPassword ?? '').isNotEmpty) 'newPassword': newPassword,
+      if ((currentPassword ?? '').isNotEmpty) 'currentPassword': currentPassword,
     }),
   );
 

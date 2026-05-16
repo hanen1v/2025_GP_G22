@@ -10,6 +10,8 @@ import '../widgets/lawyer_bottom_nav.dart';
 import '../services/api_client.dart';
 import '../services/session.dart';
 
+import 'dart:async';
+
 /// فتح ملف PDF داخل التطبيق باستخدام open_file
 Future<void> openPdfInsideApp(String fileName) async {
   try {
@@ -111,9 +113,11 @@ class LawyerRequestsPage extends StatefulWidget {
 
   @override
   State<LawyerRequestsPage> createState() => _LawyerRequestsPageState();
+  
 }
 
 class _LawyerRequestsPageState extends State<LawyerRequestsPage> {
+  Timer? _timer;
   String _currentTab = 'Upcoming';
   List<LawyerAppointment> _all = [];
   bool _loading = true;
@@ -122,42 +126,48 @@ class _LawyerRequestsPageState extends State<LawyerRequestsPage> {
       _all.where((ap) => ap.status == _currentTab).toList();
 
   @override
-  void initState() {
-    super.initState();
-    _load();
-  }
+void initState() {
+  super.initState();
+  _load();
 
-  Future<void> _load() async {
+  _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+    _load(showLoading: false);
+  });
+}
+
+  Future<void> _load({bool showLoading = true}) async {
+  if (showLoading) {
     setState(() => _loading = true);
-
-    try {
-      final user = await Session.getUser(); // المحامي
-      if (user == null || !user.isLawyer) {
-        throw Exception('المستخدم الحالي ليس محاميًا');
-      }
-
-      final res = await http.post(
-        Uri.parse('${ApiClient.base}/get_lawyer_appointments.php'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'lawyerId': user.id}),
-      );
-
-      final body = jsonDecode(res.body);
-      print('API RESPONSE: $body');
-      final list = (body['appointments'] as List? ?? [])
-          .cast<Map<String, dynamic>>()
-          .map((m) => LawyerAppointment.fromJson(m))
-          .toList();
-
-      setState(() => _all = list);
-    } catch (e) {
-      debugPrint('ERROR loading lawyer appointments: $e');
-    }
-
-    if (mounted) {
-      setState(() => _loading = false);
-    }
   }
+
+  try {
+    final user = await Session.getUser();
+    if (user == null || !user.isLawyer) {
+      throw Exception('المستخدم الحالي ليس محاميًا');
+    }
+
+    final res = await http.post(
+      Uri.parse('${ApiClient.base}/get_lawyer_appointments.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'lawyerId': user.id}),
+    );
+
+    final body = jsonDecode(res.body);
+
+    final list = (body['appointments'] as List? ?? [])
+        .cast<Map<String, dynamic>>()
+        .map((m) => LawyerAppointment.fromJson(m))
+        .toList();
+
+    setState(() => _all = list);
+  } catch (e) {
+    debugPrint('ERROR loading lawyer appointments: $e');
+  }
+
+  if (mounted && showLoading) {
+    setState(() => _loading = false);
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -768,5 +778,11 @@ if (ap.status == 'Past') ...[
       },
     );
   }
+
+@override
+void dispose() {
+  _timer?.cancel();
+  super.dispose();
+}
 
 }

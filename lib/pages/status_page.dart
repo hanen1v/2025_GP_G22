@@ -8,7 +8,7 @@ import '../widgets/app_bottom_nav.dart';
 import '../services/session.dart';
 import '../services/api_client.dart';
 import '../models/user.dart';
-
+import 'dart:async';
 // ================== MODEL ==================
 
 class Appointment {
@@ -103,6 +103,7 @@ class StatusPage extends StatefulWidget {
 }
 
 class _StatusPageState extends State<StatusPage> {
+  Timer? _refreshTimer;
   String _currentTab = 'Upcoming';
 
   List<Appointment> _allAppointments = [];
@@ -118,14 +119,23 @@ class _StatusPageState extends State<StatusPage> {
   void initState() {
     super.initState();
     _loadAppointments();
+    _refreshTimer = Timer.periodic(
+  const Duration(seconds: 5),
+  (_) => _loadAppointments(),
+);
   }
 
   Future<void> _loadAppointments() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-      _notClientOrGuest = false;
-    });
+    if (_allAppointments.isEmpty) {
+  setState(() {
+    _loading = true;
+  });
+}
+
+setState(() {
+  _error = null;
+  _notClientOrGuest = false;
+});
 
     try {
       final user = await Session.getUser();
@@ -1155,5 +1165,10 @@ if (ap.file.trim().isNotEmpty) ...[
   }
 
 
+@override
+void dispose() {
+  _refreshTimer?.cancel();
+  super.dispose();
+}
 
 }

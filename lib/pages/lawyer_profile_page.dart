@@ -20,6 +20,7 @@ class _LawyerProfilePageState extends State<LawyerProfilePage> {
   final TextEditingController _passCtrl     = TextEditingController();
   final TextEditingController _expCtrl      = TextEditingController(); 
   final TextEditingController _confirmPassCtrl = TextEditingController();
+  final TextEditingController _currentPassCtrl = TextEditingController();
 
 
   String? _selectedMainSpec;
@@ -188,10 +189,61 @@ class _LawyerProfilePageState extends State<LawyerProfilePage> {
       'academicMajor'        : _selectedAcademicMajor,
     };
 
+
+
     final newPass = _passCtrl.text.trim();
-    if (newPass.isNotEmpty) {
-      payload['password'] = newPass;
-    }
+
+if (newPass.isNotEmpty) {
+
+  _currentPassCtrl.clear();
+
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (_) {
+      return AlertDialog(
+        title: const Text('تأكيد تغيير كلمة المرور'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('أدخل كلمة المرور الحالية للتأكيد'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _currentPassCtrl,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'كلمة المرور الحالية',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('إلغاء'),
+          ),
+          ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: const Color(0xFF0B5345),
+    foregroundColor: Colors.white,
+  ),
+  onPressed: () {
+    if (_currentPassCtrl.text.isEmpty) return;
+    Navigator.pop(context, true);
+  },
+  child: const Text('تأكيد'),
+),
+        ],
+      );
+    },
+  );
+
+  if (ok != true) return;
+
+  payload['password'] = newPass;
+  payload['currentPassword'] = _currentPassCtrl.text.trim();
+}
+
+
 
     payload.removeWhere((key, value) {
       if (value == null) return true;
@@ -752,12 +804,13 @@ Future<void> _confirmDelete() async {
 
               const SizedBox(height: 24),
 
-              TextField(
+              IgnorePointer(
+               child: TextField(
                 controller: _expCtrl,
-                keyboardType: TextInputType.number,
                 textAlign: TextAlign.right,
                 decoration: _inputDecoration('سنوات الخبرة'),
-              ),
+                ),
+               ),
               const SizedBox(height: 16),
               
 
