@@ -141,8 +141,8 @@ $request_stmt->execute();
         $title = 'طلب تسجيل جديد';
         $body  = "المحامي $fullName سجل في النظام وينتظر الموافقة";
         send_push($players, $title, $body, ['type' => 'new_lawyer', 'id' => $lawyerId]); 
-        echo json_encode(["debug" => "4 - push sent"]);
-exit;
+//         echo json_encode(["debug" => "4 - push sent"]);
+// exit;
     }
 
     // 5️⃣ جلب بيانات المحامي للرد على التطبيق (تم إصلاح الفاصلة هنا)
@@ -156,10 +156,10 @@ exit;
         WHERE LawyerID = $lawyerId
         LIMIT 1
     ");
-// echo json_encode([
-//     "debug" => "5 - user fetched",
-//     "rows" => $uRes ? $uRes->num_rows : "query failed"
-// ]);
+echo json_encode([
+    "debug" => "5 - user fetched",
+    "rows" => $uRes ? $uRes->num_rows : "query failed"
+]);
 // exit;
     if ($uRes && $uRes->num_rows > 1) {
         $user = $uRes->fetch_assoc();
