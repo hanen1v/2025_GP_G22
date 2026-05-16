@@ -130,7 +130,8 @@ final TextStyle checkboxTextStyle = const TextStyle(
         'file_name': widget.attachedFileName ?? '',
           'request_type': widget.requestType.name,  
       });
-
+print('📤 Status: ${response.statusCode}'); // ← أضف
+print('📤 Body: ${response.body}');  
       setState(() => _isPaying = false);
 
       if (response.statusCode == 200) {

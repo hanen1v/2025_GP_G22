@@ -8,7 +8,7 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 // ini_set('display_errors', 1);
 
 require_once 'config.php';
-
+$conn->query("SET time_zone = '+03:00'");
 $raw  = file_get_contents("php://input");
 $data = json_decode($raw, true);
 
