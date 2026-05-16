@@ -1050,7 +1050,8 @@ print('📤 JSON المرسل: ${json.encode(requestData)}');
           )
           .timeout(const Duration(seconds: 10));
 
-      print('📥 استجابة السيرفر: ${response.body}');
+      print("📥 Status Code: ${response.statusCode}");
+print("📥 Body: ${response.body}");
 
       final result = json.decode(response.body);
 

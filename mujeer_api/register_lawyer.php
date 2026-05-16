@@ -88,6 +88,8 @@ $stmt->bind_param("sssssiiissssssss",
 );
 
 if ($stmt->execute()) {
+    echo json_encode(["debug" => "1 - insert success"]);
+    exit;
     $lawyerId = $conn->insert_id;
     
     // 2️⃣ إضافة طلب للمشرفين في جدول request
@@ -98,6 +100,8 @@ if ($stmt->execute()) {
         $request_stmt->bind_param("isss", $lawyerId, $license_file_name, $fullName, $licenseNumber);
         $request_stmt->execute();
         $request_stmt->close();
+//         echo json_encode(["debug" => "2 - request inserted"]);
+// exit;
     }
 
     // 3️⃣ جلب الـ Player IDs للمشرفين (مرة واحدة فقط هنا)
@@ -111,12 +115,18 @@ if ($stmt->execute()) {
         }
     }
     $q->close();
-
+// echo json_encode([
+//     "debug" => "3 - players fetched",
+//     "players_count" => count($players)
+// ]);
+// exit;
     // 4️⃣ إرسال الإشعار (سيتم إرسال إشعار واحد فقط الآن)
     if (!empty($players)) {
         $title = 'طلب تسجيل جديد';
         $body  = "المحامي $fullName سجل في النظام وينتظر الموافقة";
         send_push($players, $title, $body, ['type' => 'new_lawyer', 'id' => $lawyerId]); 
+//         echo json_encode(["debug" => "4 - push sent"]);
+// exit;
     }
 
     // 5️⃣ جلب بيانات المحامي للرد على التطبيق (تم إصلاح الفاصلة هنا)
@@ -130,12 +140,20 @@ if ($stmt->execute()) {
         WHERE LawyerID = $lawyerId
         LIMIT 1
     ");
-
+// echo json_encode([
+//     "debug" => "5 - user fetched",
+//     "rows" => $uRes ? $uRes->num_rows : "query failed"
+// ]);
+// exit;
     if ($uRes && $uRes->num_rows > 1) {
         $user = $uRes->fetch_assoc();
         $user['UserType'] = 'lawyer';
     }
-
+// echo json_encode([
+//     "debug" => "5 - user fetched",
+//     "rows" => $uRes ? $uRes->num_rows : "query failed"
+// ]);
+// exit;
     echo json_encode([
         "success"         => true,
         "message"         => "تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك",
