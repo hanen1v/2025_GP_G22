@@ -88,8 +88,8 @@ $stmt->bind_param("sssssiiissssssss",
 );
 
 if ($stmt->execute()) {
-    echo json_encode(["debug" => "1 - insert success"]);
-    exit;
+    // echo json_encode(["debug" => "1 - insert success"]);
+    // exit;
     $lawyerId = $conn->insert_id;
     
     // 2️⃣ إضافة طلب للمشرفين في جدول request
@@ -100,8 +100,8 @@ if ($stmt->execute()) {
         $request_stmt->bind_param("isss", $lawyerId, $license_file_name, $fullName, $licenseNumber);
         $request_stmt->execute();
         $request_stmt->close();
-//         echo json_encode(["debug" => "2 - request inserted"]);
-// exit;
+        echo json_encode(["debug" => "2 - request inserted"]);
+exit;
     }
 
     // 3️⃣ جلب الـ Player IDs للمشرفين (مرة واحدة فقط هنا)
