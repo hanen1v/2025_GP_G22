@@ -127,6 +127,7 @@ class RequestCard extends StatelessWidget {
   Future<void> _openPDFTemporary(BuildContext context, String url) async {
     try {
       if (url.isEmpty) throw 'رابط الملف غير متوفر';
+      print('PDF URL: $url');
       final res = await http.get(Uri.parse(url));
       if (res.statusCode != 200) {
         throw 'فشل تحميل الملف (${res.statusCode})';

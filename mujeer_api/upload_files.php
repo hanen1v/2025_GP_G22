@@ -27,6 +27,18 @@ if (
     $signature = sha1("public_id=$fileName&timestamp=$timestamp" . $API_SECRET);
 
     $ch = curl_init();
+    $mimeType = $uploadedFile['type'];
+if ($mimeType === 'application/pdf') {
+    $resourceType = 'raw';
+} elseif (strpos($mimeType, 'image/') === 0) {
+    $resourceType = 'image';
+} else {
+    $resourceType = 'raw';
+}
+
+$timestamp = time();
+$signature = sha1("public_id=$fileName&timestamp=$timestamp" . $API_SECRET);
+
     curl_setopt_array($ch, [
         CURLOPT_URL            => "https://api.cloudinary.com/v1_1/$CLOUD_NAME/auto/upload",
         CURLOPT_RETURNTRANSFER => true,
