@@ -93,7 +93,7 @@ if ($stmt->execute()) {
     $lawyerId = $conn->insert_id;
     
     // 2️⃣ إضافة طلب للمشرفين في جدول request
-    $request_sql = "INSERT INTO request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status)
+    $request_sql = "INSERT INTO Request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status)
                     VALUES (1, ?, ?, ?, ?, 'Pending')";
     $request_stmt = $conn->prepare($request_sql);
 
