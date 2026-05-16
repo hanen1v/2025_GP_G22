@@ -735,7 +735,6 @@ Future<void> _cancelAppointment(int appointmentId) async {
 
 
 Future<void> _openAttachment(Appointment ap) async {
-  // لو ما فيه اسم ملف نطلع
   if (ap.file.trim().isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('لا يوجد ملف مرفق')),
@@ -743,36 +742,50 @@ Future<void> _openAttachment(Appointment ap) async {
     return;
   }
 
-  // 1) رابط الملف من السيرفر
-  // عدّلي المسار حسب المكان الفعلي للملفات عندك في الـ PHP
-  final url = '${ApiClient.base}/uploads/${ap.file}';
+  final url = ap.file.startsWith('http')
+      ? ap.file
+      : '${ApiClient.base}/uploads/${ap.file}';
 
-  // نعرض شاشة تحميل صغيرة
   showDialog(
     context: context,
     barrierDismissible: false,
-    builder: (ctx) => const Center(
-      child: CircularProgressIndicator(),
-    ),
+    builder: (ctx) => const Center(child: CircularProgressIndicator()),
   );
 
   try {
-    // 2) تحميل الملف من السيرفر
     final response = await http.get(Uri.parse(url));
-    if (response.statusCode != 200) {
-      throw Exception('HTTP ${response.statusCode}');
+    if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
+
+    // ✅ استخرج الامتداد فقط، وسمّ الملف باسم قصير
+    final contentType = response.headers['content-type'] ?? '';
+    String ext = '';
+
+    // حاول تجيب الامتداد من الـ URL أولاً
+    final uri = Uri.parse(url);
+    final lastSegment = uri.pathSegments.isNotEmpty ? uri.pathSegments.last : '';
+    final dotIndex = lastSegment.lastIndexOf('.');
+    if (dotIndex != -1 && dotIndex < lastSegment.length - 1) {
+      ext = lastSegment.substring(dotIndex); // مثال: .pdf
     }
 
-    // 3) حفظ الملف في مسار مؤقت داخل الجهاز
-    final dir = await getTemporaryDirectory();
-    final filePath = '${dir.path}/${ap.file}';
-    final file = File(filePath);
-    await file.writeAsBytes(response.bodyBytes);
+    // لو ما لقينا امتداد من URL، نجيبه من Content-Type
+    if (ext.isEmpty) {
+      if (contentType.contains('pdf')) ext = '.pdf';
+      else if (contentType.contains('jpeg') || contentType.contains('jpg')) ext = '.jpg';
+      else if (contentType.contains('png')) ext = '.png';
+      else if (contentType.contains('word') || contentType.contains('docx')) ext = '.docx';
+      else ext = '.pdf';
+    }
 
-    // قفل شاشة التحميل
+    // ✅ اسم قصير = timestamp + امتداد فقط
+    final shortName = '${DateTime.now().millisecondsSinceEpoch}$ext';
+
+    final dir = await getTemporaryDirectory();
+    final filePath = '${dir.path}/$shortName';
+    await File(filePath).writeAsBytes(response.bodyBytes);
+
     Navigator.of(context, rootNavigator: true).pop();
 
-    // 4) فتح الملف بتطبيق النظام (داخل الجهاز)
     final result = await OpenFile.open(filePath);
     if (result.type != ResultType.done) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -780,15 +793,12 @@ Future<void> _openAttachment(Appointment ap) async {
       );
     }
   } catch (e) {
-    // لو صار خطأ نقفل الديالوج لو كان مفتوح
     Navigator.of(context, rootNavigator: true).pop();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('حدث خطأ أثناء فتح الملف: $e')),
     );
   }
 }
-
-
 //navigate to chat screen
 void _openChatWithLawyer(Appointment ap) async {
   final user = await Session.getUser();

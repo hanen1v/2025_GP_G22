@@ -683,16 +683,36 @@ Future<void> _uploadSelectedFile() async {
 }
 
   Future<void> _openDownloadedFile(String url, String fileName) async {
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final dir = await getTemporaryDirectory();
-        final file = File('${dir.path}/$fileName');
-        await file.writeAsBytes(response.bodyBytes);
-        await OpenFile.open(file.path);
+  try {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final dir = await getTemporaryDirectory();
+
+      // ✅ جرب تجيب الامتداد من الـ URL أولاً
+      String ext = '';
+      final cleanUrl = url.split('?').first; // أزل query params
+      final lastDot = cleanUrl.lastIndexOf('.');
+      if (lastDot != -1 && (cleanUrl.length - lastDot) <= 5) {
+        ext = cleanUrl.substring(lastDot); // مثال: .pdf أو .jpg
       }
-    } catch (e) { 
-      debugPrint("Error opening file: $e"); 
+
+      // لو ما لقينا امتداد من URL، جيبه من Content-Type
+      if (ext.isEmpty) {
+        final contentType = response.headers['content-type'] ?? '';
+        if (contentType.contains('pdf')) ext = '.pdf';
+        else if (contentType.contains('jpeg') || contentType.contains('jpg')) ext = '.jpg';
+        else if (contentType.contains('png')) ext = '.png';
+        else if (contentType.contains('word')) ext = '.docx';
+        else ext = '.pdf'; // fallback
+      }
+
+      final shortName = '${DateTime.now().millisecondsSinceEpoch}$ext';
+      final file = File('${dir.path}/$shortName');
+      await file.writeAsBytes(response.bodyBytes);
+      await OpenFile.open(file.path);
     }
+  } catch (e) {
+    debugPrint("Error opening file: $e");
   }
+}
 }
