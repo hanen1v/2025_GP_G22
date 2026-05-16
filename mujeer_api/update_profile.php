@@ -5,7 +5,7 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);
 
 require_once __DIR__ . '/config.php';
 
@@ -80,7 +80,49 @@ $sets = [];
 $sets[] = "Username = '$username'";
 $sets[] = "PhoneNumber = '$phoneNumber'";
 
+$currentPassword = isset($data['currentPassword'])
+  ? $data['currentPassword']
+  : '';
+
 if (!empty($newPassword)) {
+
+  // لازم يدخل كلمة المرور الحالية
+  if (empty($currentPassword)) {
+    echo json_encode([
+      "success" => false,
+      "message" => "كلمة المرور الحالية مطلوبة"
+    ]);
+    exit;
+  }
+
+  // نجيب كلمة المرور الحالية من الداتابيس
+  $passRes = $conn->query("
+    SELECT Password
+    FROM $table
+    WHERE $idCol = $userId
+    LIMIT 1
+  ");
+
+  if (!$passRes || $passRes->num_rows === 0) {
+    echo json_encode([
+      "success" => false,
+      "message" => "المستخدم غير موجود"
+    ]);
+    exit;
+  }
+
+  $passRow = $passRes->fetch_assoc();
+
+  // التحقق من كلمة المرور الحالية
+  if (!password_verify($currentPassword, $passRow['Password'])) {
+    echo json_encode([
+      "success" => false,
+      "message" => "كلمة المرور الحالية غير صحيحة"
+    ]);
+    exit;
+  }
+
+  // تشفير الباسورد الجديد
   $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
   $sets[] = "Password = '$hashed'";
 }
