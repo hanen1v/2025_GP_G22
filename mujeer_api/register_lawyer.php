@@ -96,13 +96,29 @@ if ($stmt->execute()) {
     $request_sql = "INSERT INTO request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status)
                     VALUES (1, ?, ?, ?, ?, 'Pending')";
     $request_stmt = $conn->prepare($request_sql);
-    if ($request_stmt) {
-        $request_stmt->bind_param("isss", $lawyerId, $license_file_name, $fullName, $licenseNumber);
-        $request_stmt->execute();
-        $request_stmt->close();
-        echo json_encode(["debug" => "2 - request inserted"]);
+
+if (!$request_stmt) {
+    echo json_encode([
+        "debug" => "prepare failed",
+        "error" => $conn->error
+    ]);
+    exit;
+}
+
+echo json_encode(["debug" => "prepare success"]);
 exit;
-    }
+
+$request_stmt->bind_param("isss", $lawyerId, $license_file_name, $fullName, $licenseNumber);
+
+echo json_encode(["debug" => "bind success"]);
+exit;
+
+$request_stmt->execute();
+
+echo json_encode([
+    "debug" => "execute success"
+]);
+exit;
 
     // 3️⃣ جلب الـ Player IDs للمشرفين (مرة واحدة فقط هنا)
     $q = $conn->prepare("SELECT player_id FROM admin_devices");
