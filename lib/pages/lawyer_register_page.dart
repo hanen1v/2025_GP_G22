@@ -1086,6 +1086,7 @@ print("📥 Body: ${response.body}");
               'license_file',
               _licenseFile!.path!,
               filename: licenseName,
+              contentType: MediaType('application', 'pdf'),
             ),
           );
 
