@@ -105,8 +105,8 @@ if (!$request_stmt) {
     exit;
 }
 
-echo json_encode(["debug" => "prepare success"]);
-exit;
+// echo json_encode(["debug" => "prepare success"]);
+// exit;
 
 $request_stmt->bind_param("isss", $lawyerId, $license_file_name, $fullName, $licenseNumber);
 
