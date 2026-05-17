@@ -26,7 +26,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CallManager _callManager = CallManager();
-  final String tempToken = "007eJxTYJh784Hvt9NHEtVYt764GV6/fNubTjW5Jq23TAzO075InZZQYDBIM0k2NUhJMzEwNzFJS01NSktJTTFKMU40NjKwSDYzFD3wNbMhkJFhYuRDZkYGCATxuRlyS7NSU4vikxNzchgYANXxJDg="; 
+  final String tempToken = "007eJxTYIjdLnTPZe3iy1wTp3x8XN/LJVvp/Of+5/dKTm6ibt0z7J4oMBikmSSbGqSkmRiYm5ikpaYmpaWkphilGCcaGxlYJJsZ7inlyGoIZGRYxW/JwsgAgSA+N0NuaVZqalF8cmJODgMDAIh/Irk="; 
   
   bool _isMuted = false;
   bool _isSpeakerOn = false; 

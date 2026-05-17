@@ -7,6 +7,7 @@ import 'select_time_page.dart';
 import '../models/request_type.dart';
 import '../services/api_client.dart';
 import '../models/lawyer.dart';
+import 'ai_page.dart';
 
 class LawyerDetailsPage extends StatefulWidget {
   final int lawyerId;
@@ -312,29 +313,46 @@ child: lawyer?['image'] == null || lawyer!['image'].toString().isEmpty
     );
   }
 
-  Widget _buildFab(BuildContext context) => Container(
-        width: 65,
-        height: 65,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-              colors: [Color.fromARGB(255, 6, 61, 65), Color.fromARGB(255, 8, 65, 69)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight),
-          boxShadow: const [
-            BoxShadow(
-                color: Color.fromARGB(255, 31, 79, 83),
-                blurRadius: 10,
-                offset: Offset(0, 4))
+  Widget _buildFab(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    
+    return Container(
+      width: screenWidth * 0.16,
+      height: screenWidth * 0.16,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [
+            Color.fromARGB(255, 6, 61, 65),
+            Color.fromARGB(255, 8, 65, 69)
           ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: FloatingActionButton(
-          onPressed: () => Navigator.pushReplacementNamed(context, '/plus'),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: const Icon(Icons.add, color: Colors.white, size: 28),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromARGB(255, 31, 79, 83),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+       onPressed: () {
+  Navigator.pushNamed(context, '/ai_page');
+},
+
+
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Icon(
+          Icons.auto_awesome,
+          color: Colors.white,
+          size: screenWidth * 0.07,
         ),
-      );
+      ),
+    );
+  }
 
 
 

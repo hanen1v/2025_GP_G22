@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/request_type.dart';
 import 'lawyer_details_page.dart';
+import '../services/api_client.dart';
 
 class RecommendedLawyersPage extends StatelessWidget {
   final String category;
@@ -289,16 +290,11 @@ class RecommendedLawyersPage extends StatelessWidget {
   }
 
   String _getImageUrl(Map<String, dynamic> lawyer) {
-    final directImage = (lawyer['image'] ?? '').toString().trim();
-    if (directImage.isNotEmpty) return directImage;
-
-    final photoName = (lawyer['LawyerPhoto'] ?? '').toString().trim();
-    if (photoName.isNotEmpty) {
-      return 'https://res.cloudinary.com/dmhrba99m/image/upload/$photoName';
-    }
-
-    return '';
-  }
+  final photoName = (lawyer['LawyerPhoto'] ?? '').toString().trim();
+  if (photoName.isEmpty) return '';
+  if (photoName.startsWith('http')) return photoName;
+  return '${ApiClient.profileImageBase}/$photoName';
+}
 
   Widget _infoChip(IconData icon, String? label) {
     if (label == null || label.isEmpty) return const SizedBox.shrink();
