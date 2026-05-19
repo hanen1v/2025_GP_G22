@@ -14,7 +14,8 @@ $price       = isset($_POST['price']) ? floatval($_POST['price']) : 0;
 $details     = isset($_POST['details']) ? trim($_POST['details']) : '';
 $fileName    = isset($_POST['file_name']) ? trim($_POST['file_name']) : null;
 $requestType = isset($_POST['request_type']) ? $_POST['request_type'] : 'consultation';
-
+$useWallet = isset($_POST['use_wallet']) &&
+             $_POST['use_wallet'] == "1";
 if ($lawyerId == 0 || $clientId == 0 || $timeslotId == 0 || $price <= 0) {
     echo json_encode([
         "success" => false,
@@ -41,6 +42,62 @@ if ($requestType === 'contractReview' && ($fileName === null || $fileName === ''
 
 try {
     $conn->begin_transaction();
+if($useWallet){
+
+    $walletStmt=$conn->prepare("
+    SELECT Points
+    FROM client
+    WHERE ClientID=?
+    ");
+
+    $walletStmt->bind_param(
+    "i",
+    $clientId
+    );
+
+    $walletStmt->execute();
+
+    $walletResult=
+    $walletStmt->get_result();
+
+    $walletRow=
+    $walletResult->fetch_assoc();
+
+    $walletBalance=
+    floatval($walletRow['Points']);
+
+    $walletStmt->close();
+
+    if($walletBalance>0){
+
+        $usedAmount=
+        min(
+        $walletBalance,
+        $price
+        );
+
+        $newBalance=
+        $walletBalance-
+        $usedAmount;
+
+        $updateWallet=
+        $conn->prepare("
+        UPDATE client
+        SET Points=?
+        WHERE ClientID=?
+        ");
+
+        $updateWallet->bind_param(
+        "di",
+        $newBalance,
+        $clientId
+        );
+
+        $updateWallet->execute();
+
+        $updateWallet->close();
+    }
+}
 
     $slotSql = "SELECT `time` FROM timeslot WHERE id = ? AND is_booked = 0";
     $slotStmt = $conn->prepare($slotSql);
