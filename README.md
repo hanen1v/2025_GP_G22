@@ -22,7 +22,7 @@ Mujeer supports Saudi Arabia's digital-justice goals by implementing a **manual 
 | **OpenAI GPT-4o API** | Generates customized legal contract drafts using AI |
 | **Agora API** | Enables voice calling between clients and lawyers |
 | **Firebase Authentication Services** | Handles OTP verification for secure account login |
-| **OneSignal API** | Push notifications for lawyers and admins |
+| **OneSignal API** | Push notifications for admins |
  
 ---
  
