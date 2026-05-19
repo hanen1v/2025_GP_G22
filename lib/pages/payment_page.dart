@@ -38,6 +38,8 @@ class _PaymentPageState extends State<PaymentPage> {
   String? _expiryError;
   String? _cvvError;
   bool _isPaying = false;
+  double walletBalance = 0;
+bool useWallet = false;
 
   final Color mainColor = const Color.fromARGB(255, 6, 61, 65);
 
@@ -54,7 +56,16 @@ class _PaymentPageState extends State<PaymentPage> {
     _cardError = null;
     _expiryError = null;
     _cvvError = null;
+// ===== NEW WALLET FEATURE START =====
 
+bool walletCoversFullAmount =
+    useWallet && walletBalance >= widget.price;
+
+if (walletCoversFullAmount) {
+  return true;
+}
+
+// ===== NEW WALLET FEATURE END =====
     String number = _cardNumberController.text.replaceAll(' ', '');
     if (number.length != 16 || int.tryParse(number) == null) {
       _cardError = 'أدخل رقم بطاقة صحيح مكون من 16 رقم';
@@ -103,7 +114,37 @@ final TextStyle checkboxTextStyle = const TextStyle(
   fontWeight: FontWeight.w400,
 );
 
+// ===== NEW WALLET FEATURE START =====
 
+@override
+void initState() {
+  super.initState();
+  _loadWalletBalance();
+}
+
+Future<void> _loadWalletBalance() async {
+  User? currentUser = await Session.getUser();
+
+  if (currentUser == null) return;
+//php/////////////////////////////////////////////////////////////////////////////
+  final url = Uri.parse(
+      'http://10.0.2.2:8888/mujeer_api/get_wallet.php?id=${currentUser.id}');
+
+  try {
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      setState(() {
+        walletBalance =
+            double.tryParse(data['points'].toString()) ?? 0;
+      });
+    }
+  } catch (_) {}
+}
+
+// ===== NEW WALLET FEATURE END =====
   Future<void> _confirmPayment() async {
     if (!_validate()) return;
 
@@ -119,6 +160,7 @@ final TextStyle checkboxTextStyle = const TextStyle(
 
     final url =
         Uri.parse('https://2025gpg22-production.up.railway.app/confirm_payment.php');
+        // Uri.parse('http://10.0.2.2:8888/mujeer_api/confirm_payment.php');
 
     try {
       final response = await http.post(url, body: {
@@ -128,7 +170,8 @@ final TextStyle checkboxTextStyle = const TextStyle(
         'price': widget.price.toString(),
         'details': widget.caseDetails,
         'file_name': widget.attachedFileName ?? '',
-          'request_type': widget.requestType.name,  
+          'request_type': widget.requestType.name, 
+          'use_wallet': useWallet ? "1" : "0", 
       });
 print('📤 Status: ${response.statusCode}'); // ← أضف
 print('📤 Body: ${response.body}');  
@@ -459,7 +502,36 @@ print('📤 Body: ${response.body}');
                           ),
                         ],
                       ),
-                      const SizedBox(height: 30),
+                      // ===== NEW WALLET FEATURE START =====
+
+CheckboxListTile(
+  value: useWallet,
+  contentPadding: EdgeInsets.zero,
+
+  onChanged: walletBalance <= 0
+      ? null
+      : (v) {
+          setState(() {
+            useWallet = v!;
+          });
+        },
+
+  activeColor: mainColor,
+
+  title: Text(
+    "الدفع من المحفظة (${walletBalance.toStringAsFixed(0)} ريال)",
+    style: TextStyle(
+      color: mainColor,
+      fontWeight: FontWeight.bold,
+      fontSize: 16,
+    ),
+  ),
+),
+
+const SizedBox(height: 4),
+
+// ===== NEW WALLET FEATURE END =====
+                      const SizedBox(height: 8),
                       Align(
                         alignment: Alignment.centerRight,
                         child: Text(
@@ -544,8 +616,24 @@ print('📤 Body: ${response.body}');
                               borderRadius: BorderRadius.circular(30),
                             ),
                           ),
-                          onPressed:
-                              (_isPaying || !allAgreed) ? null : _confirmPayment,
+                        onPressed:
+(_isPaying || !allAgreed)
+? null
+: () {
+
+if(useWallet &&
+walletBalance < widget.price){
+
+_confirmPayment();
+
+}
+else{
+
+_confirmPayment();
+
+}
+
+},
                           child: _isPaying
                               ? const CircularProgressIndicator(
                                   color: Colors.white)
