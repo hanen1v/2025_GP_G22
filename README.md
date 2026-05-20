@@ -48,7 +48,7 @@ Make sure the following tools are installed:
 - VS Code or Android Studio for development
 - PHP 8+ with `mysqli` extension
 - Git
-- 
+  
 ---
  
 ### 2. Backend Setup
@@ -144,9 +144,9 @@ static const String base = 'http://YOUR_LOCAL_IP:8888/mujeer_api';
  
 ---
  
-### 7. Third-Party API Keys & Tokens
+### 5. Third-Party API Keys & Tokens
   
-#### 7.1 OpenAI (GPT-4o) — Contract Drafting
+#### 5.1 OpenAI (GPT-4o) — Contract Drafting
 Used to generate AI-powered legal contract drafts.
  
 1. Go to [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
@@ -159,7 +159,7 @@ OPENAI_API_KEY=sk-...
  
 ---
  
-#### 7.2 Agora
+#### 5.2 Agora
 Used for voice calling between clients and lawyers.
  
 1. Go to [https://console.agora.io](https://console.agora.io)
@@ -171,7 +171,7 @@ final String tempToken = 'temp token'
  
 ---
  
-#### 7.3 Firebase — OTP Verification
+#### 5.3 Firebase — OTP Verification
 Used for phone number verification during registration.
  
 1. Go to [https://console.firebase.google.com](https://console.firebase.google.com)
@@ -184,7 +184,7 @@ android/app/google-services.json
  
 ---
  
-#### 7.4 OneSignal — Push Notifications
+#### 5.4 OneSignal — Push Notifications
 Used to send notifications to lawyers and admins.
  
 1. Go to [https://app.onesignal.com](https://app.onesignal.com)
@@ -201,7 +201,7 @@ OneSignal.initialize("YOUR-ONESIGNAL-APP-ID");
  
 ---
  
-#### 7.5 Cloudinary — File & Image Storage
+#### 5.5 Cloudinary — File & Image Storage
 Used to store lawyer photos, files, and contract documents.
  
 1. Go to [https://cloudinary.com](https://cloudinary.com) and create a free account
@@ -215,7 +215,7 @@ CLOUDINARY_API_SECRET=your-api-secret
  
 ---
  
-### 8. Running the App
+### 6. Running the App
 ```bash
 flutter run
 ```
@@ -227,7 +227,7 @@ flutter run -d emulator-5554
  
 ---
  
-### 9. Admin Workflow
+### 7. Admin Workflow
 The admin signs in through the app using admin credentials.
  **Admin username:** adminformujeer
  **Admin password:** Abdullah@123
