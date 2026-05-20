@@ -3,7 +3,7 @@
 ## Introduction
 Mujeer is an Arabic Android application for legal consultations in Saudi Arabia.  
 The app simplifies access to lawyers licensed by the Saudi Ministry of Justice and features a smart recommendation system to suggest the most suitable lawyer.  
-It also provides **AI-powered legal contract drafting** with the option for final review by a licensed attorney.  
+It also provides **AI-powered legal contract drafting** with the option for final review by a licensed lawyer.  
 Mujeer supports Saudi Arabia's digital-justice goals by implementing a **manual verification process** for lawyer licenses and displaying an official **"Verified" badge** for every approved lawyer, enhancing user trust and security.
  
 ---
@@ -23,7 +23,7 @@ Mujeer supports Saudi Arabia's digital-justice goals by implementing a **manual 
 | **Agora API** | Enables voice calling between clients and lawyers |
 | **Firebase Authentication Services** | Handles OTP verification for secure account login |
 | **OneSignal API** | Push notifications for admins |
- 
+| **Firebase Firestore** | Used for storing masseges in real-time chating |
 ---
  
 ## Deployment
@@ -33,7 +33,6 @@ The application is fully hosted on the cloud:
 |-----------|----------|-----|
 | PHP Backend | Railway | `https://2025gpg22-production.up.railway.app` |
 | Python AI API | Railway | `https://ai-production-b7fa.up.railway.app` |
-| MySQL Database | Railway | Managed MySQL instance |
 | Files & Images | Cloudinary | Cloud name: `dmhrba99m` |
  
 ---
@@ -49,9 +48,7 @@ Make sure the following tools are installed:
 - VS Code or Android Studio for development
 - PHP 8+ with `mysqli` extension
 - Git
-- OneSignal Account (for notifications)
-- Firebase Project (for OTP services)
-- Cloudinary Account (for file storage)
+- 
 ---
  
 ### 2. Backend Setup
@@ -105,7 +102,6 @@ The AI service is a FastAPI Python app located in `AI_API/`.
 #### Local:
 ```bash
 cd AI_API
-pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
  
@@ -127,7 +123,6 @@ flutter pub get
 ```
  
 #### 4.2 Backend URL
-In `lib/services/api_client.dart`:
  
 **Production (default):**
 ```dart
@@ -145,35 +140,12 @@ static const String base = 'http://YOUR_LOCAL_IP:8888/mujeer_api';
  
 ---
  
-### 5. Firebase Setup
-The project uses Firebase Authentication Services for OTP verification.
- 
-Make sure this file exists:
-```
-android/app/google-services.json
-```
- 
-After adding it:
-```bash
-flutter clean
-flutter pub get
-```
- 
----
- 
-### 6. OneSignal Setup
-In `lib/main.dart`:
-```dart
-OneSignal.initialize("YOUR-ONESIGNAL-APP-ID");
-OneSignal.Notifications.requestPermission(true);
-```
+
  
 ---
  
 ### 7. Third-Party API Keys & Tokens
- 
-The following APIs require credentials that must be configured before running the app.
- 
+  
 #### 7.1 OpenAI (GPT-4o) — Contract Drafting
 Used to generate AI-powered legal contract drafts.
  
@@ -183,10 +155,7 @@ Used to generate AI-powered legal contract drafts.
 ```
 OPENAI_API_KEY=sk-...
 ```
-4. It is also referenced in `mujeer_api/config.php`:
-```php
-define('OPENAI_API_KEY', getenv('OPENAI_API_KEY') ?: '');
-```
+
  
 ---
  
@@ -194,10 +163,9 @@ define('OPENAI_API_KEY', getenv('OPENAI_API_KEY') ?: '');
 Used for voice calling between clients and lawyers.
  
 1. Go to [https://console.agora.io](https://console.agora.io)
-2. Create a new project and copy the **App ID** and **Temp Token** ( Note: This feature requires a token that expires every 24 hours. After expiration, the feature will not work.)
-3. In `lib/` find the Agora configuration file and set:
+2. Create a new project and copy the **Temp Token** ( Note: This feature requires a token that expires every 24 hours. After expiration, the feature will not work.)
+3. In `lib/pages/chat_screen.dart` set:
 ```dart
-const String agoraAppId = 'YOUR_AGORA_APP_ID';
 final String tempToken = 'temp token'
 ```
  
@@ -212,6 +180,7 @@ Used for phone number verification during registration.
 ```
 android/app/google-services.json
 ```
+4. In this project we use '0500795359' with '123456' code as test phone number for development.
  
 ---
  
@@ -233,7 +202,7 @@ OneSignal.initialize("YOUR-ONESIGNAL-APP-ID");
 ---
  
 #### 7.5 Cloudinary — File & Image Storage
-Used to store lawyer photos, license files, and contract documents.
+Used to store lawyer photos, files, and contract documents.
  
 1. Go to [https://cloudinary.com](https://cloudinary.com) and create a free account
 2. From the dashboard, copy your **Cloud Name**, **API Key**, and **API Secret**
@@ -260,7 +229,8 @@ flutter run -d emulator-5554
  
 ### 9. Admin Workflow
 The admin signs in through the app using admin credentials.
- 
+ **Admin username:** adminformujeer
+ **Admin password:** Abdullah@123
 Admin responsibilities:
 - Review lawyer registration requests
 - View uploaded license files
