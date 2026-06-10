@@ -1,8 +1,5 @@
 <?php
 require_once __DIR__ . '/config.php'; 
-$testRaw = file_get_contents("php://input");
-echo json_encode(["debug_raw" => $testRaw, "length" => strlen($testRaw)]);
-exit;
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');

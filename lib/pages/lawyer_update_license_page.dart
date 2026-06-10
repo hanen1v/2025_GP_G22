@@ -78,11 +78,7 @@ class _LawyerUpdateLicensePageState extends State<LawyerUpdateLicensePage> {
   fileName: licenseFileName,
 );
 
-// احفظي الرابط في الداتابيس
-await ApiClient.saveLicenseFileUrl(
-  lawyerId: user.id,
-  fileUrl: fileUrl,
-);
+
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
