@@ -133,9 +133,12 @@ class _AdminLawyerDetailsPageState extends State<AdminLawyerDetailsPage> {
                         CircleAvatar(
   radius: 42,
   backgroundImage: lawyer?['image'] != null && lawyer!['image'].toString().isNotEmpty
-    ? NetworkImage('${ApiClient.profileImageBase}/${lawyer!['image']}')
+    ? NetworkImage(
+        lawyer!['image'].toString().startsWith('http')
+            ? lawyer!['image']
+            : '${ApiClient.profileImageBase}/${lawyer!['image']}')
     : null,
-child: lawyer?['image'] == null || lawyer!['image'].toString().isEmpty
+  child: lawyer?['image'] == null || lawyer!['image'].toString().isEmpty
     ? const Icon(Icons.person, color: Colors.grey)
     : null,
 ),
