@@ -5,20 +5,17 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 // error_log("REQUEST RECEIVED: " . file_get_contents("php://input"));
 // مهم: لا نطبع أخطاء HTML للعميل (Flutter)
-error_reporting(E_ALL);
-ini_set('log_errors', 1);          // ✅ سجّليها في اللوق
-ini_set('error_log', __DIR__ . '/php_errors.log');
+// error_reporting(E_ALL);
+// ini_set('log_errors', 1);          // ✅ سجّليها في اللوق
+// ini_set('error_log', __DIR__ . '/php_errors.log');
 
 require_once __DIR__ . '/config.php';
 
-$raw = trim(file_get_contents("php://input"));
-if (empty($raw)) {
-    echo json_encode(["success" => false, "message" => "raw is empty"]);
-    exit;
-}
+$raw =file_get_contents("php://input");
+
 $data = json_decode($raw, true);
-error_log("RAW INPUT: " . $raw);
-error_log("DECODED: " . print_r($data, true));
+// error_log("RAW INPUT: " . $raw);
+// error_log("DECODED: " . print_r($data, true));
 if (!$data) {
     echo json_encode(["success" => false, "message" => "Invalid JSON"]);
     exit;
