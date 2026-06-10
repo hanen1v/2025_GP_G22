@@ -11,9 +11,10 @@ ini_set('error_log', __DIR__ . '/php_errors.log');
 
 require_once __DIR__ . '/config.php';
 
-$raw = file_get_contents("php://input");
+$raw = trim(file_get_contents("php://input"));
 $data = json_decode($raw, true);
-
+error_log("RAW INPUT: " . $raw);
+error_log("DECODED: " . print_r($data, true));
 if (!$data) {
     echo json_encode(["success" => false, "message" => "Invalid JSON"]);
     exit;
