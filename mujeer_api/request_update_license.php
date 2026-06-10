@@ -50,7 +50,7 @@ $licenseFileName = 'license_update_' . $lawyerId . '_' . time() . '.pdf';
     RequestType   ← نستخدمه لتمييز "UpdateLicense" عن "NewLawyer" لو حبيتي
 */
 
-$sql = "INSERT INTO request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status)
+$sql = "INSERT INTO Request (AdminID, LawyerID, LawyerLicense, LawyerName, LicenseNumber, Status)
                     VALUES (1, ?, ?, ?, ?, 'Pending')";
 
 $stmt = $conn->prepare($sql);
