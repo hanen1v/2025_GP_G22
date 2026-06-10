@@ -321,10 +321,10 @@ onTap: () {
               CircleAvatar(
   radius: 28,
   backgroundImage: lawyer['image'] != null && lawyer['image'].toString().isNotEmpty
-    ? NetworkImage('${ApiClient.profileImageBase}/${lawyer['image']}')
-    : null,
-child: lawyer['image'] == null || lawyer['image'].toString().isEmpty
-    ? const Icon(Icons.person, color: Colors.grey)
+    ? NetworkImage(
+        lawyer['image'].toString().startsWith('http')
+            ? lawyer['image']
+            : '${ApiClient.profileImageBase}/${lawyer['image']}')
     : null,
 ),
               const SizedBox(width: 12),

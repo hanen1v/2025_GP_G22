@@ -270,4 +270,5 @@ Admin responsibilities:
 ## Done!
 Mujeer is fully set up and ready for testing and development.  
 For production, all services are live on Railway and Cloudinary — no local server needed.
-   
+ ## GitHub repository:
+ https://github.com/hanen1v/2025_GP_G22.git  

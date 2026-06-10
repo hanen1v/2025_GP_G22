@@ -128,7 +128,7 @@ Future<void> _loadWalletBalance() async {
   if (currentUser == null) return;
 //php/////////////////////////////////////////////////////////////////////////////
   final url = Uri.parse(
-      'http://10.0.2.2:8888/mujeer_api/get_wallet.php?id=${currentUser.id}');
+      'https://2025gpg22-production.up.railway.app/get_wallet.php?id=${currentUser.id}');
 
   try {
     final response = await http.get(url);
