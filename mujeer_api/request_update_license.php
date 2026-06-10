@@ -12,6 +12,10 @@ ini_set('error_log', __DIR__ . '/php_errors.log');
 require_once __DIR__ . '/config.php';
 
 $raw = trim(file_get_contents("php://input"));
+if (empty($raw)) {
+    echo json_encode(["success" => false, "message" => "raw is empty"]);
+    exit;
+}
 $data = json_decode($raw, true);
 error_log("RAW INPUT: " . $raw);
 error_log("DECODED: " . print_r($data, true));
