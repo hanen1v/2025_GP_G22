@@ -10,8 +10,8 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 // ini_set('error_log', __DIR__ . '/php_errors.log');
 
 require_once __DIR__ . '/config.php';
-echo json_encode(["test" => "config loaded"]);
-exit;
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 $raw =file_get_contents("php://input");
 
 $data = json_decode($raw, true);
