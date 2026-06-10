@@ -65,7 +65,6 @@ if ($conn->connect_error) {
 }
 
 // 1️⃣ استعلام إدخال المحامي
-// ✅ غيّر الـ SQL
 $sql = "INSERT INTO lawyer (
     FullName, Username, Password, PhoneNumber, LicenseNumber, 
     StartMonth, StartYear, YearsOfExp, Gender, MainSpecialization, FSubSpecialization, 
@@ -79,7 +78,6 @@ if (!$stmt) {
     exit;
 }
 
-// ✅ أضف ii لـ StartMonth و StartYear
 $stmt->bind_param("sssssiiissssssss", 
     $fullName, $username, $hashed_password, $phoneNumber, $licenseNumber,
     $startMonth, $startYear, $yearsOfExp, $gender_english, $mainSpecialization, 
@@ -88,8 +86,6 @@ $stmt->bind_param("sssssiiissssssss",
 );
 
 if ($stmt->execute()) {
-    // echo json_encode(["debug" => "1 - insert success"]);
-    // exit;
     $lawyerId = $conn->insert_id;
     
     // 2️⃣ إضافة طلب للمشرفين في جدول request
@@ -97,55 +93,28 @@ if ($stmt->execute()) {
                     VALUES (1, ?, ?, ?, ?, 'Pending')";
     $request_stmt = $conn->prepare($request_sql);
 
-if (!$request_stmt) {
-    echo json_encode([
-        "debug" => "prepare failed",
-        "error" => $conn->error
-    ]);
-    exit;
-}
+    if (!$request_stmt) {
+        echo json_encode([
+            "debug" => "prepare failed",
+            "error" => $conn->error
+        ]);
+        exit;
+    }
 
-// echo json_encode(["debug" => "prepare success"]);
-// exit;
+    $request_stmt->bind_param("isss", $lawyerId, $license_file_name, $fullName, $licenseNumber);
+    $request_stmt->execute();
 
-$request_stmt->bind_param("isss", $lawyerId, $license_file_name, $fullName, $licenseNumber);
-
-// echo json_encode(["debug" => "bind success"]);
-// exit;
-
-$request_stmt->execute();
-
-// echo json_encode([
-//     "debug" => "execute success"
-// ]);
-// exit;
-
-    // 3️⃣ جلب الـ Player IDs للمشرفين (مرة واحدة فقط هنا)
+    // 3️⃣ جلب الـ Player IDs للمشرفين
     $q = $conn->prepare("SELECT player_id FROM admin_devices");
     $q->execute();
     $res = $q->get_result();
     $players = [];
     while ($row = $res->fetch_assoc()) {
-        if (!empty($row['player_id'])) {
-            $players[] = $row['player_id'];
-        }
+        if (!empty($row['player_id'])) $players[] = $row['player_id'];
     }
     $q->close();
-// echo json_encode([
-//     "debug" => "3 - players fetched",
-//     "players_count" => count($players)
-// ]);
-// exit;
-    // 4️⃣ إرسال الإشعار (سيتم إرسال إشعار واحد فقط الآن)
-    if (!empty($players)) {
-        $title = 'طلب تسجيل جديد';
-        $body  = "المحامي $fullName سجل في النظام وينتظر الموافقة";
-        send_push($players, $title, $body, ['type' => 'new_lawyer', 'id' => $lawyerId]); 
-//         echo json_encode(["debug" => "4 - push sent"]);
-// exit;
-    }
 
-    // 5️⃣ جلب بيانات المحامي للرد على التطبيق (تم إصلاح الفاصلة هنا)
+    // 4️⃣ جلب بيانات المحامي أولاً
     $user = null;
     $uRes = $conn->query("
         SELECT
@@ -156,20 +125,12 @@ $request_stmt->execute();
         WHERE LawyerID = $lawyerId
         LIMIT 1
     ");
-// echo json_encode([
-//     "debug" => "5 - user fetched",
-//     "rows" => $uRes ? $uRes->num_rows : "query failed"
-// ]);
-// exit;
     if ($uRes && $uRes->num_rows >= 1) {
         $user = $uRes->fetch_assoc();
         $user['UserType'] = 'lawyer';
     }
-// echo json_encode([
-//     "debug" => "6 - user fetched",
-//     "rows" => $uRes ? $uRes->num_rows : "query failed"
-// ]);
-// exit;
+
+    // 5️⃣ أرسل الرد لـ Flutter
     echo json_encode([
         "success"         => true,
         "message"         => "تم تسجيل المحامي بنجاح! سيتم مراجعة طلبك",
@@ -178,6 +139,17 @@ $request_stmt->execute();
         "photoFileName"   => $photo_file_name,
         "user"            => $user
     ], JSON_UNESCAPED_UNICODE);
+
+    // 6️⃣ أغلق الاتصال مع Flutter وأرسل الإشعار في الخلفية
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    }
+
+    if (!empty($players)) {
+        $title = 'طلب تسجيل جديد';
+        $body  = "المحامي $fullName سجل في النظام وينتظر الموافقة";
+        send_push($players, $title, $body, ['type' => 'new_lawyer', 'id' => $lawyerId]);
+    }
 
 } else {
     if ($conn->errno == 1062) {
