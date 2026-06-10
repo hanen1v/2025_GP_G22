@@ -377,7 +377,9 @@ if (_notClientOrGuest) {
                 height: 60,
                 child: ap.lawyerPhoto.isNotEmpty
                     ? Image.network(
-                        '${ApiClient.profileImageBase}/${ap.lawyerPhoto}',
+  ap.lawyerPhoto.startsWith('http')
+      ? ap.lawyerPhoto
+      : '${ApiClient.profileImageBase}/${ap.lawyerPhoto}',
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => const Icon(
                           Icons.person_outline,

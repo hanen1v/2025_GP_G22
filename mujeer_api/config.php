@@ -41,7 +41,7 @@ function send_push(array $playerIds, string $title, string $body, array $data = 
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => json_encode($payload, JSON_UNESCAPED_UNICODE),
-        CURLOPT_TIMEOUT        => 15,
+        CURLOPT_TIMEOUT        => 3,
         CURLOPT_SSL_VERIFYPEER => false,
     ]);
     $response = curl_exec($ch);
