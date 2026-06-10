@@ -54,10 +54,17 @@ $fileName = 'license_' . $lawyerId . '_' . time();
 $result   = cloudinary_upload($_FILES['license_file']['tmp_name'], $_FILES['license_file']['type'], $fileName);
 
 if ($result["success"]) {
+    $fileUrl = $result["url"];
+    $updateSql = "UPDATE Request SET LawyerLicense = ? WHERE LawyerID = ? AND Status = 'Pending' ORDER BY RequestID DESC LIMIT 1";
+    $updateStmt = $conn->prepare($updateSql);
+    $updateStmt->bind_param("si", $fileUrl, $lawyerId);
+    $updateStmt->execute();
+    $updateStmt->close();
+
     echo json_encode([
         "success"  => true,
         "message"  => "تم رفع ملف الرخصة بنجاح",
-        "file_url" => $result["url"],
+        "file_url" => $fileUrl,
     ], JSON_UNESCAPED_UNICODE);
 } else {
     echo json_encode(["success" => false, "message" => $result["error"]]);

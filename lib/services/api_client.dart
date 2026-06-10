@@ -495,7 +495,7 @@ static Future<Map<String, dynamic>> requestLicenseUpdate({
 
 
 
-static Future<void> uploadLicenseUpdateFile({
+static Future<String> uploadLicenseUpdateFile({
   required int lawyerId,
   required String filePath,
   required String fileName,
@@ -520,6 +520,13 @@ static Future<void> uploadLicenseUpdateFile({
   if (response.statusCode < 200 || response.statusCode >= 300) {
     throw Exception('فشل رفع ملف الرخصة: HTTP ${response.statusCode}: $respBody');
   }
+
+  final jsonBody = jsonDecode(respBody);
+  if (jsonBody['success'] != true) {
+    throw Exception(jsonBody['message'] ?? 'فشل الرفع');
+  }
+
+  return jsonBody['file_url'] as String; // ← الرابط الكامل من Cloudinary
 }
 
 

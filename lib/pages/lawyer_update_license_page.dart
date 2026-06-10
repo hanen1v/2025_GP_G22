@@ -72,11 +72,17 @@ class _LawyerUpdateLicensePageState extends State<LawyerUpdateLicensePage> {
       }
 
       // 2) رفع ملف الرخصة باستخدام الاسم الذي رجع من الـ PHP
-      await ApiClient.uploadLicenseUpdateFile(
-        lawyerId: user.id,
-        filePath: _licenseFile!.path!,
-        fileName: licenseFileName,
-      );
+      final fileUrl = await ApiClient.uploadLicenseUpdateFile(
+  lawyerId: user.id,
+  filePath: _licenseFile!.path!,
+  fileName: licenseFileName,
+);
+
+// احفظي الرابط في الداتابيس
+await ApiClient.saveLicenseFileUrl(
+  lawyerId: user.id,
+  fileUrl: fileUrl,
+);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

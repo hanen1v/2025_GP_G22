@@ -36,7 +36,7 @@ if ($lawyerId <= 0 || $fullName === '' || $licenseNumber === '') {
 }
 
 // اسم ملف مبدئي للرخصة الجديدة (رح نرفعها في API ثاني)
-$licenseFileName = 'license_update_' . $lawyerId . '_' . time() . '.pdf';
+$licenseFileName = 'license_update_' . $lawyerId . '_' . time();
 
 /*
     نفترض أن جدول request فيه الأعمدة:

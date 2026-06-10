@@ -125,27 +125,32 @@ class RequestCard extends StatelessWidget {
   });
 //show file
   Future<void> _openPDFTemporary(BuildContext context, String url) async {
-    try {
-      if (url.isEmpty) throw 'رابط الملف غير متوفر';
-      print('PDF URL: $url');
-      final res = await http.get(Uri.parse(url));
-      if (res.statusCode != 200) {
-        throw 'فشل تحميل الملف (${res.statusCode})';
-      }
+  try {
+    if (url.isEmpty) throw 'رابط الملف غير متوفر';
 
-      final tmp = await getTemporaryDirectory();
-      final name = url.split('/').last;
-      final path = '${tmp.path}/$name';
+    final fullUrl = url.startsWith('http')
+        ? url
+        : '${ApiClient.base}/uploads/$url';
 
-      final f = File(path);
-      await f.writeAsBytes(res.bodyBytes);
-
-      await OpenFile.open(path);
-    } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('تعذّر فتح الملف: $e')));
+    print('PDF URL: $fullUrl');
+    final res = await http.get(Uri.parse(fullUrl));
+    if (res.statusCode != 200) {
+      throw 'فشل تحميل الملف (${res.statusCode})';
     }
+
+    final tmp = await getTemporaryDirectory();
+    final name = fullUrl.split('/').last;
+    final path = '${tmp.path}/$name';
+
+    final f = File(path);
+    await f.writeAsBytes(res.bodyBytes);
+
+    await OpenFile.open(path);
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('تعذّر فتح الملف: $e')));
   }
+}
   @override//////////////////
   @override
 Widget build(BuildContext context) {
