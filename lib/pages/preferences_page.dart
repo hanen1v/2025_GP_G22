@@ -66,10 +66,18 @@ class _PreferencesPageState extends State<PreferencesPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(
-                    widget.category,
-                    style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+                  Flexible(
+  child: Text(
+    widget.category,
+    textAlign: TextAlign.end,
+    softWrap: true,
+    style: TextStyle(
+      color: primaryColor,
+      fontWeight: FontWeight.bold,
+      fontSize: 16,
+    ),
+  ),
+),
                   const Text(" :تصنيف الحالة", style: TextStyle(fontWeight: FontWeight.w500)),
                   const SizedBox(width: 10),
                   Icon(Icons.gavel_rounded, color: primaryColor, size: 20),

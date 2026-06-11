@@ -218,13 +218,16 @@ class _LawyerChip extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            Text(
-              lawyer.fullName,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 13.5, height: 1.2),
-            ),
+            SizedBox(
+  height: 34, // سطرين بالضبط
+  child: Text(
+    lawyer.fullName,
+    textAlign: TextAlign.center,
+    maxLines: 2,
+    overflow: TextOverflow.ellipsis,
+    style: const TextStyle(fontSize: 13.5, height: 1.2),
+  ),
+),
           ],
         ),
       ),
